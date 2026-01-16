@@ -3,22 +3,55 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AnimeFume Admin</title>
+<title>EP Status Tracker</title>
+
 <style>
+/* ===== RESET ===== */
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:system-ui,sans-serif;
+}
+
+body{
+  background:#0b0b0b;
+  color:#fff;
+  padding:20px;
+}
+
+/* ===== TITLE ===== */
+h2{
+  text-align:center;
+  margin-bottom:10px;
+  color:#00ffcc;
+}
+
+/* ===== SUMMARY ===== */
+.summary{
+  text-align:center;
+  margin-bottom:14px;
+  font-size:14px;
+}
+
+/* ===== TABLE ===== */
+.table-wrap{
+  overflow-x:auto;
+}
 
 .admin-table{
   width:100%;
+  min-width:420px;
   border-collapse:collapse;
   background:#111;
-  color:#fff;
-  font-size:14px;
 }
 
 .admin-table th,
 .admin-table td{
   border:1px solid #333;
-  padding:8px;
+  padding:10px;
   text-align:center;
+  font-size:14px;
 }
 
 .admin-table th{
@@ -26,390 +59,80 @@
   color:#00ffcc;
 }
 
+.admin-table tr.done{
+  background:#10221c;
+}
+
 .admin-table tr.wait{
   background:#2a1a1a;
 }
 
-.admin-table tr.wait td{
-  color:#ff8888;
-}
-
 .admin-table tr.done td{
-  color:#aaffcc;
+  color:#9cffd9;
 }
 
-.hidden{
-  display:none;
+.admin-table tr.wait td{
+  color:#ff9c9c;
 }
 
-.header{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:52px;
-  background:#0b0b0b;
-  display:flex;
-  align-items:center;
-  padding:0 16px;
-  z-index:999;
-  border-bottom:1px solid #222;
-}
-
-/* ปุ่ม ☰ */
-#menuBtn{
-  font-size:22px;
-  cursor:pointer;
-  color:#00ffcc;
-  user-select:none;
-}
-
-/* กล่องเมนู */
-#menuDropdown{
-  position:absolute;
-  top:56px;
-  left:16px;
-  background:#111;
-  border:1px solid #222;
-  border-radius:10px;
-  padding:8px 0;
-  min-width:140px;
-  box-shadow:0 10px 30px rgba(0,0,0,.6);
-}
-
-/* ลิงก์ในเมนู */
-#menuDropdown a{
-  display:block;
-  padding:10px 14px;
-  color:#fff;
-  text-decoration:none;
-  font-size:14px;
-}
-
-#menuDropdown a:hover{
-  background:#00ffcc;
-  color:#000;
-}
-
-/* ===============================
-   RESET & BASE
-================================ */
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-  font-family:system-ui, -apple-system, Segoe UI, sans-serif;
-}
-
-body{
-  min-height:100vh;
-  background:#0b0b0b;
-  color:#fff;
-  padding:20px;
-}
-
-/* ===============================
-   HEADINGS
-================================ */
-h1{
-  text-align:center;
-  color:#ff4d4d;
-  margin-bottom:10px;
-}
-
-h3{
-  text-align:center;
-  color:#ffd24d;
-  margin:15px 0 10px;
-}
-
-/* ===============================
-   CONTAINER
-================================ */
-.container{
-  max-width:520px;
-  margin:auto;
-}
-
-/* ===============================
-   INPUTS / SELECT
-================================ */
-input,
-select{
-  width:100%;
-  padding:10px 12px;
-  margin:6px 0;
-  border-radius:8px;
-  border:1px solid #222;
-  background:#1a1a1a;
-  color:#fff;
-  font-size:14px;
-}
-
-input::placeholder{
-  color:#777;
-}
-
-/* ===============================
-   DEFAULT BUTTON (ทั่วไป)
-================================ */
-button{
-  width:100%;
-  padding:10px 12px;
-  margin:8px 0;
+/* ===== BUTTON ===== */
+.toggle-btn{
+  padding:6px 10px;
   border:none;
-  border-radius:8px;
-  background:#ff4d4d;
-  color:#fff;
-  font-size:14px;
-  font-weight:600;
-  cursor:pointer;
-  transition:0.2s;
-}
-
-button:hover{
-  background:#ff1a1a;
-}
-
-/* ===============================
-   GO TO SITE BUTTON (ปุ่มนำทาง)
-================================ */
-.go-btn{
-  background:#00ffcc;
-  color:#000;
-}
-
-.go-btn:hover{
-  background:#00ccaa;
-}
-
-/* ===============================
-   ADMIN BOX
-================================ */
-.go-btn{
-  margin-bottom:20px;
-  padding:14px;
-  font-size:15px;
-  background:#00ffcc;
-  color:#000;
-  border-radius:12px;
-  font-weight:700;
-}
-
-.admin-title{
-  font-size:16px;
-  font-weight:600;
-  margin-bottom:16px;
-  letter-spacing:.5px;
-  color:#7cffc4;
-}
-
-/* ===============================
-   STATS
-================================ */
-.stat{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:10px 0;
-  border-bottom:1px solid #1f1f1f;
-}
-
-.stat:last-child{
-  border-bottom:none;
-}
-
-.label{
-  font-size:13px;
-  color:#aaa;
-}
-
-.value{
-  font-size:20px;
-  font-weight:600;
-  color:#fff;
-}
-
-.value.small{
-  font-size:13px;
-  color:#ccc;
-  font-family:monospace;
-}
-
-/* ===============================
-   CARD (EP LIST / PREVIEW)
-================================ */
-.card{
-  background:linear-gradient(135deg,#1c1c1c,#262626);
-  padding:12px 16px;
-  border-radius:12px;
-  margin:10px 0;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  box-shadow:0 6px 12px rgba(0,0,0,.5);
-}
-
-.card button{
-  width:auto;
-  padding:6px 14px;
-  background:#ff4d4d;
-  border-radius:8px;
-  font-size:13px;
-}
-
-.card button:hover{
-  background:#ff1a1a;
-}
-
-/* ===============================
-   PREVIEW BOX
-================================ */
-.preview{
-  margin:10px 0;
-  background:#1a1a1a;
-  padding:10px;
-  border-radius:12px;
-  display:flex;
-  align-items:center;
-  gap:10px;
-  border:1px solid #222;
-}
-
-.preview img{
-  width:60px;
-  height:80px;
-  object-fit:cover;
   border-radius:6px;
-  border:1px solid #444;
+  background:#00ffcc;
+  color:#000;
+  font-size:13px;
+  cursor:pointer;
 }
 
-.preview span{
-  font-size:14px;
-  color:#ddd;
-}
-
-/* ===============================
-   MOBILE
-================================ */
-@media(max-width:500px){
-  .card{
-    flex-direction:column;
-    align-items:flex-start;
-    gap:6px;
-  }
+.toggle-btn:hover{
+  background:#00cfa8;
 }
 </style>
 </head>
+
 <body>
 
-<div id="bg"></div>
-
-<header class="header">
-
-  <div id="menuBtn">☰</div>
-  <div id="menuDropdown" class="hidden">
-    <a href="รายการตอน.html">🔒</a>
-   
-  </div>
-</header>
-
-<section class="anime-list" id="animeList">
-
-<div class="container">
-
-หน้านี้อนุญาตให้เฉพาะผู้ดูแลระบบเท่านั้น
-
-<h3>เลือกเรื่อง / สร้างเรื่องใหม่</h3>
-<select id="animeSelect">
-  <option value="">-- สร้างเรื่องใหม่ --</option>
-</select>
-<input id="animeNew" placeholder="ชื่อเรื่องใหม่ (กรอกถ้าเรื่องใหม่)">
-<input id="ep" type="number" placeholder="ตอนที่">
-<input id="video" placeholder="ลิงก์วิดีโอ">
-<input id="poster" placeholder="ลิงก์โปสเตอร์">
-<button onclick="addEpisode()">เพิ่มตอน</button>
-
-<h3>รายการตอนของเรื่องนี้</h3>
+<h2>📋 ตารางสถานะตอน</h2>
 
 <div class="summary">
-  ลงแล้ว: <span id="doneCount">0</span> /
-  เหลือ: <span id="waitCount">0</span> |
-  ความคืบหน้า: <span id="progressPercent">0%</span>
+  ลงแล้ว: <b><span id="doneCount">0</span></b> |
+  เหลือ: <b><span id="waitCount">0</span></b> |
+  ความคืบหน้า: <b><span id="progress">0%</span></b>
 </div>
 
-<div style="overflow-x:auto">
+<div class="table-wrap">
 <table class="admin-table" id="epTable">
   <thead>
     <tr>
-      <th>ตอน</th>
+      <th>EP</th>
       <th>สถานะ</th>
-      <th>จัดการ</th>
+      <th>เปลี่ยน</th>
     </tr>
   </thead>
   <tbody>
-    <!-- ตัวอย่าง -->
     <tr data-status="done">
       <td>EP 1</td>
       <td class="status">✔ ลงแล้ว</td>
-      <td><button class="toggle-btn">เปลี่ยนสถานะ</button></td>
+      <td><button class="toggle-btn">สลับ</button></td>
     </tr>
-
     <tr data-status="wait">
       <td>EP 2</td>
       <td class="status">⏳ ยังไม่ลง</td>
-      <td><button class="toggle-btn">เปลี่ยนสถานะ</button></td>
+      <td><button class="toggle-btn">สลับ</button></td>
+    </tr>
+    <tr data-status="wait">
+      <td>EP 3</td>
+      <td class="status">⏳ ยังไม่ลง</td>
+      <td><button class="toggle-btn">สลับ</button></td>
     </tr>
   </tbody>
 </table>
 </div>
 
-<div id="episodeList"></div>
-
-<button onclick="saveJSON()">บันทึกไฟล์ JSON</button>
-</div>
-
-<div class="admin-box">
-  <div class="admin-title">Visitor Monitor</div>
-
-  <div class="stat">
-    <span class="label">Total Visits</span>
-    <span class="value">128</span>
-  </div>
-
-  <div class="stat">
-    <span class="label">Unique Devices</span>
-    <span class="value">42</span>
-  </div>
-
-  <div class="stat">
-    <span class="label">Current Device</span>
-    <span class="value small">DEV-A9X3F2</span>
-  </div>
-
-  <div class="stat">
-    <span class="label">Last Access</span>
-    <span class="value small">2026-01-16 18:45</span>
-  </div>
-</div>
-
 <script>
-
-const btn = document.getElementById("menuBtn");
-const menu = document.getElementById("menuDropdown");
-
-btn.onclick = ()=>{
-  menu.classList.toggle("hidden");
-};
-
-// กดที่อื่นแล้วปิด
-document.addEventListener("click",e=>{
-  if(!btn.contains(e.target) && !menu.contains(e.target)){
-    menu.classList.add("hidden");
-  }
-});
-
-function updateTable(){
+function updateStatus(){
   const rows = document.querySelectorAll("#epTable tbody tr");
   let done = 0;
   let wait = 0;
@@ -430,115 +153,24 @@ function updateTable(){
   });
 
   const total = done + wait;
-  const percent = total ? Math.round((done / total) * 100) : 0;
+  const percent = total ? Math.round((done/total)*100) : 0;
 
   document.getElementById("doneCount").innerText = done;
   document.getElementById("waitCount").innerText = wait;
-  document.getElementById("progressPercent").innerText = percent + "%";
+  document.getElementById("progress").innerText = percent + "%";
 }
 
-// คลิกเปลี่ยนสถานะ
 document.addEventListener("click",e=>{
   if(e.target.classList.contains("toggle-btn")){
     const row = e.target.closest("tr");
     row.dataset.status =
       row.dataset.status === "done" ? "wait" : "done";
-    updateTable();
+    updateStatus();
   }
 });
 
-updateTable();
-
-function goToSite(){
-  window.location.href = "รายการตอน.html";
-}
-
-let data = { animeTitle:"", episodes:[] };
-
-// โหลด JSON ถ้ามี
-fetch("episodes.json")
-  .then(res=>res.json())
-  .then(json=>{
-    data=json;
-    populateAnimeSelect();
-    renderList();
-  })
-  .catch(()=>console.log("ไม่มี JSON เดิม"));
-
-// dropdown
-function populateAnimeSelect(){
-  const select=document.getElementById("animeSelect");
-  if(!data.animeTitle) return;
-  const option=document.createElement("option");
-  option.value=data.animeTitle;
-  option.textContent=data.animeTitle;
-  select.appendChild(option);
-  select.value=data.animeTitle;
-}
-
-// เพิ่มตอน
-function addEpisode(){
-  const select=document.getElementById("animeSelect");
-  const animeNew=document.getElementById("animeNew").value.trim();
-  const ep=parseInt(document.getElementById("ep").value);
-  const video=document.getElementById("video").value.trim();
-  const poster=document.getElementById("poster").value.trim();
-
-  if(animeNew) data.animeTitle=animeNew;
-  else if(select.value) data.animeTitle=select.value;
-  else { alert("กรอกชื่อเรื่อง"); return; }
-
-  if(!ep||!video){ alert("กรอกตอนและวิดีโอ"); return; }
-
-  if(data.episodes.some(e=>e.ep===ep)){ alert("ตอนนี้มีอยู่แล้ว"); return; }
-
-  data.episodes.push({ep,video,poster});
-  renderList();
-}
-
-// ลบตอน
-function deleteEpisode(ep){
-  if(!confirm("ลบตอนที่ "+ep+" ใช่ไหม?")) return;
-  data.episodes=data.episodes.filter(e=>e.ep!==ep);
-  renderList();
-}
-
-// แสดงรายการตอน + preview
-function renderList(){
-  const box=document.getElementById("episodeList");
-  box.innerHTML="";
-  data.episodes.sort((a,b)=>a.ep-b.ep).forEach(e=>{
-    const div=document.createElement("div");
-    div.className="card";
-
-    const preview=document.createElement("div");
-    preview.className="preview";
-    const img=document.createElement("img");
-    img.src=e.poster||"https://via.placeholder.com/60x80";
-    const span=document.createElement("span");
-    span.textContent="EP "+e.ep+" - "+e.video;
-    preview.appendChild(img);
-    preview.appendChild(span);
-
-    const btn=document.createElement("button");
-    btn.textContent="ลบ";
-    btn.onclick=()=>deleteEpisode(e.ep);
-
-    div.appendChild(preview);
-    div.appendChild(btn);
-    box.appendChild(div);
-  });
-}
-
-// บันทึก JSON
-function saveJSON(){
-  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="episodes.json";
-  a.click();
-}
-
+updateStatus();
 </script>
+
 </body>
 </html>

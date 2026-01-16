@@ -101,6 +101,11 @@ button:hover { background:#ff1a1a; }
 <button onclick="saveJSON()">บันทึกไฟล์ JSON</button>
 </div>
 
+document.getElementById("info").innerHTML = `
+  <p>Device ID: ${deviceId}</p>
+  <p>เข้าชมเว็บแล้ว: ${visitCount} ครั้ง</p>
+`;
+
 <script>
 let data = { animeTitle:"", episodes:[] };
 

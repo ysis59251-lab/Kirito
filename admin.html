@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnimeFume Admin</title>
+<style>
+/* ===== RESET ===== */
+* { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+body { margin:0; min-height:100vh; background:#1a1a1a; color:#fff; padding:20px; }
+
+/* ===== HEADINGS ===== */
+h1,h3 { margin-bottom:12px; text-align:center; }
+h1 { color:#ff4d4d; }
+h3 { color:#ffd24d; }
+
+/* ===== INPUTS & BUTTONS ===== */
+input, select, button {
+  padding:10px 12px;
+  margin:6px 0;
+  width:100%;
+  border-radius:8px;
+  border:none;
+  font-size:1rem;
+}
+input, select { background:#222; color:#fff; }
+button { background:#ff4d4d; color:#fff; cursor:pointer; transition:.2s; font-weight:600; }
+button:hover { background:#ff1a1a; }
+
+/* ===== CARD ===== */
+.card{
+  background: linear-gradient(135deg,#222,#333);
+  padding:12px 16px;
+  border-radius:12px;
+  margin:10px 0;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:0 6px 12px rgba(0,0,0,0.5);
+}
+.card button{
+  padding:6px 14px;
+  background:#ff4d4d;
+  border:none;
+  border-radius:8px;
+  color:#fff;
+  cursor:pointer;
+  font-weight:600;
+  transition:.2s;
+}
+.card button:hover{ background:#ff1a1a; }
+
+/* ===== CONTAINER ===== */
+.container{
+  max-width:500px;
+  margin:auto;
+}
+
+/* ===== PREVIEW BOX ===== */
+.preview{
+  margin:10px 0;
+  background:#222;
+  padding:10px;
+  border-radius:12px;
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.preview img{
+  width:60px;
+  height:80px;
+  object-fit:cover;
+  border-radius:6px;
+  border:1px solid #444;
+}
+.preview span{ font-size:0.95rem; }
+
+@media(max-width:500px){
+  .card{ flex-direction:column; align-items:flex-start; gap:6px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+<h1>เเอดมิน AnimeFume</h1>
+หน้านี้อนุญาตให้เฉพาะผู้ดูแลระบบเท่านั้น
+<h3>เลือกเรื่อง / สร้างเรื่องใหม่</h3>
+<select id="animeSelect">
+  <option value="">-- สร้างเรื่องใหม่ --</option>
+</select>
+<input id="animeNew" placeholder="ชื่อเรื่องใหม่ (กรอกถ้าเรื่องใหม่)">
+<input id="ep" type="number" placeholder="ตอนที่">
+<input id="video" placeholder="ลิงก์วิดีโอ">
+<input id="poster" placeholder="ลิงก์โปสเตอร์">
+<button onclick="addEpisode()">เพิ่มตอน</button>
+
+<h3>รายการตอนของเรื่องนี้</h3>
+<div id="episodeList"></div>
+
+<button onclick="saveJSON()">บันทึกไฟล์ JSON</button>
+</div>
+
+<script>
+let data = { animeTitle:"", episodes:[] };
+
+// โหลด JSON ถ้ามี
+fetch("episodes.json")
+  .then(res=>res.json())
+  .then(json=>{
+    data=json;
+    populateAnimeSelect();
+    renderList();
+  })
+  .catch(()=>console.log("ไม่มี JSON เดิม"));
+
+// dropdown
+function populateAnimeSelect(){
+  const select=document.getElementById("animeSelect");
+  if(!data.animeTitle) return;
+  const option=document.createElement("option");
+  option.value=data.animeTitle;
+  option.textContent=data.animeTitle;
+  select.appendChild(option);
+  select.value=data.animeTitle;
+}
+
+// เพิ่มตอน
+function addEpisode(){
+  const select=document.getElementById("animeSelect");
+  const animeNew=document.getElementById("animeNew").value.trim();
+  const ep=parseInt(document.getElementById("ep").value);
+  const video=document.getElementById("video").value.trim();
+  const poster=document.getElementById("poster").value.trim();
+
+  if(animeNew) data.animeTitle=animeNew;
+  else if(select.value) data.animeTitle=select.value;
+  else { alert("กรอกชื่อเรื่อง"); return; }
+
+  if(!ep||!video){ alert("กรอกตอนและวิดีโอ"); return; }
+
+  if(data.episodes.some(e=>e.ep===ep)){ alert("ตอนนี้มีอยู่แล้ว"); return; }
+
+  data.episodes.push({ep,video,poster});
+  renderList();
+}
+
+// ลบตอน
+function deleteEpisode(ep){
+  if(!confirm("ลบตอนที่ "+ep+" ใช่ไหม?")) return;
+  data.episodes=data.episodes.filter(e=>e.ep!==ep);
+  renderList();
+}
+
+// แสดงรายการตอน + preview
+function renderList(){
+  const box=document.getElementById("episodeList");
+  box.innerHTML="";
+  data.episodes.sort((a,b)=>a.ep-b.ep).forEach(e=>{
+    const div=document.createElement("div");
+    div.className="card";
+
+    const preview=document.createElement("div");
+    preview.className="preview";
+    const img=document.createElement("img");
+    img.src=e.poster||"https://via.placeholder.com/60x80";
+    const span=document.createElement("span");
+    span.textContent="EP "+e.ep+" - "+e.video;
+    preview.appendChild(img);
+    preview.appendChild(span);
+
+    const btn=document.createElement("button");
+    btn.textContent="ลบ";
+    btn.onclick=()=>deleteEpisode(e.ep);
+
+    div.appendChild(preview);
+    div.appendChild(btn);
+    box.appendChild(div);
+  });
+}
+
+// บันทึก JSON
+function saveJSON(){
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download="episodes.json";
+  a.click();
+}
+</script>
+</body>
+</html>

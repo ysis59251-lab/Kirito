@@ -1,4 +1,63 @@
-<h2>📋 รายการตอน (แอดมิน)</h2>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>Admin Episode List</title>
+
+<style>
+body{
+  margin:0;
+  padding:20px;
+  background:#0b0b0b;
+  color:#fff;
+  font-family:sans-serif;
+}
+
+/* ===== SUMMARY ===== */
+.summary{
+  margin-bottom:15px;
+  font-weight:bold;
+  font-size:16px;
+}
+
+/* ===== TABLE ===== */
+.admin-table{
+  width:100%;
+  border-collapse:collapse;
+  background:#111;
+  color:#fff;
+  font-size:14px;
+}
+
+.admin-table th,
+.admin-table td{
+  border:1px solid #333;
+  padding:8px;
+  text-align:center;
+}
+
+.admin-table th{
+  background:#1c1c1c;
+  color:#00ffcc;
+}
+
+.admin-table tr.wait{
+  background:#2a1a1a;
+}
+
+.admin-table tr.wait td{
+  color:#ff8888;
+}
+
+.admin-table tr.done td{
+  color:#aaffcc;
+}
+</style>
+</head>
+
+<body>
+
+<h2>📋 รายการตอน (หน้าแอดมิน)</h2>
 
 <div class="summary">
   ลงแล้ว: <span id="doneCount">0</span> ตอน |
@@ -9,7 +68,7 @@
   <thead>
     <tr>
       <th>ตอน</th>
-      <th>ชื่อ</th>
+      <th>ประเภท</th>
       <th>สถานะ</th>
       <th>หมายเหตุ</th>
     </tr>
@@ -40,9 +99,30 @@
       <td>EP 4</td>
       <td>พากย์ไทย</td>
       <td>ยังไม่ลง</td>
-      <td>ยังไม่ได้อัปโหลด</td>
+      <td>ยังไม่อัปโหลด</td>
     </tr>
   </tbody>
 </table>
 
-<script src="admin.js"></script>
+<script>
+const rows = document.querySelectorAll("#epTable tbody tr");
+let done = 0;
+let wait = 0;
+
+rows.forEach(row=>{
+  const status = row.dataset.status;
+  if(status === "done"){
+    done++;
+    row.classList.add("done");
+  }else{
+    wait++;
+    row.classList.add("wait");
+  }
+});
+
+document.getElementById("doneCount").textContent = done;
+document.getElementById("waitCount").textContent = wait;
+</script>
+
+</body>
+</html>

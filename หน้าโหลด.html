@@ -94,14 +94,18 @@ body { min-height:100vh; color:#333; }
 </section>
 
 <script>
-// ===== โหลด JSON เพิ่มการ์ดใหม่โดยไม่ลบของเก่า =====
+/* ===============================
+   LOAD ANIME CARD (ไม่ลบของเก่า)
+================================ */
 fetch("episodes.json")
 .then(res => res.json())
 .then(data => {
   const box = document.getElementById("animeList");
   if(!box || !data || !data.episodes) return;
 
-  const poster = data.episodes[0]?.poster || "https://via.placeholder.com/300x400?text=No+Image";
+  const poster = data.episodes[0]?.poster || 
+    "https://via.placeholder.com/300x400?text=No+Image";
+
   const html = `
     <a href="watch.html?ep=1" class="anime-card">
       <div class="img-box">
@@ -112,67 +116,86 @@ fetch("episodes.json")
       </div>
     </a>
   `;
-  box.insertAdjacentHTML("afterbegin", html); // เพิ่มบนสุด โดยไม่ลบของเก่า
+  box.insertAdjacentHTML("afterbegin", html);
 })
 .catch(()=>{});
 
-// ===== เมนู =====
-const menuBtn = document.getElementById('menuBtn');
-const menuDropdown = document.getElementById('menuDropdown');
-menuDropdown.style.display = 'none';
-menuBtn.addEventListener('click', ()=>{
-  menuDropdown.style.display = (menuDropdown.style.display==='none')?'flex':'none';
-});
 
-// ===== Parallax =====
+/* ===============================
+   MENU
+================================ */
+const menuBtn = document.getElementById("menuBtn");
+const menuDropdown = document.getElementById("menuDropdown");
+
+if(menuBtn && menuDropdown){
+  menuDropdown.style.display = "none";
+  menuBtn.addEventListener("click", ()=>{
+    menuDropdown.style.display =
+      (menuDropdown.style.display === "none") ? "flex" : "none";
+  });
+}
+
+
+/* ===============================
+   PARALLAX
+================================ */
 const bg = document.getElementById("bg");
-window.addEventListener("scroll",()=>{ bg.style.transform = `translateY(${window.scrollY*0.18}px)`; });
+if(bg){
+  window.addEventListener("scroll", ()=>{
+    bg.style.transform = `translateY(${window.scrollY * 0.18}px)`;
+  });
+}
 
-// ===== Particle =====
+
+/* ===============================
+   PARTICLE EFFECT
+================================ */
 function spawnParticle(){
   const p = document.createElement("div");
-  p.className="particle";
-  p.style.left = Math.random()*100 + "vw";
-  p.style.animationDuration = (6+Math.random()*6)+"s";
+  p.className = "particle";
+  p.style.left = Math.random() * 100 + "vw";
+  p.style.animationDuration = (6 + Math.random() * 6) + "s";
   document.body.appendChild(p);
-  setTimeout(()=>p.remove(),12000);
+  setTimeout(()=>p.remove(), 12000);
 }
-setInterval(spawnParticle,350);
-// สร้าง ID เครื่อง (ถ้ายังไม่มี)
+setInterval(spawnParticle, 350);
+
+
+/* ===============================
+   VISITOR MONITOR (LOCAL)
+   ต่อเครื่อง / ไม่พังหน้าอื่น
+================================ */
+
+// Device ID (สร้างครั้งเดียว)
 let deviceId = localStorage.getItem("device_id");
 if(!deviceId){
-  deviceId = "dev-" + Math.random().toString(36).substr(2,9);
+  deviceId = "DEV-" + Math.random().toString(36).substr(2,8).toUpperCase();
   localStorage.setItem("device_id", deviceId);
 }
 
-/* ===== Visitor Monitor (Local Only) ===== */
+// นับจำนวนเข้าเว็บ
+let visitCount = parseInt(localStorage.getItem("visit_count") || "0", 10);
+visitCount++;
+localStorage.setItem("visit_count", visitCount);
 
-// สร้าง Device ID ถ้ายังไม่มี
-let deviceId = localStorage.getItem("device_id");
-if (!deviceId) {
-  deviceId = "DEV-" + Math.random().toString(36).substr(2, 8).toUpperCase();
-  localStorage.setItem("device_id", deviceId);
-}
-
-// นับจำนวนครั้งที่เข้าเว็บ
-let visits = parseInt(localStorage.getItem("visit_count") || "0");
-visits++;
-localStorage.setItem("visit_count", visits);
-
-// เวลาล่าสุด
-const now = new Date();
-const lastAccess = now.toLocaleString("th-TH");
-
-// บันทึกเวลา
+// เวลาเข้าเว็บล่าสุด
+const lastAccess = new Date().toLocaleString("th-TH");
 localStorage.setItem("last_access", lastAccess);
 
-// แสดงผล
-document.querySelectorAll(".stat .value")[0].textContent = visits;
-document.querySelectorAll(".stat .value")[1].textContent = "1";
-document.querySelectorAll(".stat .value")[2].textContent = lastAccess;
+// แสดงผล (เฉพาะหน้าที่มี admin-box)
+const stats = document.querySelectorAll(".stat .value");
+if(stats.length >= 3){
+  stats[0].textContent = visitCount;   // Total Visits (เครื่องนี้)
+  stats[1].textContent = "1";          // Unique Devices (local)
+  stats[2].textContent = lastAccess;   // Last Access
+}
 
-// (เสริม) แสดง Device ID ถ้าต้องการ
-console.log("Device:", deviceId);
+// debug
+console.log("Visitor Monitor →", {
+  deviceId,
+  visitCount,
+  lastAccess
+});
 </script>
 
 </body>

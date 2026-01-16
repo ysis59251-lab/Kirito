@@ -145,14 +145,34 @@ if(!deviceId){
   localStorage.setItem("device_id", deviceId);
 }
 
+/* ===== Visitor Monitor (Local Only) ===== */
+
+// สร้าง Device ID ถ้ายังไม่มี
+let deviceId = localStorage.getItem("device_id");
+if (!deviceId) {
+  deviceId = "DEV-" + Math.random().toString(36).substr(2, 8).toUpperCase();
+  localStorage.setItem("device_id", deviceId);
+}
+
 // นับจำนวนครั้งที่เข้าเว็บ
-let visitCount = localStorage.getItem("visit_count");
-visitCount = visitCount ? parseInt(visitCount) + 1 : 1;
-localStorage.setItem("visit_count", visitCount);
+let visits = parseInt(localStorage.getItem("visit_count") || "0");
+visits++;
+localStorage.setItem("visit_count", visits);
+
+// เวลาล่าสุด
+const now = new Date();
+const lastAccess = now.toLocaleString("th-TH");
+
+// บันทึกเวลา
+localStorage.setItem("last_access", lastAccess);
 
 // แสดงผล
-console.log("Device ID:", deviceId);
-console.log("Visit Count:", visitCount);
+document.querySelectorAll(".stat .value")[0].textContent = visits;
+document.querySelectorAll(".stat .value")[1].textContent = "1";
+document.querySelectorAll(".stat .value")[2].textContent = lastAccess;
+
+// (เสริม) แสดง Device ID ถ้าต้องการ
+console.log("Device:", deviceId);
 </script>
 
 </body>

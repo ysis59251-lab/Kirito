@@ -6,6 +6,20 @@
 <title>AnimeFume Admin</title>
 <style>
 
+.go-btn{
+  margin-bottom:15px;
+  padding:8px 14px;
+  background:#00ffcc;
+  border:none;
+  border-radius:6px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.go-btn:hover{
+  background:#00ccaa;
+}
+
 .admin-box{
   background:#0f0f0f;
   border:1px solid #222;
@@ -150,6 +164,10 @@ button:hover { background:#ff1a1a; }
 <button onclick="saveJSON()">บันทึกไฟล์ JSON</button>
 </div>
 
+<button class="go-btn" onclick="goToSite()">
+  🌐 ไปหน้าเว็บหลัก
+</button>
+
 <div class="admin-box">
   <div class="admin-title">Visitor Monitor</div>
 
@@ -259,6 +277,11 @@ function saveJSON(){
   a.download="episodes.json";
   a.click();
 }
+
+function goToSite(){
+  window.location.href = "";
+}
+
 </script>
 </body>
 </html>

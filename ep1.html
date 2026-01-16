@@ -6,109 +6,61 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    /* ===== body ===== */
 body{
   margin:0;
   min-height:100vh;
   font-family:sans-serif;
   background:
-    url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg?semt=ais_hybrid&w=740&q=80")
+    url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg")
     center / cover no-repeat fixed;
 }
 
-/* ===== container ===== */
-.container{
-  max-width:720px;
-  margin:auto;
-  padding:12px;
-}
-
-/* ===== TITLE ===== */
 .title{
-  background:#ffffff;
-  color:#000000;
+  background:#fff;
+  color:#000;
   padding:12px 16px;
   border-radius:12px;
-  margin-bottom:10px;
-
+  margin:12px;
   font-size:18px;
   font-weight:700;
-  line-height:1.35;
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-
-  text-shadow:
-    0 1px 0 rgba(255,255,255,1),
-    0 -1px 0 rgba(0,0,0,0.05);
-
-  box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }
 
-/* ===== กล่องรวมตอน ===== */
 .top-title{
   background:rgba(0,0,0,.85);
   color:#fff;
-  padding:14px 18px;
+  padding:14px;
   border-radius:14px;
+  margin:12px;
   text-align:center;
-  margin-bottom:14px;
-  font-weight:600;
 }
 
-/* ===== PLAYER (จุดสำคัญ) ===== */
 .player{
-  width:100%;
   max-width:720px;
-  margin:0 auto 14px;
+  margin:12px auto;
   background:#000;
   border-radius:14px;
   overflow:hidden;
-  box-shadow:0 10px 25px rgba(0,0,0,.6);
 }
 
 .player video{
   width:100%;
-  height:auto;          /* 🔥 สำคัญ */
-  max-height:none;      /* 🔥 สำคัญ */
-  aspect-ratio:16 / 9;  /* คุมสัดส่วนแทน */
+  aspect-ratio:16/9;
   object-fit:contain;
   background:#000;
-  display:block;
 }
 
-.video-error{
-  position:absolute;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  background:rgba(0,0,0,0.7);
-  color:#fff;
-  padding:20px 30px;
-  border-radius:10px;
-  text-align:center;
-  z-index:999;
-}
-
-.video-error h2{
-  margin:0 0 8px;
-  color:#ff4d4d;
-}
-
-/* ===== buttons ===== */
 .controls{
   display:flex;
   gap:10px;
-  margin-top:14px;
+  margin:12px;
 }
 
 .btn{
   flex:1;
-  background:#1e1e1e;
+  padding:12px;
   border:none;
   border-radius:12px;
-  padding:12px;
+  background:#1e1e1e;
   color:#fff;
   cursor:pointer;
 }
@@ -116,118 +68,65 @@ body{
 .btn:hover{
   background:#ff4d4d;
 }
-
-/* ===== footer ===== */
-.footer-support{
-  margin:60px 16px 20px;
-  padding:12px 16px;
-  text-align:center;
-  font-size:.85rem;
-  color:#222;
-  background:#ffffff;
-  border-radius:12px;
-}
 </style>
 </head>
 
-<body>
-<div class="title-box">
+<!-- 🔥 จุดสำคัญ -->
+<body
+  data-anime="Kusuriya no Hitorigoto"
+  data-ep="1"
+  data-total="24"
+>
 
-  <div class="title" id="epTitle">
-    Kusuriya no Hitorigoto สืบคดีปริศนา หมอยาตำรับโคมแดง ตอนที่ 1
-  </div>
-
-  <div class="top-title">
-    รวมทุกตอน Kusuriya no Hitorigoto ตอนที่ 1–24 พากย์ไทย จบแล้ว
-  </div>
-  
-<div class="player">
-    <video
-    id="videoPlayer"
-    controls
-    playsinline
-    poster="https://pbs.twimg.com/media/DSJGh_9U8AAzf_Q.jpg">
-    <source src="https://files.akuma-player.xyz/view/59405c86-b886-532e-8b8c-e25d2d17a812" type="video/mp4">
-  </video></div>
-
-  <div class="controls">
-    <button class="btn" onclick="prevEp()">⬅ ตอนก่อนหน้า</button>
-    <button class="btn" onclick="showAllEp()">☰ ตอนทั้งหมด</button>
-    <button class="btn" onclick="nextEp()">ตอนถัดไป ➡</button>
-  </div>
-
-<div id="videoError" style="display:none;">
-  วิดีโอมีปัญหา กรุณาติดต่อแอดมิน
+<div class="title">
+  Kusuriya no Hitorigoto ตอนที่ 1
 </div>
 
-<div class="footer-support">
-  สนับสนุนผลงานผ่านช่องทางที่ถูกลิขสิทธิ์
+<div class="top-title">
+  รวมทุกตอน ตอนที่ 1–24
+</div>
 
+<div class="player">
+  <video id="videoPlayer" controls playsinline>
+    <source src="https://files.akuma-player.xyz/view/59405c86-b886-532e-8b8c-e25d2d17a812" type="video/mp4">
+  </video>
+</div>
+
+<div class="controls">
+  <button class="btn" onclick="prevEp()">⬅ ตอนก่อนหน้า</button>
+  <button class="btn" onclick="nextEp()">ตอนถัดไป ➡</button>
 </div>
 
 <script>
-const params = new URLSearchParams(location.search);
-let ep = parseInt(params.get("ep")) || 1;
-let currentQuality = params.get("q") || "360";
+/* ===== ระบบบันทึกตอนอัตโนมัติ ===== */
+const animeName = document.body.dataset.anime;
+const epNumber  = Number(document.body.dataset.ep);
+const totalEp   = Number(document.body.dataset.total);
 
-const video = document.getElementById("videoPlayer");
-const qualitySelect = document.getElementById("quality");
-const errorBox = document.getElementById("videoError"); // ถ้ามี div แจ้งเตือน
+let db = JSON.parse(localStorage.getItem("animeDB")) || {};
 
-const videos = {
-  1:{360:"https://files.akuma-player.xyz/view/59405c86-b886-532e-8b8c-e25d2d17a812"},
-};
-
-function loadVideo(){
-  const url = videos[ep]?.[currentQuality];
-  if(!url){
-    alert("ไม่พบวิดีโอตอนนี้");
-    return;
-  }
-  video.src = url;
-  video.load();
+if(!db[animeName]){
+  db[animeName] = {
+    total: totalEp,
+    done: []
+  };
 }
 
-qualitySelect.value = currentQuality;
-qualitySelect.onchange = () => {
-  currentQuality = qualitySelect.value;
-  history.replaceState(null,"",`?ep=${ep}&q=${currentQuality}`);
-  loadVideo();
-};
+if(!db[animeName].done.includes(epNumber)){
+  db[animeName].done.push(epNumber);
+}
 
+localStorage.setItem("animeDB", JSON.stringify(db));
+
+/* ===== เปลี่ยนตอน ===== */
 function prevEp(){
-  if(ep <= 1) return alert("นี่คือตอนแรกแล้ว");
-  location.href = `?ep=${ep-1}&q=${currentQuality}`;
+  if(epNumber <= 1) return alert("ตอนแรกแล้ว");
+  location.href = `?ep=${epNumber-1}`;
 }
 
 function nextEp(){
-  location.href = "ep2.html";
+  location.href = `?ep=${epNumber+1}`;
 }
-
-function showAllEp(){
-  location.href = "ByteWorld101.html";
-}
-
-/* 🔴 ดักจับ error วิดีโอ + ส่งแจ้งแอดมิน */
-video.addEventListener("error", () => {
-  if(errorBox) errorBox.style.display = "block";
-
-  fetch("report_error.php", {
-    method: "POST",
-    headers: {"Content-Type":"application/json"},
-    body: JSON.stringify({
-      ep: ep,
-      quality: currentQuality,
-      video: video.currentSrc,
-      page: location.href,
-      time: new Date().toISOString()
-    })
-  });
-});
-
-
-
-loadVideo();
 </script>
 
 </body>

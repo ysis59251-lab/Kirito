@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AnimeFume</title>
+
+<style>
+/* ===== RESET ===== */
+* {
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: #333;
+}
+
+/* ===== BACKGROUND ===== */
+#bg {
+  position: fixed;
+  inset: 0;
+  background: url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg")
+    center / cover no-repeat;
+  z-index: -1;
+}
+
+/* ===== HEADER ===== */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(255,255,255,0.7);
+  backdrop-filter: blur(8px);
+  padding: 14px;
+  text-align: center;
+  border-bottom: 1px solid #ddd;
+}
+
+.header h1 {
+  margin: 0 0 10px;
+}
+
+.search {
+  width: 90%;
+  max-width: 400px;
+  padding: 10px 14px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  outline: none;
+}
+
+/* ===== LIST ===== */
+.anime-list {
+  padding: 20px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 16px;
+}
+
+/* ===== CARD ===== */
+.anime-card {
+  text-decoration: none;
+  color: #333;
+  background: rgba(255,255,255,0.75);
+  backdrop-filter: blur(6px);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+  transition: transform .2s, box-shadow .2s;
+}
+
+.anime-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+}
+
+.img-box {
+  position: relative;
+}
+
+.img-box img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+
+.overlay-text {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  padding: 10px;
+  font-size: 13px;
+  color: #fff;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.75),
+    rgba(0,0,0,0.2),
+    transparent
+  );
+}
+
+/* ===== PARTICLE ===== */
+.particle {
+  position: fixed;
+  bottom: -20px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 2;
+  background: radial-gradient(circle,
+    rgba(180,220,255,0.9),
+    rgba(180,220,255,0.4),
+    transparent
+  );
+  box-shadow:
+    0 0 10px rgba(180,220,255,0.9),
+    0 0 20px rgba(150,200,255,0.6);
+  animation: particleUp linear forwards;
+}
+
+@keyframes particleUp {
+  from {
+    transform: translateY(0) scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(-120vh) scale(1.4);
+    opacity: 1;
+  }
+}
+
+#menuBtn {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  font-size: 28px;
+  color: #fff;
+  cursor: pointer;
+  z-index: 1000;
+  user-select: none;
+}
+
+#menuDropdown {
+  position: fixed;
+  top: 55px;
+  left: 15px;
+  background: rgba(0,0,0,0.85);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  z-index: 999;
+}
+
+/* ลิงก์ในเมนู */
+#menuDropdown a {
+  color: #fff;
+  text-decoration: none;
+  padding: 8px 12px;
+  font-size: 16px;
+  transition: 0.2s;
+}
+
+/* ซ่อนเมนูตั้งแต่แรก */
+.hidden {
+  display: none;   /* เดิมไม่มีปัญหา */
+}
+
+/* เพิ่ม transition ให้เลื่อนลงสวย */
+#menuDropdown {
+  transition: all 0.25s ease;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="bg"></div>
+
+<header class="header">
+  <h1>AnimeFume</h1>
+  <input class="search" type="text" placeholder="ค้นหาอนิเมะ...">
+  
+<!-- ปุ่มเมนู -->
+<div id="menuBtn">☰</div>
+
+<!-- เมนูเลือกภาษา -->
+<div id="menuDropdown" class="hidden">
+  <a href="หน้าโหลด.html">หน้าเเรก</a>
+  <a href="">ซับไทย</a>
+  <a href="index3.html">พากย์ไทย</a>
+  <a href="other.html">อื่นๆ</a>a>
+</div>
+  
+</header>
+
+<section class="anime-list">
+  <a href="ByteWorld101.html" class="anime-card">
+    <div class="img-box">
+      <img src="https://kusuriyanohitorigoto.jp/season1/gallery/img/keyvisual/02.jpg">
+      <div class="overlay-text">
+        Mizu Zokusei no Mahoutsukai<br>
+        ตอนที่ 1–24 พากย์ไทย จบแล้ว
+      </div>
+    </div>
+  </a>
+  
+    <a href="202.html" class="anime-card">
+    <div class="img-box">
+      <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+      <div class="overlay-text">
+       Sword Art Online ซอร์ดอาร์ตออนไลน์<br>
+    (ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว
+      </div>
+    </div>
+  </a>
+  
+      <a href="203.html" class="anime-card">
+    <div class="img-box">
+      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3G46VISYTyNvhfCIRxvFe6KExkWlNdekrUg88tKYhZ7wA0NNXGmQg74rj&s=10">
+      <div class="overlay-text">
+      DAN DA DAN ดันดาดัน<br>
+     (ภาค1) ตอนที่ 1-12 พากย์ไทย จบแล้ว
+      </div>
+    </div>
+  </a>
+  
+</section>
+
+<script>
+
+const menuBtn = document.getElementById('menuBtn');
+const menuDropdown = document.getElementById('menuDropdown');
+
+// เริ่มต้นซ่อนเมนูแน่นอน
+menuDropdown.style.display = 'none';
+
+menuBtn.addEventListener('click', () => {
+  if(menuDropdown.style.display === 'none'){
+    menuDropdown.style.display = 'flex';  // แสดง
+  } else {
+    menuDropdown.style.display = 'none';  // ซ่อน
+  }
+});
+
+function selectLanguage(lang){
+  alert("คุณเลือก: " + lang);
+  menuDropdown.style.display = 'none'; // เลือกแล้วปิดเมนู
+}
+
+function selectLanguage(lang){
+  alert("คุณเลือก: " + lang); // ตัวอย่างทดลอง
+  menuDropdown.classList.add('hidden'); // เลือกแล้วปิดเมนู
+}
+  
+/* Parallax background */
+const bg = document.getElementById("bg");
+window.addEventListener("scroll", () => {
+  bg.style.transform = `translateY(${window.scrollY * 0.18}px)`;
+});
+
+/* Particle effect */
+function spawnParticle() {
+  const p = document.createElement("div");
+  p.className = "particle";
+  p.style.left = Math.random() * 100 + "vw";
+  p.style.animationDuration = (6 + Math.random() * 6) + "s";
+  document.body.appendChild(p);
+  setTimeout(() => p.remove(), 12000);
+}
+
+setInterval(spawnParticle, 350);
+
+</script>
+
+</body>
+</html>

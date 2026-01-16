@@ -3,53 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EP Status Tracker</title>
+<title>Anime Progress Tracker</title>
 
 <style>
-
-/* ===== PROGRESS BAR ===== */
-.progress-box{
-  width:100%;
-  height:12px;
-  background:#222;
-  border-radius:10px;
-  overflow:hidden;
-  margin:12px 0 20px;
-}
-
-.progress-bar{
-  height:100%;
-  width:0%;
-  background:linear-gradient(90deg,#00ffcc,#00cfa8);
-  transition:width .3s ease;
-}
-
-/* ===== RESET ===== */
 *{
   box-sizing:border-box;
-  margin:0;
-  padding:0;
   font-family:system-ui,sans-serif;
 }
 
 body{
   background:#0b0b0b;
   color:#fff;
-  padding:20px;
+  padding:16px;
 }
 
-/* ===== TITLE ===== */
 h2{
   text-align:center;
-  margin-bottom:10px;
   color:#00ffcc;
-}
-
-/* ===== SUMMARY ===== */
-.summary{
-  text-align:center;
   margin-bottom:14px;
-  font-size:14px;
 }
 
 /* ===== TABLE ===== */
@@ -57,142 +28,113 @@ h2{
   overflow-x:auto;
 }
 
-.admin-table{
+table{
   width:100%;
-  min-width:420px;
+  min-width:600px;
   border-collapse:collapse;
   background:#111;
 }
 
-.admin-table th,
-.admin-table td{
+th,td{
   border:1px solid #333;
   padding:10px;
   text-align:center;
   font-size:14px;
 }
 
-.admin-table th{
+th{
   background:#1c1c1c;
   color:#00ffcc;
 }
 
-.admin-table tr.done{
-  background:#10221c;
+/* ===== PROGRESS ===== */
+.progress-box{
+  width:100%;
+  height:10px;
+  background:#222;
+  border-radius:10px;
+  overflow:hidden;
 }
 
-.admin-table tr.wait{
-  background:#2a1a1a;
+.progress-bar{
+  height:100%;
+  background:linear-gradient(90deg,#00ffcc,#00cfa8);
 }
 
-.admin-table tr.done td{
+/* ===== STATUS ===== */
+.done{
   color:#9cffd9;
 }
 
-.admin-table tr.wait td{
+.wait{
   color:#ff9c9c;
-}
-
-/* ===== BUTTON ===== */
-.toggle-btn{
-  padding:6px 10px;
-  border:none;
-  border-radius:6px;
-  background:#00ffcc;
-  color:#000;
-  font-size:13px;
-  cursor:pointer;
-}
-
-.toggle-btn:hover{
-  background:#00cfa8;
 }
 </style>
 </head>
 
 <body>
 
-<h2>📋 ตารางสถานะตอน</h2>
-
-<div class="progress-box">
-  <div class="progress-bar" id="progressBar"></div>
-</div>
-
-<div class="summary">
-  ลงแล้ว: <b><span id="doneCount">0</span></b> |
-  เหลือ: <b><span id="waitCount">0</span></b> |
-  ความคืบหน้า: <b><span id="progress">0%</span></b>
-</div>
+<h2>📊 ตารางความคืบหน้าอนิเมะ</h2>
 
 <div class="table-wrap">
-<table class="admin-table" id="epTable">
+<table id="animeTable">
   <thead>
     <tr>
-      <th>EP</th>
-      <th>สถานะ</th>
-      <th>เปลี่ยน</th>
+      <th>เรื่อง</th>
+      <th>ทั้งหมด</th>
+      <th>ลงแล้ว</th>
+      <th>เหลือ</th>
+      <th>%</th>
+      <th>ความคืบหน้า</th>
     </tr>
   </thead>
-  <tbody>
-    <tr data-status="done">
-      <td>EP 1</td>
-      <td class="status">✔ ลงแล้ว</td>
-      <td><button class="toggle-btn">สลับ</button></td>
-    </tr>
-    <tr data-status="wait">
-      <td>EP 2</td>
-      <td class="status">⏳ ยังไม่ลง</td>
-      <td><button class="toggle-btn">สลับ</button></td>
-    </tr>
-    <tr data-status="wait">
-      <td>EP 3</td>
-      <td class="status">⏳ ยังไม่ลง</td>
-      <td><button class="toggle-btn">สลับ</button></td>
-    </tr>
-  </tbody>
+  <tbody></tbody>
 </table>
 </div>
 
 <script>
-function updateStatus(){
-  const rows = document.querySelectorAll("#epTable tbody tr");
-  let done = 0;
-  let wait = 0;
-
-  rows.forEach(row=>{
-    const status = row.dataset.status;
-    row.classList.remove("done","wait");
-
-    if(status === "done"){
-      done++;
-      row.classList.add("done");
-      row.querySelector(".status").innerText = "✔ ลงแล้ว";
-    }else{
-      wait++;
-      row.classList.add("wait");
-      row.querySelector(".status").innerText = "⏳ ยังไม่ลง";
-    }
-  });
-
-  const total = done + wait;
-  const percent = total ? Math.round((done/total)*100) : 0;
-
-  document.getElementById("doneCount").innerText = done;
-  document.getElementById("waitCount").innerText = wait;
-  document.getElementById("progress").innerText = percent + "%";
-document.getElementById("progressBar").style.width = percent + "%";
-}
-
-document.addEventListener("click",e=>{
-  if(e.target.classList.contains("toggle-btn")){
-    const row = e.target.closest("tr");
-    row.dataset.status =
-      row.dataset.status === "done" ? "wait" : "done";
-    updateStatus();
+/* ====== ข้อมูล (แก้แค่นี้พอ) ====== */
+const animeList = [
+  {
+    title:"ตัวอย่างเรื่อง A",
+    total:24,
+    episodes:[1,2,3,4,5,6,7,8,9,10,11,12,13]
+  },
+  {
+    title:"ตัวอย่างเรื่อง B",
+    total:12,
+    episodes:[1,2,3,4]
+  },
+  {
+    title:"ตัวอย่างเรื่อง C",
+    total:50,
+    episodes:[1,2,3,4,5,6,7,8,9]
   }
-});
+];
 
-updateStatus();
+/* ====== สร้างตารางอัตโนมัติ ====== */
+const tbody = document.querySelector("#animeTable tbody");
+
+animeList.forEach(anime=>{
+  const done = anime.episodes.length;
+  const wait = anime.total - done;
+  const percent = Math.round((done / anime.total) * 100);
+
+  const tr = document.createElement("tr");
+  tr.innerHTML = `
+    <td>${anime.title}</td>
+    <td>${anime.total}</td>
+    <td class="done">${done}</td>
+    <td class="wait">${wait}</td>
+    <td>${percent}%</td>
+    <td>
+      <div class="progress-box">
+        <div class="progress-bar" style="width:${percent}%"></div>
+      </div>
+    </td>
+  `;
+  tbody.appendChild(tr);
+});
 </script>
 
 </body>

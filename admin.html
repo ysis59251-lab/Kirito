@@ -6,48 +6,56 @@
 <title>AnimeFume Admin</title>
 <style>
 
-.admin-table{
+.header{
+  position:fixed;
+  top:0;
+  left:0;
   width:100%;
-  min-width:420px;
-  border-collapse:collapse;
+  height:52px;
+  background:#0b0b0b;
+  display:flex;
+  align-items:center;
+  padding:0 16px;
+  z-index:999;
+  border-bottom:1px solid #222;
+}
+
+/* ปุ่ม ☰ */
+#menuBtn{
+  font-size:22px;
+  cursor:pointer;
+  color:#00ffcc;
+  user-select:none;
+}
+
+/* กล่องเมนู */
+#menuDropdown{
+  position:absolute;
+  top:56px;
+  left:16px;
   background:#111;
+  border:1px solid #222;
+  border-radius:10px;
+  padding:8px 0;
+  min-width:140px;
+  box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+
+/* ลิงก์ในเมนู */
+#menuDropdown a{
+  display:block;
+  padding:10px 14px;
   color:#fff;
+  text-decoration:none;
   font-size:14px;
 }
 
-.admin-table th,
-.admin-table td{
-  border:1px solid #333;
-  padding:8px;
-  text-align:center;
+#menuDropdown a:hover{
+  background:#00ffcc;
+  color:#000;
 }
 
-.admin-table th{
-  background:#1c1c1c;
-  color:#00ffcc;
-}
-
-.admin-table tr.wait{
-  background:#2a1a1a;
-}
-
-.admin-table tr.done{
-  background:#132a22;
-}
-
-.summary{
-  margin:10px 0;
-  font-weight:bold;
-}
-
-.toggle-btn{
-  padding:6px 10px;
-  border:none;
-  border-radius:6px;
-  background:#ffd24d;
-  cursor:pointer;
-  font-weight:600;
-}
+/*
 /* ===============================
    RESET & BASE
 ================================ */
@@ -351,6 +359,20 @@ button:hover{
 </div>
 
 <script>
+
+const btn = document.getElementById("menuBtn");
+const menu = document.getElementById("menuDropdown");
+
+btn.onclick = ()=>{
+  menu.classList.toggle("hidden");
+};
+
+// กดที่อื่นแล้วปิด
+document.addEventListener("click",e=>{
+  if(!btn.contains(e.target) && !menu.contains(e.target)){
+    menu.classList.add("hidden");
+  }
+});
 
 function updateTable(){
   const rows = document.querySelectorAll("#epTable tbody tr");

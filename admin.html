@@ -6,20 +6,47 @@
 <title>AnimeFume Admin</title>
 <style>
 
-.go-btn{
-  display:block;
-  text-align:center;
-  text-decoration:none;
-  margin-bottom:20px;
-  padding:14px;
-  font-size:15px;
-  background:#00ffcc;
-  color:#000;
-  border-radius:12px;
-  font-weight:700;
+.admin-table{
+  width:100%;
+  min-width:420px;
+  border-collapse:collapse;
+  background:#111;
+  color:#fff;
+  font-size:14px;
 }
-.go-btn:hover{
-  background:#00ccaa;
+
+.admin-table th,
+.admin-table td{
+  border:1px solid #333;
+  padding:8px;
+  text-align:center;
+}
+
+.admin-table th{
+  background:#1c1c1c;
+  color:#00ffcc;
+}
+
+.admin-table tr.wait{
+  background:#2a1a1a;
+}
+
+.admin-table tr.done{
+  background:#132a22;
+}
+
+.summary{
+  margin:10px 0;
+  font-weight:bold;
+}
+
+.toggle-btn{
+  padding:6px 10px;
+  border:none;
+  border-radius:6px;
+  background:#ffd24d;
+  cursor:pointer;
+  font-weight:600;
 }
 /* ===============================
    RESET & BASE
@@ -252,6 +279,39 @@ button:hover{
 <button onclick="addEpisode()">เพิ่มตอน</button>
 
 <h3>รายการตอนของเรื่องนี้</h3>
+
+<div class="summary">
+  ลงแล้ว: <span id="doneCount">0</span> /
+  เหลือ: <span id="waitCount">0</span> |
+  ความคืบหน้า: <span id="progressPercent">0%</span>
+</div>
+
+<div style="overflow-x:auto">
+<table class="admin-table" id="epTable">
+  <thead>
+    <tr>
+      <th>ตอน</th>
+      <th>สถานะ</th>
+      <th>จัดการ</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- ตัวอย่าง -->
+    <tr data-status="done">
+      <td>EP 1</td>
+      <td class="status">✔ ลงแล้ว</td>
+      <td><button class="toggle-btn">เปลี่ยนสถานะ</button></td>
+    </tr>
+
+    <tr data-status="wait">
+      <td>EP 2</td>
+      <td class="status">⏳ ยังไม่ลง</td>
+      <td><button class="toggle-btn">เปลี่ยนสถานะ</button></td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
 <div id="episodeList"></div>
 
 <button onclick="saveJSON()">บันทึกไฟล์ JSON</button>
@@ -282,6 +342,46 @@ button:hover{
 </div>
 
 <script>
+
+function updateTable(){
+  const rows = document.querySelectorAll("#epTable tbody tr");
+  let done = 0;
+  let wait = 0;
+
+  rows.forEach(row=>{
+    const status = row.dataset.status;
+    row.classList.remove("done","wait");
+
+    if(status === "done"){
+      done++;
+      row.classList.add("done");
+      row.querySelector(".status").innerText = "✔ ลงแล้ว";
+    }else{
+      wait++;
+      row.classList.add("wait");
+      row.querySelector(".status").innerText = "⏳ ยังไม่ลง";
+    }
+  });
+
+  const total = done + wait;
+  const percent = total ? Math.round((done / total) * 100) : 0;
+
+  document.getElementById("doneCount").innerText = done;
+  document.getElementById("waitCount").innerText = wait;
+  document.getElementById("progressPercent").innerText = percent + "%";
+}
+
+// คลิกเปลี่ยนสถานะ
+document.addEventListener("click",e=>{
+  if(e.target.classList.contains("toggle-btn")){
+    const row = e.target.closest("tr");
+    row.dataset.status =
+      row.dataset.status === "done" ? "wait" : "done";
+    updateTable();
+  }
+});
+
+updateTable();
 
 function goToSite(){
   window.location.href = "รายการตอน.html";

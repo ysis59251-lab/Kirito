@@ -5,6 +5,55 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AnimeFume Admin</title>
 <style>
+
+.admin-box{
+  background:#0f0f0f;
+  border:1px solid #222;
+  border-radius:14px;
+  padding:18px;
+  width:320px;
+  color:#eaeaea;
+  font-family:system-ui, sans-serif;
+  box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+
+.admin-title{
+  font-size:16px;
+  font-weight:600;
+  margin-bottom:16px;
+  letter-spacing:.5px;
+  color:#7cffc4;
+}
+
+.stat{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:10px 0;
+  border-bottom:1px solid #1f1f1f;
+}
+
+.stat:last-child{
+  border-bottom:none;
+}
+
+.label{
+  font-size:13px;
+  color:#aaa;
+}
+
+.value{
+  font-size:20px;
+  font-weight:600;
+  color:#fff;
+}
+
+.value.small{
+  font-size:13px;
+  color:#ccc;
+  font-family:monospace;
+}
+
 /* ===== RESET ===== */
 * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
 body { margin:0; min-height:100vh; background:#1a1a1a; color:#fff; padding:20px; }
@@ -101,11 +150,29 @@ button:hover { background:#ff1a1a; }
 <button onclick="saveJSON()">บันทึกไฟล์ JSON</button>
 </div>
 
-document.getElementById("info").innerHTML = `
-  <p>Device ID: ${deviceId}</p>
-  <p>เข้าชมเว็บแล้ว: ${visitCount} ครั้ง</p>
-`;
+<div class="admin-box">
+  <div class="admin-title">Visitor Monitor</div>
 
+  <div class="stat">
+    <span class="label">Total Visits</span>
+    <span class="value">128</span>
+  </div>
+
+  <div class="stat">
+    <span class="label">Unique Devices</span>
+    <span class="value">42</span>
+  </div>
+
+  <div class="stat">
+    <span class="label">Current Device</span>
+    <span class="value small">DEV-A9X3F2</span>
+  </div>
+
+  <div class="stat">
+    <span class="label">Last Access</span>
+    <span class="value small">2026-01-16 18:45</span>
+  </div>
+</div>
 <script>
 let data = { animeTitle:"", episodes:[] };
 

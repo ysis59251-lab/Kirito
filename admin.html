@@ -191,7 +191,13 @@ button:hover { background:#ff1a1a; }
     <span class="value small">2026-01-16 18:45</span>
   </div>
 </div>
+
 <script>
+
+function goToSite(){
+  window.location.href = "รายการตอน.html";
+}
+
 let data = { animeTitle:"", episodes:[] };
 
 // โหลด JSON ถ้ามี
@@ -276,10 +282,6 @@ function saveJSON(){
   a.href=URL.createObjectURL(blob);
   a.download="episodes.json";
   a.click();
-}
-
-function goToSite(){
-  window.location.href = "รายการตอน.html";
 }
 
 </script>

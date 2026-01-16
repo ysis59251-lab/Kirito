@@ -138,6 +138,21 @@ function spawnParticle(){
   setTimeout(()=>p.remove(),12000);
 }
 setInterval(spawnParticle,350);
+// สร้าง ID เครื่อง (ถ้ายังไม่มี)
+let deviceId = localStorage.getItem("device_id");
+if(!deviceId){
+  deviceId = "dev-" + Math.random().toString(36).substr(2,9);
+  localStorage.setItem("device_id", deviceId);
+}
+
+// นับจำนวนครั้งที่เข้าเว็บ
+let visitCount = localStorage.getItem("visit_count");
+visitCount = visitCount ? parseInt(visitCount) + 1 : 1;
+localStorage.setItem("visit_count", visitCount);
+
+// แสดงผล
+console.log("Device ID:", deviceId);
+console.log("Visit Count:", visitCount);
 </script>
 
 </body>

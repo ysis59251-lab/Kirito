@@ -100,13 +100,14 @@ button:hover{
 /* ===============================
    ADMIN BOX
 ================================ */
-.admin-box{
-  margin-top:20px;
-  background:#0f0f0f;
-  border:1px solid #222;
-  border-radius:14px;
-  padding:18px;
-  box-shadow:0 10px 30px rgba(0,0,0,.6);
+.go-btn{
+  margin-bottom:20px;
+  padding:14px;
+  font-size:15px;
+  background:#00ffcc;
+  color:#000;
+  border-radius:12px;
+  font-weight:700;
 }
 
 .admin-title{
@@ -217,13 +218,15 @@ button:hover{
 <body>
 
 <div class="container">
+
+<button class="go-btn" onclick="goToSite()">
+    🌐 ไปหน้าเว็บหลัก
+  </button>
+
+
 <h1>เเอดมิน AnimeFume</h1>
 
 หน้านี้อนุญาตให้เฉพาะผู้ดูแลระบบเท่านั้น
-
-  <button class="go-btn" onclick="goToSite()">
-    🌐 ไปหน้าเว็บหลัก
-  </button>
 
 <h3>เลือกเรื่อง / สร้างเรื่องใหม่</h3>
 <select id="animeSelect">

@@ -2,22 +2,37 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>Admin Episode List</title>
+<title>Admin Progress</title>
 
 <style>
 body{
-  margin:0;
-  padding:20px;
   background:#0b0b0b;
   color:#fff;
   font-family:sans-serif;
+  padding:20px;
 }
 
-/* ===== SUMMARY ===== */
 .summary{
-  margin-bottom:15px;
-  font-weight:bold;
+  margin-bottom:10px;
   font-size:16px;
+  font-weight:bold;
+}
+
+.progress-box{
+  background:#1a1a1a;
+  border-radius:8px;
+  overflow:hidden;
+  margin-bottom:15px;
+}
+
+.progress-bar{
+  height:20px;
+  width:0%;
+  background:#00ffcc;
+  text-align:center;
+  font-size:12px;
+  color:#000;
+  transition:0.3s;
 }
 
 /* ===== TABLE ===== */
@@ -25,7 +40,6 @@ body{
   width:100%;
   border-collapse:collapse;
   background:#111;
-  color:#fff;
   font-size:14px;
 }
 
@@ -52,16 +66,26 @@ body{
 .admin-table tr.done td{
   color:#aaffcc;
 }
+
+.status{
+  cursor:pointer;
+  font-weight:bold;
+}
 </style>
 </head>
 
 <body>
 
-<h2>📋 รายการตอน (หน้าแอดมิน)</h2>
+<h2>📋 รายการตอน (แอดมิน)</h2>
 
 <div class="summary">
-  ลงแล้ว: <span id="doneCount">0</span> ตอน |
-  เหลือ: <span id="waitCount">0</span> ตอน
+  ลงแล้ว: <span id="doneCount">0</span> /
+  ทั้งหมด: <span id="totalCount">0</span> ตอน
+  | เหลือ: <span id="waitCount">0</span> ตอน
+</div>
+
+<div class="progress-box">
+  <div class="progress-bar" id="progressBar">0%</div>
 </div>
 
 <table class="admin-table" id="epTable">
@@ -69,7 +93,7 @@ body{
     <tr>
       <th>ตอน</th>
       <th>ประเภท</th>
-      <th>สถานะ</th>
+      <th>สถานะ (คลิกเปลี่ยน)</th>
       <th>หมายเหตุ</th>
     </tr>
   </thead>
@@ -77,52 +101,33 @@ body{
     <tr data-status="done">
       <td>EP 1</td>
       <td>พากย์ไทย</td>
-      <td>ลงแล้ว</td>
+      <td class="status">ลงแล้ว</td>
       <td>-</td>
     </tr>
 
     <tr data-status="done">
       <td>EP 2</td>
       <td>พากย์ไทย</td>
-      <td>ลงแล้ว</td>
+      <td class="status">ลงแล้ว</td>
       <td>-</td>
     </tr>
 
     <tr data-status="wait">
       <td>EP 3</td>
       <td>พากย์ไทย</td>
-      <td>ยังไม่ลง</td>
+      <td class="status">ยังไม่ลง</td>
       <td>รอไฟล์</td>
     </tr>
 
     <tr data-status="wait">
       <td>EP 4</td>
       <td>พากย์ไทย</td>
-      <td>ยังไม่ลง</td>
-      <td>ยังไม่อัปโหลด</td>
+      <td class="status">ยังไม่ลง</td>
+      <td>-</td>
     </tr>
   </tbody>
 </table>
 
-<script>
-const rows = document.querySelectorAll("#epTable tbody tr");
-let done = 0;
-let wait = 0;
-
-rows.forEach(row=>{
-  const status = row.dataset.status;
-  if(status === "done"){
-    done++;
-    row.classList.add("done");
-  }else{
-    wait++;
-    row.classList.add("wait");
-  }
-});
-
-document.getElementById("doneCount").textContent = done;
-document.getElementById("waitCount").textContent = wait;
-</script>
-
+<script src="admin.js"></script>
 </body>
 </html>

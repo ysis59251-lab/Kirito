@@ -15,6 +15,7 @@ body{background:#000;color:#fff;min-height:100vh}
   z-index:-1;
 }
 
+/* ===== HEADER ===== */
 .header{
   position:sticky;top:0;
   background:rgba(0,0,0,.6);
@@ -28,6 +29,7 @@ body{background:#000;color:#fff;min-height:100vh}
   border-radius:20px;border:none;
 }
 
+/* ===== MENU ===== */
 #menuBtn{
   position:fixed;top:15px;left:15px;
   font-size:28px;cursor:pointer;z-index:1000
@@ -36,12 +38,58 @@ body{background:#000;color:#fff;min-height:100vh}
   position:fixed;top:60px;left:15px;
   background:#111;border-radius:10px;
   display:none;flex-direction:column;
+  z-index:1000;
 }
 #menuDropdown a{
   padding:10px 14px;color:#fff;text-decoration:none
 }
 #menuDropdown a:hover{background:#222}
 
+/* ===== HOT SECTION ===== */
+.hot-section{
+  padding:15px;
+}
+.hot-section h2{
+  font-size:18px;
+  margin-bottom:10px;
+}
+.hot-slider{
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  scroll-snap-type:x mandatory;
+}
+.hot-slider::-webkit-scrollbar{display:none}
+
+.hot-card{
+  min-width:140px;
+  background:#111;
+  border-radius:14px;
+  overflow:hidden;
+  scroll-snap-align:start;
+  text-decoration:none;
+  color:#fff;
+  position:relative;
+}
+.hot-card img{
+  width:100%;
+  height:180px;
+  object-fit:cover;
+}
+.hot-card .title{
+  padding:8px;
+  font-size:13px;
+}
+.hot-card .views{
+  position:absolute;
+  bottom:8px;right:8px;
+  font-size:11px;
+  background:rgba(0,0,0,.7);
+  padding:3px 6px;
+  border-radius:6px;
+}
+
+/* ===== LIST ===== */
 .anime-list{
   padding:20px;
   display:grid;
@@ -49,6 +97,7 @@ body{background:#000;color:#fff;min-height:100vh}
   gap:16px;
 }
 
+/* ===== CARD ===== */
 .anime-card{
   background:rgba(255,255,255,.08);
   border-radius:16px;
@@ -56,11 +105,9 @@ body{background:#000;color:#fff;min-height:100vh}
   text-decoration:none;color:#fff;
   position:relative;
 }
-
 .img-box img{
   width:100%;height:220px;object-fit:cover
 }
-
 .overlay-text{
   position:absolute;bottom:0;left:0;width:100%;
   padding:10px;font-size:13px;
@@ -96,6 +143,12 @@ body{background:#000;color:#fff;min-height:100vh}
   <input class="search" placeholder="ค้นหาอนิเมะ...">
 </header>
 
+<!-- 🔥 HOT SLIDER -->
+<section class="hot-section">
+  <h2>🔥 ยอดฮิต</h2>
+  <div class="hot-slider" id="hotSlider"></div>
+</section>
+
 <section class="anime-list" id="animeList">
 
 <a href="ByteWorld101.html" class="anime-card" data-title="Mizu Zokusei">
@@ -128,38 +181,61 @@ body{background:#000;color:#fff;min-height:100vh}
 /* ===== MENU ===== */
 const menuBtn=document.getElementById("menuBtn")
 const menu=document.getElementById("menuDropdown")
-menuBtn.onclick=()=>menu.style.display=menu.style.display==="flex"?"none":"flex"
-document.addEventListener("click",e=>{
-  if(!menu.contains(e.target)&&e.target!==menuBtn)menu.style.display="none"
-})
+menuBtn.onclick=(e)=>{
+  e.stopPropagation()
+  menu.style.display=menu.style.display==="flex"?"none":"flex"
+}
+document.addEventListener("click",()=>menu.style.display="none")
 
-/* ===== REAL VIEW + HOT ===== */
+/* ===== VIEW + HOT ===== */
 document.querySelectorAll(".anime-card").forEach(card=>{
   const title=card.dataset.title
   if(!title)return
 
-  const viewRef=db.ref("views/anime/"+title)
-  viewRef.transaction(v=>(v||0)+1)
+  const ref=db.ref("views/anime/"+title)
+  ref.transaction(v=>(v||0)+1)
 
-  viewRef.get().then(snap=>{
+  ref.get().then(snap=>{
     const views=snap.val()||0
+    card.dataset.views=views
+
     if(views>=50){
       const b=document.createElement("div")
       b.className="badge hot"
       b.textContent="🔥 กำลังฮิต"
       card.querySelector(".img-box").appendChild(b)
     }
-    card.dataset.views=views
     sortCards()
   })
 })
 
-/* ===== SORT BY POPULAR ===== */
+/* ===== SORT + BUILD HOT SLIDER ===== */
 function sortCards(){
   const box=document.getElementById("animeList")
   const cards=[...box.children]
   cards.sort((a,b)=>(b.dataset.views||0)-(a.dataset.views||0))
   cards.forEach(c=>box.appendChild(c))
+  buildHotSlider(cards)
+}
+
+function buildHotSlider(cards){
+  const hot=document.getElementById("hotSlider")
+  hot.innerHTML=""
+  cards.slice(0,8).forEach(card=>{
+    if(!card.dataset.views)return
+    const img=card.querySelector("img").src
+    const title=card.querySelector(".overlay-text").innerText.split("\n")[0]
+    const link=card.href
+    const views=card.dataset.views
+
+    hot.insertAdjacentHTML("beforeend",`
+      <a href="${link}" class="hot-card">
+        <img src="${img}">
+        <div class="title">${title}</div>
+        <div class="views">👁 ${views}</div>
+      </a>
+    `)
+  })
 }
 </script>
 

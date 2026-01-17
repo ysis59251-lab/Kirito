@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>DarkFrame</title>
+<title>DarkFrame Watch</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
@@ -13,6 +13,7 @@ body{
   background:
     url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg")
     center / cover no-repeat fixed;
+  color:#fff;
 }
 
 .title{
@@ -34,6 +35,16 @@ body{
   text-align:center;
 }
 
+.stats{
+  margin:12px;
+  background:rgba(0,0,0,.7);
+  border-radius:12px;
+  padding:12px;
+  display:flex;
+  gap:16px;
+  justify-content:center;
+}
+
 .player{
   max-width:720px;
   margin:12px auto;
@@ -46,7 +57,6 @@ body{
   width:100%;
   aspect-ratio:16/9;
   object-fit:contain;
-  background:#000;
 }
 
 .controls{
@@ -65,13 +75,11 @@ body{
   cursor:pointer;
 }
 
-.btn:hover{
-  background:#ff4d4d;
-}
+.btn:hover{background:#ff4d4d}
+.like{background:#ff4d4d}
 </style>
 </head>
 
-<!-- 🔥 จุดสำคัญ -->
 <body
   data-anime="Kusuriya no Hitorigoto"
   data-ep="1"
@@ -79,11 +87,16 @@ body{
 >
 
 <div class="title">
-  Kusuriya no Hitorigoto ตอนที่ 1
+  Kusuriya no Hitorigoto ตอนที่ <span id="epShow">1</span>
 </div>
 
 <div class="top-title">
-  รวมทุกตอน ตอนที่ 1–24
+  รวมทุกตอน 1–24
+</div>
+
+<div class="stats">
+  👀 กำลังดู: <b id="watchingNow">0</b>
+  ❤️ ถูกใจ: <b id="likeCount">0</b>
 </div>
 
 <div class="player">
@@ -94,38 +107,59 @@ body{
 
 <div class="controls">
   <button class="btn" onclick="prevEp()">⬅ ตอนก่อนหน้า</button>
+  <button class="btn like" onclick="likeAnime()">❤️ ถูกใจ</button>
   <button class="btn" onclick="nextEp()">ตอนถัดไป ➡</button>
 </div>
 
+<!-- ===== FIREBASE ===== -->
+<script src="firebase.js"></script>
 <script>
-/* ===== ระบบบันทึกตอนอัตโนมัติ ===== */
-const animeName = document.body.dataset.anime;
-const epNumber  = Number(document.body.dataset.ep);
-const totalEp   = Number(document.body.dataset.total);
+/* ================= BASIC ================= */
+const anime = document.body.dataset.anime;
+const ep    = Number(document.body.dataset.ep);
+const total = Number(document.body.dataset.total);
+epShow.textContent = ep;
 
-let db = JSON.parse(localStorage.getItem("animeDB")) || {};
+/* ================= LOCAL PROGRESS ================= */
+let dbLocal = JSON.parse(localStorage.getItem("animeDB")) || {};
+if(!dbLocal[anime]){
+  dbLocal[anime] = { total, done: [] };
+}
+if(!dbLocal[anime].done.includes(ep)){
+  dbLocal[anime].done.push(ep);
+}
+localStorage.setItem("animeDB", JSON.stringify(dbLocal));
 
-if(!db[animeName]){
-  db[animeName] = {
-    total: totalEp,
-    done: []
-  };
+/* ================= FIREBASE ================= */
+
+// 👀 คนดูเรียลไทม์
+const watchRef = db.ref("watching/"+anime).push(true);
+watchRef.onDisconnect().remove();
+
+db.ref("watching/"+anime).on("value", s=>{
+  watchingNow.textContent = s.numChildren();
+});
+
+// 🔢 ยอดดูสะสม (นับครั้งเดียวต่อการเข้า)
+db.ref("views/anime/"+anime).transaction(v => (v||0)+1);
+
+// ❤️ Like
+function likeAnime(){
+  db.ref("likes/"+anime).transaction(v => (v||0)+1);
 }
 
-if(!db[animeName].done.includes(epNumber)){
-  db[animeName].done.push(epNumber);
-}
+db.ref("likes/"+anime).on("value", s=>{
+  likeCount.textContent = s.val() || 0;
+});
 
-localStorage.setItem("animeDB", JSON.stringify(db));
-
-/* ===== เปลี่ยนตอน ===== */
+/* ================= CHANGE EP ================= */
 function prevEp(){
-  if(epNumber <= 1) return alert("ตอนแรกแล้ว");
-  location.href = `?ep=${epNumber-1}`;
+  if(ep<=1) return alert("ตอนแรกแล้ว");
+  location.href = `?ep=${ep-1}`;
 }
-
 function nextEp(){
-  location.href = `?ep=${epNumber+1}`;
+  if(ep>=total) return alert("ตอนสุดท้ายแล้ว");
+  location.href = `?ep=${ep+1}`;
 }
 </script>
 

@@ -4,52 +4,78 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AnimeFume</title>
+
 <style>
-/* ===== RESET ===== */
-* { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; margin:0; padding:0; }
-body { min-height:100vh; color:#333; }
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
+body{background:#000;color:#fff;min-height:100vh}
 
-/* ===== BACKGROUND ===== */
-#bg { position:fixed; inset:0; background:url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center/cover no-repeat; z-index:-1; }
+#bg{
+  position:fixed;inset:0;
+  background:url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center/cover;
+  z-index:-1;
+}
 
-/* ===== HEADER ===== */
-.header { position:sticky; top:0; z-index:10; background: rgba(255,255,255,0.7); backdrop-filter: blur(8px); padding:14px; text-align:center; border-bottom:1px solid #ddd;}
-.header h1 { margin:0 0 10px; }
-.search { width:90%; max-width:400px; padding:10px 14px; border-radius:20px; border:1px solid #ccc; outline:none; }
+.header{
+  position:sticky;top:0;
+  background:rgba(0,0,0,.6);
+  backdrop-filter:blur(10px);
+  padding:15px;text-align:center;
+  z-index:10;
+}
+.search{
+  width:90%;max-width:400px;
+  padding:10px 14px;
+  border-radius:20px;border:none;
+}
 
-/* ===== LIST ===== */
-.anime-list { padding:20px; display:grid; grid-template-columns: repeat(auto-fill,minmax(150px,1fr)); gap:16px; }
+#menuBtn{
+  position:fixed;top:15px;left:15px;
+  font-size:28px;cursor:pointer;z-index:1000
+}
+#menuDropdown{
+  position:fixed;top:60px;left:15px;
+  background:#111;border-radius:10px;
+  display:none;flex-direction:column;
+}
+#menuDropdown a{
+  padding:10px 14px;color:#fff;text-decoration:none
+}
+#menuDropdown a:hover{background:#222}
 
-/* ===== CARD ===== */
-.anime-card {
-  text-decoration:none;
-  color:#333;
-  background: rgba(255,255,255,0.75);
-  backdrop-filter: blur(6px);
+.anime-list{
+  padding:20px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:16px;
+}
+
+.anime-card{
+  background:rgba(255,255,255,.08);
   border-radius:16px;
   overflow:hidden;
-  box-shadow:0 8px 20px rgba(0,0,0,0.1);
-  transition: transform .2s, box-shadow .2s;
+  text-decoration:none;color:#fff;
   position:relative;
 }
-.anime-card:hover { transform: translateY(-4px); box-shadow:0 12px 30px rgba(0,0,0,0.15);}
-.img-box { position:relative; }
-.img-box img { width:100%; height:220px; object-fit:cover; }
-.overlay-text { position:absolute; left:0; bottom:0; width:100%; padding:10px; font-size:13px; color:#fff; background:linear-gradient(to top, rgba(0,0,0,0.75), rgba(0,0,0,0.2), transparent); }
 
-/* ===== PARTICLE ===== */
-.particle { position:fixed; bottom:-20px; width:6px; height:6px; border-radius:50%; pointer-events:none; z-index:2;
-  background: radial-gradient(circle, rgba(180,220,255,0.9), rgba(180,220,255,0.4), transparent);
-  box-shadow:0 0 10px rgba(180,220,255,0.9), 0 0 20px rgba(150,200,255,0.6);
-  animation: particleUp linear forwards;
+.img-box img{
+  width:100%;height:220px;object-fit:cover
 }
-@keyframes particleUp { from{transform:translateY(0) scale(0.6);opacity:0;} to{transform:translateY(-120vh) scale(1.4);opacity:1;} }
 
-/* ===== MENU ===== */
-#menuBtn { position:fixed; top:15px; left:15px; font-size:28px; color:#fff; cursor:pointer; z-index:1000; user-select:none; }
-#menuDropdown { position:fixed; top:55px; left:15px; background:rgba(0,0,0,0.85); border-radius:8px; display:flex; flex-direction:column; padding:10px; z-index:999; transition:all 0.25s ease;}
-#menuDropdown a { color:#fff; text-decoration:none; padding:8px 12px; font-size:16px; transition:0.2s;}
-.hidden { display:none; }
+.overlay-text{
+  position:absolute;bottom:0;left:0;width:100%;
+  padding:10px;font-size:13px;
+  background:linear-gradient(to top,rgba(0,0,0,.8),transparent)
+}
+
+/* ===== BADGE ===== */
+.badge{
+  position:absolute;top:8px;left:8px;
+  padding:4px 8px;border-radius:8px;
+  font-size:12px;font-weight:bold
+}
+.hot{background:#ff3b3b}
+.new{background:#00c853}
+.recommend{background:#ffd600;color:#000}
 </style>
 </head>
 
@@ -57,170 +83,85 @@ body { min-height:100vh; color:#333; }
 
 <div id="bg"></div>
 
+<div id="menuBtn">☰</div>
+<div id="menuDropdown">
+  <a href="#">หน้าแรก</a>
+  <a href="index2.html">ซับไทย</a>
+  <a href="index3.html">พากย์ไทย</a>
+  <a href="Administrator.html">แอดมิน</a>
+</div>
+
 <header class="header">
   <h1>AnimeFume</h1>
-  <input class="search" type="text" placeholder="ค้นหาอนิเมะ...">
-  
-  <div id="menuBtn">☰</div>
-  <div id="menuDropdown" class="hidden">
-    <a href="">หน้าเเรก</a>
-    <a href="index2.html">ซับไทย</a>
-    <a href="index3.html">พากย์ไทย</a>
-    <a href="Administrator.html">ระบบเเอดมิน</a>
-  </div>
+  <input class="search" placeholder="ค้นหาอนิเมะ...">
 </header>
 
 <section class="anime-list" id="animeList">
 
-  <!-- ====== ของเก่าอยู่ครบ ====== -->
-<a href="ByteWorld101.html"
-   class="anime-card"
-   data-title="Mizu Zokusei no Mahoutsukai">
-
+<a href="ByteWorld101.html" class="anime-card" data-title="Mizu Zokusei">
   <div class="img-box">
     <img src="https://kusuriyanohitorigoto.jp/season1/gallery/img/keyvisual/02.jpg">
-    <div class="overlay-text">
-      Mizu Zokusei no Mahoutsukai<br>
-      ตอนที่ 1–24 พากย์ไทย จบแล้ว
-    </div>
+    <div class="overlay-text">Mizu Zokusei<br>1–24 พากย์ไทย</div>
+    <div class="badge recommend">⭐ แนะนำ</div>
   </div>
-
 </a>
 
-  <a href="202.html" class="anime-card">
-    <div class="img-box">
-      <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
-      <div class="overlay-text">Sword Art Online<br>ตอนที่ 1-25 พากย์ไทย จบแล้ว</div>
-    </div>
-  </a>
-  <a href="203.html" class="anime-card">
-    <div class="img-box">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3G46VISYTyNvhfCIRxvFe6KExkWlNdekrUg88tKYhZ7wA0NNXGmQg74rj&s=10">
-      <div class="overlay-text">DAN DA DAN ดันดาดัน<br>ตอนที่ 1-12 พากย์ไทย จบแล้ว</div>
-    </div>
-  </a>
+<a href="202.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">Sword Art Online<br>1–25</div>
+  </div>
+</a>
+
+<a href="203.html" class="anime-card" data-title="DANDADAN">
+  <div class="img-box">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3G46VISYTyNvhfCIRxvFe6KExkWlNdekrUg88tKYhZ7wA0NNXGmQg74rj&s=10">
+    <div class="overlay-text">DAN DA DAN<br>1–12</div>
+    <div class="badge new">🆕 ใหม่</div>
+  </div>
+</a>
+
 </section>
 
 <script src="firebase.js"></script>
 <script>
-/* ===============================
-   ONLINE + VIEW (REAL)
-================================ */
-
-// ออนไลน์จริง
-const onlineRef = db.ref("onlineUsers");
-const me = onlineRef.push(true);
-me.onDisconnect().remove();
-
-// กันนับซ้ำต่อ session
-if(!sessionStorage.getItem("viewed")){
-  db.ref("views/total").transaction(v => (v||0)+1);
-
-  const day = new Date().toISOString().slice(0,10);
-  db.ref("daily/"+day).transaction(v => (v||0)+1);
-
-  sessionStorage.setItem("viewed","true");
-}
-
-const menuBtn = document.getElementById("menuBtn");
-const menu = document.getElementById("menuDropdown");
-
-menuBtn.addEventListener("click", ()=>{
-  menu.classList.toggle("show");
-});
-
-// กดตรงไหนก็ปิด
-document.addEventListener("click", (e)=>{
-  if(!menu.contains(e.target) && e.target !== menuBtn){
-    menu.classList.remove("show");
-  }
-});
-
-document.querySelectorAll(".anime-card").forEach(card=>{
-  const title = card.dataset.title;
-  if(!title) return;
-
-  const watchingRef = db.ref("watching/"+title);
-  const viewRef = db.ref("views/anime/"+title);
-
-  Promise.all([
-    watchingRef.get(),
-    viewRef.get()
-  ]).then(([wSnap,vSnap])=>{
-    const watching = wSnap.numChildren();
-    const views = vSnap.val() || 0;
-
-    // 🔥 เงื่อนไขกำลังฮิต
-    if(watching >= 3 || views >= 100){
-      const badge = document.createElement("div");
-      badge.className = "hot-badge";
-      badge.textContent = "🔥 กำลังฮิต";
-      card.querySelector(".img-box").appendChild(badge);
-    }
-  });
-});
-
-/* ===============================
-   LOAD ANIME CARD (JSON จริง)
-================================ */
-fetch("episodes.json?ts="+Date.now())
-.then(res => res.json())
-.then(data => {
-  const box = document.getElementById("animeList");
-  if(!box || !data || !data.episodes) return;
-
-  const poster =
-    data.poster ||
-    data.episodes[0]?.poster ||
-    "https://via.placeholder.com/300x400?text=No+Image";
-
-  const html = `
-    <a href="watch.html?ep=1" class="anime-card">
-      <div class="img-box">
-        <img src="${poster}">
-        <div class="overlay-text">
-          ${data.animeTitle}<br>
-          ตอนที่ 1–${data.episodes.length}
-        </div>
-      </div>
-    </a>
-  `;
-  box.insertAdjacentHTML("afterbegin", html);
+/* ===== MENU ===== */
+const menuBtn=document.getElementById("menuBtn")
+const menu=document.getElementById("menuDropdown")
+menuBtn.onclick=()=>menu.style.display=menu.style.display==="flex"?"none":"flex"
+document.addEventListener("click",e=>{
+  if(!menu.contains(e.target)&&e.target!==menuBtn)menu.style.display="none"
 })
-.catch(err=>{
-  console.error("โหลด episodes.json ไม่ได้",err);
-});
 
-/* ===============================
-   MENU
-================================ */
-const menuBtn = document.getElementById("menuBtn");
-const menuDropdown = document.getElementById("menuDropdown");
+/* ===== REAL VIEW + HOT ===== */
+document.querySelectorAll(".anime-card").forEach(card=>{
+  const title=card.dataset.title
+  if(!title)return
 
-menuBtn.onclick = ()=>{
-  menuDropdown.classList.toggle("hidden");
-};
+  const viewRef=db.ref("views/anime/"+title)
+  viewRef.transaction(v=>(v||0)+1)
 
-/* ===============================
-   PARALLAX
-================================ */
-const bg = document.getElementById("bg");
-window.addEventListener("scroll", ()=>{
-  bg.style.transform = `translateY(${scrollY * 0.18}px)`;
-});
+  viewRef.get().then(snap=>{
+    const views=snap.val()||0
+    if(views>=50){
+      const b=document.createElement("div")
+      b.className="badge hot"
+      b.textContent="🔥 กำลังฮิต"
+      card.querySelector(".img-box").appendChild(b)
+    }
+    card.dataset.views=views
+    sortCards()
+  })
+})
 
-/* ===============================
-   PARTICLE
-================================ */
-function spawnParticle(){
-  const p = document.createElement("div");
-  p.className = "particle";
-  p.style.left = Math.random()*100 + "vw";
-  p.style.animationDuration = (6 + Math.random()*6) + "s";
-  document.body.appendChild(p);
-  setTimeout(()=>p.remove(),12000);
+/* ===== SORT BY POPULAR ===== */
+function sortCards(){
+  const box=document.getElementById("animeList")
+  const cards=[...box.children]
+  cards.sort((a,b)=>(b.dataset.views||0)-(a.dataset.views||0))
+  cards.forEach(c=>box.appendChild(c))
 }
-setInterval(spawnParticle,350);
 </script>
+
 </body>
 </html>

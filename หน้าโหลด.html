@@ -214,22 +214,48 @@ menuBtn.onclick=(e)=>{
 document.addEventListener("click",()=>menu.style.display="none")
 
 /* ===== BOTTOM NAV LOGIC ===== */
-let page=1, per=5
+const pageMap = {
+  1: "index.html",
+  2: "203.html",
+  3: "MP1.html",
+  4: "ByteWorld101.html",
+  5: "202.html",
+  6: "another.html"
+};
+
+let page = 1, per = 5;
+
 function render(){
-  const box=document.getElementById("numberBox")
-  box.innerHTML=""
-  const start=(page-1)*per+1
-  for(let i=start;i<start+per;i++){
-    const d=document.createElement("div")
-    d.className="num"
-    d.textContent=i
-    d.onclick=()=>location.href=`page${i}.html`
-    box.appendChild(d)
+  const box = document.getElementById("numberBox");
+  box.innerHTML = "";
+
+  const start = (page - 1) * per + 1;
+
+  for(let i = start; i < start + per; i++){
+    if(!pageMap[i]) continue; // ❗ ไม่มีหน้า → ไม่สร้างเลข
+
+    const d = document.createElement("div");
+    d.className = "num";
+    d.textContent = i;
+    d.onclick = () => location.href = pageMap[i];
+
+    box.appendChild(d);
   }
 }
-function nextSet(){page++;render()}
-function prevSet(){if(page>1){page--;render()}}
-render()
+
+function nextSet(){
+  page++;
+  render();
+}
+
+function prevSet(){
+  if(page > 1){
+    page--;
+    render();
+  }
+}
+
+render();
 </script>
 
 </body>

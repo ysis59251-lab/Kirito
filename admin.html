@@ -3,138 +3,162 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anime Progress Tracker</title>
+<title>Anime Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-*{
-  box-sizing:border-box;
-  font-family:system-ui,sans-serif;
-}
-
+*{box-sizing:border-box;font-family:system-ui}
 body{
+  margin:0;
   background:#0b0b0b;
   color:#fff;
   padding:16px;
 }
-
 h2{
-  text-align:center;
   color:#00ffcc;
-  margin-bottom:14px;
+  margin-bottom:16px;
+}
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:12px;
+}
+.card{
+  background:#111;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #222;
+}
+.card span{
+  font-size:12px;
+  color:#aaa;
+}
+.card h3{
+  margin:6px 0 0;
+  color:#00ffcc;
 }
 
-/* ===== TABLE ===== */
-.table-wrap{
-  overflow-x:auto;
+.section{
+  margin-top:20px;
+  background:#111;
+  padding:16px;
+  border-radius:14px;
+  border:1px solid #222;
 }
 
 table{
   width:100%;
-  min-width:600px;
   border-collapse:collapse;
-  background:#111;
+  margin-top:12px;
 }
-
 th,td{
-  border:1px solid #333;
-  padding:10px;
+  border:1px solid #222;
+  padding:8px;
   text-align:center;
-  font-size:14px;
 }
+th{color:#00ffcc;background:#161616}
 
-th{
-  background:#1c1c1c;
-  color:#00ffcc;
-}
-
-/* ===== PROGRESS ===== */
-.progress-box{
-  width:100%;
-  height:10px;
+.progress{
+  height:8px;
   background:#222;
   border-radius:10px;
   overflow:hidden;
 }
-
-.progress-bar{
+.bar{
   height:100%;
   background:linear-gradient(90deg,#00ffcc,#00cfa8);
-}
-
-/* ===== STATUS ===== */
-.done{
-  color:#9cffd9;
-}
-
-.wait{
-  color:#ff9c9c;
 }
 </style>
 </head>
 
 <body>
 
-<h2>📊 ตารางความคืบหน้าอนิเมะ</h2>
+<h2>📊 Anime Dashboard</h2>
 
-<div class="table-wrap">
-<table id="animeTable">
-  <thead>
-    <tr>
-      <th>เรื่อง</th>
-      <th>ทั้งหมด</th>
-      <th>ลงแล้ว</th>
-      <th>เหลือ</th>
-      <th>%</th>
-      <th>ความคืบหน้า</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+<div class="cards">
+  <div class="card"><span>จำนวนเรื่อง</span><h3 id="sAnime">0</h3></div>
+  <div class="card"><span>ตอนทั้งหมด</span><h3 id="sTotal">0</h3></div>
+  <div class="card"><span>ลงแล้ว</span><h3 id="sDone">0</h3></div>
+  <div class="card"><span>เหลือ</span><h3 id="sWait">0</h3></div>
+  <div class="card"><span>ความคืบหน้า</span><h3 id="sPercent">0%</h3></div>
+</div>
+
+<div class="section">
+  <h3>📈 ความคืบหน้าโดยรวม</h3>
+  <canvas id="pie"></canvas>
+</div>
+
+<div class="section">
+  <h3>📋 รายละเอียด</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>เรื่อง</th>
+        <th>ทั้งหมด</th>
+        <th>ลงแล้ว</th>
+        <th>เหลือ</th>
+        <th>%</th>
+      </tr>
+    </thead>
+    <tbody id="list"></tbody>
+  </table>
 </div>
 
 <script>
-/* ====== ข้อมูล (แก้แค่นี้พอ) ====== */
-const animeList = [
-  {
-    title:"ตัวอย่างเรื่อง A",
-    total:24,
-    episodes:[1,2,3,4,5,6,7,8,9,10,11,12,13]
-  },
-  {
-    title:"ตัวอย่างเรื่อง B",
-    total:12,
-    episodes:[1,2,3,4]
-  },
-  {
-    title:"ตัวอย่างเรื่อง C",
-    total:50,
-    episodes:[1,2,3,4,5,6,7,8,9]
-  }
-];
+let pieChart;
 
-/* ====== สร้างตารางอัตโนมัติ ====== */
-const tbody = document.querySelector("#animeTable tbody");
+async function loadData(){
+  const res = await fetch("anime.json?ts="+Date.now());
+  const data = await res.json();
 
-animeList.forEach(anime=>{
-  const done = anime.episodes.length;
-  const wait = anime.total - done;
-  const percent = Math.round((done / anime.total) * 100);
+  let total=0, done=0;
+  list.innerHTML="";
 
-  const tr = document.createElement("tr");
-  tr.innerHTML = `
-    <td>${anime.title}</td>
-    <td>${anime.total}</td>
-    <td class="done">${done}</td>
-    <td class="wait">${wait}</td>
-    <td>${percent}%</td>
-    <td>
-      <div class="progress-box">
-        <div class="progress-bar" style="width:${percent}%"></div>
-      </div>
-    </td>
-  `;
-  tbody.appendChild(tr);
-});
+  data.anime.forEach(a=>{
+    total+=a.total;
+    done+=a.done;
+
+    const p=Math.round(a.done/a.total*100);
+    list.innerHTML+=`
+      <tr>
+        <td>${a.title}</td>
+        <td>${a.total}</td>
+        <td>${a.done}</td>
+        <td>${a.total-a.done}</td>
+        <td>
+          ${p}%
+          <div class="progress"><div class="bar" style="width:${p}%"></div></div>
+        </td>
+      </tr>`;
+  });
+
+  sAnime.textContent=data.anime.length;
+  sTotal.textContent=total;
+  sDone.textContent=done;
+  sWait.textContent=total-done;
+  sPercent.textContent=Math.round(done/total*100)+"%";
+
+  drawChart(done,total-done);
+}
+
+function drawChart(done,wait){
+  if(pieChart) pieChart.destroy();
+  pieChart=new Chart(pie,{
+    type:"doughnut",
+    data:{
+      labels:["ลงแล้ว","เหลือ"],
+      datasets:[{
+        data:[done,wait],
+        backgroundColor:["#00ffcc","#333"]
+      }]
+    },
+    options:{plugins:{legend:{labels:{color:"#fff"}}}}
+  });
+}
+
+loadData();
+setInterval(loadData,5000); // เรียลไทม์ทุก 5 วิ
 </script>
 
 </body>

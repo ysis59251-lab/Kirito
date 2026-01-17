@@ -9,6 +9,7 @@
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
 body{background:#000;color:#fff;min-height:100vh}
 
+/* ===== BG ===== */
 #bg{
   position:fixed;inset:0;
   background:url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center/cover;
@@ -45,48 +46,23 @@ body{background:#000;color:#fff;min-height:100vh}
 }
 #menuDropdown a:hover{background:#222}
 
-/* ===== HOT SECTION ===== */
-.hot-section{
-  padding:15px;
-}
-.hot-section h2{
-  font-size:18px;
-  margin-bottom:10px;
-}
-.hot-slider{
-  display:flex;
-  gap:12px;
-  overflow-x:auto;
-  scroll-snap-type:x mandatory;
-}
+/* ===== HOT ===== */
+.hot-section{padding:15px}
+.hot-section h2{font-size:18px;margin-bottom:10px}
+.hot-slider{display:flex;gap:12px;overflow-x:auto}
 .hot-slider::-webkit-scrollbar{display:none}
-
 .hot-card{
   min-width:140px;
-  background:#111;
-  border-radius:14px;
-  overflow:hidden;
-  scroll-snap-align:start;
-  text-decoration:none;
-  color:#fff;
+  background:#111;border-radius:14px;
+  overflow:hidden;color:#fff;text-decoration:none;
   position:relative;
 }
-.hot-card img{
-  width:100%;
-  height:180px;
-  object-fit:cover;
-}
-.hot-card .title{
-  padding:8px;
-  font-size:13px;
-}
+.hot-card img{width:100%;height:180px;object-fit:cover}
+.hot-card .title{padding:8px;font-size:13px}
 .hot-card .views{
-  position:absolute;
-  bottom:8px;right:8px;
-  font-size:11px;
+  position:absolute;bottom:8px;right:8px;
   background:rgba(0,0,0,.7);
-  padding:3px 6px;
-  border-radius:6px;
+  font-size:11px;padding:3px 6px;border-radius:6px
 }
 
 /* ===== LIST ===== */
@@ -105,9 +81,7 @@ body{background:#000;color:#fff;min-height:100vh}
   text-decoration:none;color:#fff;
   position:relative;
 }
-.img-box img{
-  width:100%;height:220px;object-fit:cover
-}
+.img-box img{width:100%;height:220px;object-fit:cover}
 .overlay-text{
   position:absolute;bottom:0;left:0;width:100%;
   padding:10px;font-size:13px;
@@ -123,6 +97,50 @@ body{background:#000;color:#fff;min-height:100vh}
 .hot{background:#ff3b3b}
 .new{background:#00c853}
 .recommend{background:#ffd600;color:#000}
+
+/* ===== BOTTOM NAV (เพิ่มอย่างเดียว) ===== */
+.bottom-area{
+  position:fixed;
+  bottom:12px;
+  left:0;
+  width:100%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  z-index:20;
+}
+.center-box{
+  width:260px;
+  padding:10px;
+  background:rgba(0,0,0,.7);
+  border-radius:14px;
+  display:flex;
+  justify-content:center;
+  gap:8px;
+}
+.num{
+  width:42px;height:42px;
+  background:#222;color:#fff;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+}
+.num:hover{background:#ff3b3b}
+.bottom-nav{
+  width:260px;
+  display:flex;
+  justify-content:space-between;
+}
+.bottom-nav button{
+  width:44px;height:44px;
+  border-radius:50%;
+  border:none;
+  background:#111;color:#fff;
+  font-size:18px;
+}
 </style>
 </head>
 
@@ -143,7 +161,6 @@ body{background:#000;color:#fff;min-height:100vh}
   <input class="search" placeholder="ค้นหาอนิเมะ...">
 </header>
 
-<!-- 🔥 HOT SLIDER -->
 <section class="hot-section">
   <h2>🔥 ยอดฮิต</h2>
   <div class="hot-slider" id="hotSlider"></div>
@@ -176,6 +193,15 @@ body{background:#000;color:#fff;min-height:100vh}
 
 </section>
 
+<!-- ===== NAV ล่างสุด ===== -->
+<div class="bottom-area">
+  <div class="center-box" id="numberBox"></div>
+  <div class="bottom-nav">
+    <button onclick="prevSet()">◀</button>
+    <button onclick="nextSet()">▶</button>
+  </div>
+</div>
+
 <script src="firebase.js"></script>
 <script>
 /* ===== MENU ===== */
@@ -187,56 +213,23 @@ menuBtn.onclick=(e)=>{
 }
 document.addEventListener("click",()=>menu.style.display="none")
 
-/* ===== VIEW + HOT ===== */
-document.querySelectorAll(".anime-card").forEach(card=>{
-  const title=card.dataset.title
-  if(!title)return
-
-  const ref=db.ref("views/anime/"+title)
-  ref.transaction(v=>(v||0)+1)
-
-  ref.get().then(snap=>{
-    const views=snap.val()||0
-    card.dataset.views=views
-
-    if(views>=50){
-      const b=document.createElement("div")
-      b.className="badge hot"
-      b.textContent="🔥 กำลังฮิต"
-      card.querySelector(".img-box").appendChild(b)
-    }
-    sortCards()
-  })
-})
-
-/* ===== SORT + BUILD HOT SLIDER ===== */
-function sortCards(){
-  const box=document.getElementById("animeList")
-  const cards=[...box.children]
-  cards.sort((a,b)=>(b.dataset.views||0)-(a.dataset.views||0))
-  cards.forEach(c=>box.appendChild(c))
-  buildHotSlider(cards)
+/* ===== BOTTOM NAV LOGIC ===== */
+let page=1, per=5
+function render(){
+  const box=document.getElementById("numberBox")
+  box.innerHTML=""
+  const start=(page-1)*per+1
+  for(let i=start;i<start+per;i++){
+    const d=document.createElement("div")
+    d.className="num"
+    d.textContent=i
+    d.onclick=()=>location.href=`page${i}.html`
+    box.appendChild(d)
+  }
 }
-
-function buildHotSlider(cards){
-  const hot=document.getElementById("hotSlider")
-  hot.innerHTML=""
-  cards.slice(0,8).forEach(card=>{
-    if(!card.dataset.views)return
-    const img=card.querySelector("img").src
-    const title=card.querySelector(".overlay-text").innerText.split("\n")[0]
-    const link=card.href
-    const views=card.dataset.views
-
-    hot.insertAdjacentHTML("beforeend",`
-      <a href="${link}" class="hot-card">
-        <img src="${img}">
-        <div class="title">${title}</div>
-        <div class="views">👁 ${views}</div>
-      </a>
-    `)
-  })
-}
+function nextSet(){page++;render()}
+function prevSet(){if(page>1){page--;render()}}
+render()
 </script>
 
 </body>

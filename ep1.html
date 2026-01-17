@@ -154,12 +154,16 @@ db.ref("likes/"+anime).on("value", s=>{
 
 /* ================= CHANGE EP ================= */
 function prevEp(){
-  if(ep<=1) return alert("ตอนแรกแล้ว");
-  location.href = `?ep=${ep-1}`;
+  if(ep <= 1) return alert("นี่คือตอนแรกแล้ว");
+  location.href = `?ep=${ep-1}&q=${currentQuality}`;
 }
+
 function nextEp(){
-  if(ep>=total) return alert("ตอนสุดท้ายแล้ว");
-  location.href = `?ep=${ep+1}`;
+  location.href = "ep2.html";
+}
+
+function showAllEp(){
+  location.href = "DarkFrame.html";
 }
 </script>
 

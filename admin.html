@@ -2,23 +2,18 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anime Dashboard</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AnimeFume Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-*{box-sizing:border-box;font-family:system-ui}
 body{
-  margin:0;
   background:#0b0b0b;
   color:#fff;
+  font-family:system-ui;
   padding:16px;
 }
-h2{
-  color:#00ffcc;
-  margin-bottom:16px;
-}
+h2{color:#00ffcc}
 .cards{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
@@ -30,15 +25,6 @@ h2{
   border-radius:12px;
   border:1px solid #222;
 }
-.card span{
-  font-size:12px;
-  color:#aaa;
-}
-.card h3{
-  margin:6px 0 0;
-  color:#00ffcc;
-}
-
 .section{
   margin-top:20px;
   background:#111;
@@ -46,119 +32,84 @@ h2{
   border-radius:14px;
   border:1px solid #222;
 }
-
-table{
-  width:100%;
-  border-collapse:collapse;
-  margin-top:12px;
-}
-th,td{
-  border:1px solid #222;
-  padding:8px;
-  text-align:center;
-}
-th{color:#00ffcc;background:#161616}
-
-.progress{
-  height:8px;
-  background:#222;
-  border-radius:10px;
-  overflow:hidden;
-}
-.bar{
-  height:100%;
-  background:linear-gradient(90deg,#00ffcc,#00cfa8);
-}
+table{width:100%;border-collapse:collapse}
+th,td{border:1px solid #222;padding:8px;text-align:center}
+th{color:#00ffcc}
+.progress{height:8px;background:#222;border-radius:10px}
+.bar{height:100%;background:linear-gradient(90deg,#00ffcc,#00cfa8)}
 </style>
 </head>
 
 <body>
 
-<h2>📊 Anime Dashboard</h2>
+<h2>📊 AnimeFume Dashboard</h2>
 
 <div class="cards">
-  <div class="card"><span>จำนวนเรื่อง</span><h3 id="sAnime">0</h3></div>
-  <div class="card"><span>ตอนทั้งหมด</span><h3 id="sTotal">0</h3></div>
-  <div class="card"><span>ลงแล้ว</span><h3 id="sDone">0</h3></div>
-  <div class="card"><span>เหลือ</span><h3 id="sWait">0</h3></div>
-  <div class="card"><span>ความคืบหน้า</span><h3 id="sPercent">0%</h3></div>
+  <div class="card">เรื่องทั้งหมด<br><b id="aCount">0</b></div>
+  <div class="card">ตอนทั้งหมด<br><b id="eTotal">0</b></div>
+  <div class="card">ลงแล้ว<br><b id="eDone">0</b></div>
+  <div class="card">เหลือ<br><b id="eWait">0</b></div>
 </div>
 
 <div class="section">
-  <h3>📈 ความคืบหน้าโดยรวม</h3>
-  <canvas id="pie"></canvas>
+  <canvas id="chart"></canvas>
 </div>
 
 <div class="section">
-  <h3>📋 รายละเอียด</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>เรื่อง</th>
-        <th>ทั้งหมด</th>
-        <th>ลงแล้ว</th>
-        <th>เหลือ</th>
-        <th>%</th>
-      </tr>
-    </thead>
-    <tbody id="list"></tbody>
-  </table>
+<table>
+<thead>
+<tr>
+<th>เรื่อง</th><th>ทั้งหมด</th><th>ลงแล้ว</th><th>เหลือ</th><th>%</th>
+</tr>
+</thead>
+<tbody id="list"></tbody>
+</table>
 </div>
 
 <script>
-let pieChart;
+let pie;
 
-async function loadData(){
-  const res = await fetch("anime.json?ts="+Date.now());
+async function load(){
+  const res = await fetch("episodes.json?ts="+Date.now());
   const data = await res.json();
 
-  let total=0, done=0;
+  let total=0,done=0;
   list.innerHTML="";
 
   data.anime.forEach(a=>{
     total+=a.total;
-    done+=a.done;
+    done+=a.episodes;
+    const p=Math.round(a.episodes/a.total*100);
 
-    const p=Math.round(a.done/a.total*100);
     list.innerHTML+=`
-      <tr>
-        <td>${a.title}</td>
-        <td>${a.total}</td>
-        <td>${a.done}</td>
-        <td>${a.total-a.done}</td>
-        <td>
-          ${p}%
-          <div class="progress"><div class="bar" style="width:${p}%"></div></div>
-        </td>
-      </tr>`;
+    <tr>
+      <td>${a.title}</td>
+      <td>${a.total}</td>
+      <td>${a.episodes}</td>
+      <td>${a.total-a.episodes}</td>
+      <td>${p}%
+        <div class="progress"><div class="bar" style="width:${p}%"></div></div>
+      </td>
+    </tr>`;
   });
 
-  sAnime.textContent=data.anime.length;
-  sTotal.textContent=total;
-  sDone.textContent=done;
-  sWait.textContent=total-done;
-  sPercent.textContent=Math.round(done/total*100)+"%";
+  aCount.textContent=data.anime.length;
+  eTotal.textContent=total;
+  eDone.textContent=done;
+  eWait.textContent=total-done;
 
-  drawChart(done,total-done);
-}
-
-function drawChart(done,wait){
-  if(pieChart) pieChart.destroy();
-  pieChart=new Chart(pie,{
+  if(pie) pie.destroy();
+  pie=new Chart(chart,{
     type:"doughnut",
     data:{
       labels:["ลงแล้ว","เหลือ"],
-      datasets:[{
-        data:[done,wait],
-        backgroundColor:["#00ffcc","#333"]
-      }]
-    },
-    options:{plugins:{legend:{labels:{color:"#fff"}}}}
+      datasets:[{data:[done,total-done],backgroundColor:["#00ffcc","#333"]}]
+    }
   });
 }
 
-loadData();
-setInterval(loadData,5000); // เรียลไทม์ทุก 5 วิ
+load();
+setInterval(load,5000);
 </script>
 
 </body>

@@ -4,39 +4,21 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>AnimeFume Dashboard</title>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{
-  background:#0b0b0b;
-  color:#fff;
-  font-family:system-ui;
-  padding:16px;
-}
+body{background:#0b0b0b;color:#fff;font-family:system-ui;padding:16px}
 h2{color:#00ffcc}
-.cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:12px;
-}
-.card{
-  background:#111;
-  padding:14px;
-  border-radius:12px;
-  border:1px solid #222;
-}
-.section{
-  margin-top:20px;
-  background:#111;
-  padding:16px;
-  border-radius:14px;
-  border:1px solid #222;
-}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.card{background:#111;padding:14px;border-radius:12px;border:1px solid #222}
+.section{margin-top:20px;background:#111;padding:16px;border-radius:14px;border:1px solid #222}
 table{width:100%;border-collapse:collapse}
 th,td{border:1px solid #222;padding:8px;text-align:center}
 th{color:#00ffcc}
-.progress{height:8px;background:#222;border-radius:10px}
+.progress{height:8px;background:#222;border-radius:10px;margin-top:4px}
 .bar{height:100%;background:linear-gradient(90deg,#00ffcc,#00cfa8)}
+canvas{max-height:320px}
 </style>
 </head>
 
@@ -44,17 +26,26 @@ th{color:#00ffcc}
 
 <h2>📊 AnimeFume Dashboard</h2>
 
+<!-- ===== FIREBASE STATS ===== -->
 <div class="cards">
-  <div class="card">เรื่องทั้งหมด<br><b id="aCount">0</b></div>
-  <div class="card">ตอนทั้งหมด<br><b id="eTotal">0</b></div>
-  <div class="card">ลงแล้ว<br><b id="eDone">0</b></div>
-  <div class="card">เหลือ<br><b id="eWait">0</b></div>
+  <div class="card">👥 ออนไลน์<br><b id="online">0</b></div>
+  <div class="card">👁️ ยอดดูรวม<br><b id="views">0</b></div>
+  <div class="card">📚 เรื่องทั้งหมด<br><b id="aCount">0</b></div>
+  <div class="card">🎬 ตอนทั้งหมด<br><b id="eTotal">0</b></div>
+  <div class="card">✅ ลงแล้ว<br><b id="eDone">0</b></div>
+  <div class="card">⏳ เหลือ<br><b id="eWait">0</b></div>
+</div>
+
+<!-- ===== GRAPHS ===== -->
+<div class="section">
+  <canvas id="dailyChart"></canvas>
 </div>
 
 <div class="section">
-  <canvas id="chart"></canvas>
+  <canvas id="pieChart"></canvas>
 </div>
 
+<!-- ===== TABLE ===== -->
 <div class="section">
 <table>
 <thead>
@@ -66,14 +57,56 @@ th{color:#00ffcc}
 </table>
 </div>
 
+<!-- ===== SCRIPTS ===== -->
+<script src="firebase.js"></script>
 <script>
+/* ================= FIREBASE ================= */
+
+// ออนไลน์
+db.ref("onlineUsers").on("value", s=>{
+  online.textContent = s.numChildren();
+});
+
+// ยอดดูรวม
+db.ref("views/total").on("value", s=>{
+  views.textContent = s.val() || 0;
+});
+
+// กราฟรายวัน
+let dailyChart;
+db.ref("daily").on("value", snap=>{
+  const labels=[], data=[];
+  snap.forEach(d=>{
+    labels.push(d.key);
+    data.push(d.val());
+  });
+
+  if(dailyChart) dailyChart.destroy();
+  dailyChart = new Chart(dailyChartCanvas,{
+    type:"line",
+    data:{
+      labels,
+      datasets:[{
+        label:"ผู้เข้าชมรายวัน",
+        data,
+        borderColor:"#00ffcc",
+        tension:.3
+      }]
+    }
+  });
+});
+
+const dailyChartCanvas = document.getElementById("dailyChart");
+
+/* ================= EPISODES.JSON ================= */
+
 let pie;
 
-async function load(){
+async function loadEpisodes(){
   const res = await fetch("episodes.json?ts="+Date.now());
   const data = await res.json();
 
-  let total=0,done=0;
+  let total=0, done=0;
   list.innerHTML="";
 
   data.anime.forEach(a=>{
@@ -88,7 +121,9 @@ async function load(){
       <td>${a.episodes}</td>
       <td>${a.total-a.episodes}</td>
       <td>${p}%
-        <div class="progress"><div class="bar" style="width:${p}%"></div></div>
+        <div class="progress">
+          <div class="bar" style="width:${p}%"></div>
+        </div>
       </td>
     </tr>`;
   });
@@ -99,17 +134,21 @@ async function load(){
   eWait.textContent=total-done;
 
   if(pie) pie.destroy();
-  pie=new Chart(chart,{
+  pie = new Chart(pieChart,{
     type:"doughnut",
     data:{
       labels:["ลงแล้ว","เหลือ"],
-      datasets:[{data:[done,total-done],backgroundColor:["#00ffcc","#333"]}]
+      datasets:[{
+        data:[done,total-done],
+        backgroundColor:["#00ffcc","#333"]
+      }]
     }
   });
 }
 
-load();
-setInterval(load,5000);
+const pieChart = document.getElementById("pieChart");
+loadEpisodes();
+setInterval(loadEpisodes,5000);
 </script>
 
 </body>

@@ -101,7 +101,7 @@ fetch("episodes.json")
 .then(res => res.json())
 .then(data => {
   const box = document.getElementById("animeList");
-  if(!box || !data || !data.episodes) return;
+  if(!box || !data || !data.anime) return;
 
   const poster = data.episodes[0]?.poster || 
     "https://via.placeholder.com/300x400?text=No+Image";

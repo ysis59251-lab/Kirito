@@ -93,7 +93,19 @@ body { min-height:100vh; color:#333; }
   </a>
 </section>
 
+<script src="firebase.js"></script>
 <script>
+// 👥 ผู้ชมออนไลน์จริง (ทั้งเว็บ)
+const onlineRef = db.ref("onlineUsers");
+const me = onlineRef.push(true);
+me.onDisconnect().remove();
+
+// 🔢 ยอดเข้าดูสะสมทั้งเว็บ
+db.ref("views/total").transaction(v => (v||0)+1);
+
+// 📅 นับรายวัน
+const day = new Date().toISOString().slice(0,10);
+db.ref("daily/"+day).transaction(v => (v||0)+1);
 /* ===============================
    LOAD ANIME CARD (ไม่ลบของเก่า)
 ================================ */
@@ -119,7 +131,6 @@ fetch("episodes.json")
   box.insertAdjacentHTML("afterbegin", html);
 })
 .catch(()=>{});
-
 
 /* ===============================
    MENU
@@ -196,6 +207,7 @@ console.log("Visitor Monitor →", {
   visitCount,
   lastAccess
 });
+
 </script>
 
 </body>

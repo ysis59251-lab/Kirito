@@ -6,6 +6,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+
+player video {
+  width: 100%;
+  max-height: 100vh;
+  background: #000;
+  object-fit: cover;
+}
+
 body{
   margin:0;
   min-height:100vh;
@@ -100,14 +108,19 @@ body{
 </div>
 
 <div class="player">
-  <video id="videoPlayer" controls playsinline>
-    <source src="https://files.akuma-player.xyz/view/59405c86-b886-532e-8b8c-e25d2d17a812" type="video/mp4">
+    <video
+    id="videoPlayer"
+    controls
+    playsinline
+    poster="https://pbs.twimg.com/media/DSJGh_9U8AAzf_Q.jpg">
+    <source src="https://main.108player.com/m3u8/82cdb32263ba3fc988bd3df7/82cdb32263ba3fc988bd3df7168.m3u8">
   </video>
-</div>
+  
+  </div>
 
 <div class="controls">
   <button class="btn" onclick="prevEp()">⬅ ตอนก่อนหน้า</button>
-  <button class="btn like" onclick="likeAnime()">❤️ ถูกใจ</button>
+    <button class="btn" onclick="showAllEp()">☰ ตอนทั้งหมด</button>
   <button class="btn" onclick="nextEp()">ตอนถัดไป ➡</button>
 </div>
 
@@ -142,11 +155,6 @@ db.ref("watching/"+anime).on("value", s=>{
 
 // 🔢 ยอดดูสะสม (นับครั้งเดียวต่อการเข้า)
 db.ref("views/anime/"+anime).transaction(v => (v||0)+1);
-
-// ❤️ Like
-function likeAnime(){
-  db.ref("likes/"+anime).transaction(v => (v||0)+1);
-}
 
 db.ref("likes/"+anime).on("value", s=>{
   likeCount.textContent = s.val() || 0;

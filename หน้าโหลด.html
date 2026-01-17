@@ -73,12 +73,20 @@ body { min-height:100vh; color:#333; }
 <section class="anime-list" id="animeList">
 
   <!-- ====== ของเก่าอยู่ครบ ====== -->
-  <a href="ByteWorld101.html" class="anime-card">
-    <div class="img-box">
-      <img src="https://kusuriyanohitorigoto.jp/season1/gallery/img/keyvisual/02.jpg">
-      <div class="overlay-text">Mizu Zokusei no Mahoutsukai<br>ตอนที่ 1–24 พากย์ไทย จบแล้ว</div>
+<a href="ByteWorld101.html"
+   class="anime-card"
+   data-title="Mizu Zokusei no Mahoutsukai">
+
+  <div class="img-box">
+    <img src="https://kusuriyanohitorigoto.jp/season1/gallery/img/keyvisual/02.jpg">
+    <div class="overlay-text">
+      Mizu Zokusei no Mahoutsukai<br>
+      ตอนที่ 1–24 พากย์ไทย จบแล้ว
     </div>
-  </a>
+  </div>
+
+</a>
+
   <a href="202.html" class="anime-card">
     <div class="img-box">
       <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
@@ -113,6 +121,44 @@ if(!sessionStorage.getItem("viewed")){
 
   sessionStorage.setItem("viewed","true");
 }
+
+const menuBtn = document.getElementById("menuBtn");
+const menu = document.getElementById("menuDropdown");
+
+menuBtn.addEventListener("click", ()=>{
+  menu.classList.toggle("show");
+});
+
+// กดตรงไหนก็ปิด
+document.addEventListener("click", (e)=>{
+  if(!menu.contains(e.target) && e.target !== menuBtn){
+    menu.classList.remove("show");
+  }
+});
+
+document.querySelectorAll(".anime-card").forEach(card=>{
+  const title = card.dataset.title;
+  if(!title) return;
+
+  const watchingRef = db.ref("watching/"+title);
+  const viewRef = db.ref("views/anime/"+title);
+
+  Promise.all([
+    watchingRef.get(),
+    viewRef.get()
+  ]).then(([wSnap,vSnap])=>{
+    const watching = wSnap.numChildren();
+    const views = vSnap.val() || 0;
+
+    // 🔥 เงื่อนไขกำลังฮิต
+    if(watching >= 3 || views >= 100){
+      const badge = document.createElement("div");
+      badge.className = "hot-badge";
+      badge.textContent = "🔥 กำลังฮิต";
+      card.querySelector(".img-box").appendChild(badge);
+    }
+  });
+});
 
 /* ===============================
    LOAD ANIME CARD (JSON จริง)

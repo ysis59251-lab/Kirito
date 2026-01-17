@@ -6,79 +6,64 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    /* ===== body ===== */
 body{
   margin:0;
   min-height:100vh;
   font-family:sans-serif;
   background:
-    url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg?semt=ais_hybrid&w=740&q=80")
+    url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg")
     center / cover no-repeat fixed;
+  color:#fff;
 }
 
-/* ===== container ===== */
 .container{
   max-width:720px;
   margin:auto;
   padding:12px;
 }
 
-/* ===== TITLE ===== */
 .title{
-  background:#ffffff;
-  color:#000000;
+  background:#fff;
+  color:#000;
   padding:12px 16px;
   border-radius:12px;
   margin-bottom:10px;
-
   font-size:18px;
   font-weight:700;
-  line-height:1.35;
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-
-  text-shadow:
-    0 1px 0 rgba(255,255,255,1),
-    0 -1px 0 rgba(0,0,0,0.05);
-
-  box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }
 
-/* ===== กล่องรวมตอน ===== */
 .top-title{
   background:rgba(0,0,0,.85);
   color:#fff;
-  padding:14px 18px;
+  padding:14px;
   border-radius:14px;
   text-align:center;
   margin-bottom:14px;
-  font-weight:600;
 }
 
-/* ===== PLAYER (จุดสำคัญ) ===== */
+.stats{
+  display:flex;
+  justify-content:space-between;
+  background:rgba(0,0,0,.7);
+  padding:10px 14px;
+  border-radius:12px;
+  margin-bottom:14px;
+  font-size:14px;
+}
+
 .player{
-  width:100%;
-  max-width:720px;
-  margin:0 auto 14px;
   background:#000;
   border-radius:14px;
   overflow:hidden;
-  box-shadow:0 10px 25px rgba(0,0,0,.6);
 }
 
-/* 🔥 ล็อกขนาดวิดีโอ ไม่ให้ใหญ่ */
 .player video{
   width:100%;
-  height:300px;        /* 👈 ถ้ายังใหญ่ ลดเป็น 180px */
-  max-height:300px;
-  object-fit:contain; /* ไม่ครอป */
+  height:300px;
+  object-fit:contain;
   background:#000;
-  display:block;
 }
 
-/* ===== buttons ===== */
 .controls{
   display:flex;
   gap:10px;
@@ -95,46 +80,52 @@ body{
   cursor:pointer;
 }
 
-.btn:hover{
-  background:#ff4d4d;
-}
+.btn:hover{background:#ff4d4d}
+.like{background:#ff4d4d}
 
-/* ===== footer ===== */
 .footer-support{
-  margin:60px 16px 20px;
-  padding:12px 16px;
+  margin:40px 16px 20px;
+  padding:12px;
   text-align:center;
   font-size:.85rem;
   color:#222;
-  background:#ffffff;
+  background:#fff;
   border-radius:12px;
 }
 </style>
 </head>
 
-<body>
-<div class="title-box">
+<body
+  data-anime="DAN DA DAN"
+  data-ep="2"
+  data-total="12"
+>
 
-  <div class="title" id="epTitle">
-    Kusuriya no Hitorigoto สืบคดีปริศนา หมอยาตำรับโคมแดง ตอนที่ 2
+<div class="container">
+
+  <div class="title">
+    DAN DA DAN ตอนที่ <span id="epShow">2</span>
   </div>
 
   <div class="top-title">
-    รวมทุกตอน Kusuriya no Hitorigoto ตอนที่ 1–24 พากย์ไทย จบแล้ว
+    รวมทุกตอน 1–12 พากย์ไทย จบแล้ว
   </div>
-  
-<div class="player">
-    <video
-    id="videoPlayer"
-    controls
-    playsinline
-    poster="https://pbs.twimg.com/media/DSJGh_9U8AAzf_Q.jpg">
-    <source src="https://main.108player.com/m3u8/b63863dcf32f9f408387fec3/b63863dcf32f9f408387fec3168.m3u8" type="video/mp4">
-  </video></div>
+
+  <div class="stats">
+    <div>👀 กำลังดู: <b id="watchingNow">0</b></div>
+    <div>❤️ ถูกใจ: <b id="likeCount">0</b></div>
+  </div>
+
+  <div class="player">
+    <video id="videoPlayer" controls playsinline
+      poster="https://pbs.twimg.com/media/DSJGh_9U8AAzf_Q.jpg">
+      <source src="https://files.akuma-player.xyz/view/59405c86-b886-532e-8b8c-e25d2d17a812" type="video/mp4">
+    </video>
+  </div>
 
   <div class="controls">
     <button class="btn" onclick="prevEp()">⬅ ตอนก่อนหน้า</button>
-    <button class="btn" onclick="showAllEp()">☰ ตอนทั้งหมด</button>
+    <button class="btn like" onclick="likeAnime()">❤️ ถูกใจ</button>
     <button class="btn" onclick="nextEp()">ตอนถัดไป ➡</button>
   </div>
 
@@ -144,54 +135,57 @@ body{
   สนับสนุนผลงานผ่านช่องทางที่ถูกลิขสิทธิ์
 </div>
 
+<!-- ===== FIREBASE ===== -->
+<script src="firebase.js"></script>
 <script>
-const params = new URLSearchParams(location.search);
-let ep = parseInt(params.get("ep")) || 1;
-let currentQuality = params.get("q") || "360";
+/* ================= BASIC ================= */
+const anime = document.body.dataset.anime;
+const ep    = Number(document.body.dataset.ep);
+const total = Number(document.body.dataset.total);
+epShow.textContent = ep;
 
-const video = document.getElementById("videoPlayer");
-const qualitySelect = document.getElementById("quality");
+/* ================= LOCAL PROGRESS ================= */
+let localDB = JSON.parse(localStorage.getItem("animeDB")) || {};
+if(!localDB[anime]){
+  localDB[anime] = { total, done: [] };
+}
+if(!localDB[anime].done.includes(ep)){
+  localDB[anime].done.push(ep);
+}
+localStorage.setItem("animeDB", JSON.stringify(localDB));
 
-const videos = {
-  1:{360:"https://files.akuma-player.xyz/view/59405c86-b886-532e-8b8c-e25d2d17a812"},
-};
+/* ================= FIREBASE ================= */
 
-function loadVideo(){
-  const url = videos[ep]?.[currentQuality];
-  if(!url){
-    alert("ไม่พบวิดีโอตอนนี้");
-    return;
-  }
-  video.src = url;
-  video.load();
+// 👀 คนดูกำลังดู (Realtime จริง)
+const watchRef = db.ref("watching/"+anime).push(true);
+watchRef.onDisconnect().remove();
+
+db.ref("watching/"+anime).on("value", s=>{
+  watchingNow.textContent = s.numChildren();
+});
+
+// 🔢 ยอดดูสะสมต่อเรื่อง (นับเมื่อเข้า)
+db.ref("views/anime/"+anime).transaction(v => (v||0)+1);
+
+// ❤️ Like
+function likeAnime(){
+  db.ref("likes/"+anime).transaction(v => (v||0)+1);
 }
 
-qualitySelect.value = currentQuality;
-qualitySelect.onchange = () => {
-  currentQuality = qualitySelect.value;
-  history.replaceState(null,"",`?ep=${ep}&q=${currentQuality}`);
-  loadVideo();
-};
+db.ref("likes/"+anime).on("value", s=>{
+  likeCount.textContent = s.val() || 0;
+});
 
+/* ================= CHANGE EP ================= */
 function prevEp(){
-  if(ep <= 1) return alert("นี่คือตอนแรกแล้ว");
-  location.href = `?ep=${ep-1}&q=${currentQuality}`;
-}
-
-function prevEp(){
-  location.href = "ep1.html";
+  if(ep<=1) return alert("นี่คือตอนแรกแล้ว");
+  location.href = `?ep=${ep-1}`;
 }
 
 function nextEp(){
-  location.href = "ep3.html";
+  if(ep>=total) return alert("ตอนสุดท้ายแล้ว");
+  location.href = `?ep=${ep+1}`;
 }
-
-
-function showAllEp(){
-  location.href = "DarkFrame.html";
-}
-
-loadVideo();
 </script>
 
 </body>

@@ -2,127 +2,116 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>DarkFrame</title>
+<title>DarkFrame Watch</title<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>DarkFrame Watch</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    /* ===== body ===== */
+
+player video {
+  width: 100%;
+  max-height: 100vh;
+  background: #000;
+  object-fit: cover;
+}
+
 body{
   margin:0;
   min-height:100vh;
   font-family:sans-serif;
   background:
-    url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg?semt=ais_hybrid&w=740&q=80")
+    url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg")
     center / cover no-repeat fixed;
+  color:#fff;
 }
 
-/* ===== container ===== */
-.container{
-  max-width:720px;
-  margin:auto;
-  padding:12px;
-}
-
-/* ===== TITLE ===== */
 .title{
-  background:#ffffff;
-  color:#000000;
+  background:#fff;
+  color:#000;
   padding:12px 16px;
   border-radius:12px;
-  margin-bottom:10px;
-
+  margin:12px;
   font-size:18px;
   font-weight:700;
-  line-height:1.35;
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-
-  text-shadow:
-    0 1px 0 rgba(255,255,255,1),
-    0 -1px 0 rgba(0,0,0,0.05);
-
-  box-shadow:0 4px 12px rgba(0,0,0,0.25);
 }
 
-/* ===== กล่องรวมตอน ===== */
 .top-title{
   background:rgba(0,0,0,.85);
   color:#fff;
-  padding:14px 18px;
+  padding:14px;
   border-radius:14px;
+  margin:12px;
   text-align:center;
-  margin-bottom:14px;
-  font-weight:600;
 }
 
-/* ===== PLAYER (จุดสำคัญ) ===== */
+.stats{
+  margin:12px;
+  background:rgba(0,0,0,.7);
+  border-radius:12px;
+  padding:12px;
+  display:flex;
+  gap:16px;
+  justify-content:center;
+}
+
 .player{
-  width:100%;
   max-width:720px;
-  margin:0 auto 14px;
+  margin:12px auto;
   background:#000;
   border-radius:14px;
   overflow:hidden;
-  box-shadow:0 10px 25px rgba(0,0,0,.6);
 }
 
-/* 🔥 ล็อกขนาดวิดีโอ ไม่ให้ใหญ่ */
 .player video{
   width:100%;
-  height:300px;        /* 👈 ถ้ายังใหญ่ ลดเป็น 180px */
-  max-height:300px;
-  object-fit:contain; /* ไม่ครอป */
-  background:#000;
-  display:block;
+  aspect-ratio:16/9;
+  object-fit:contain;
 }
 
-/* ===== buttons ===== */
 .controls{
   display:flex;
   gap:10px;
-  margin-top:14px;
+  margin:12px;
 }
 
 .btn{
   flex:1;
-  background:#1e1e1e;
+  padding:12px;
   border:none;
   border-radius:12px;
-  padding:12px;
+  background:#1e1e1e;
   color:#fff;
   cursor:pointer;
 }
 
-.btn:hover{
-  background:#ff4d4d;
-}
-
-/* ===== footer ===== */
-.footer-support{
-  margin:60px 16px 20px;
-  padding:12px 16px;
-  text-align:center;
-  font-size:.85rem;
-  color:#222;
-  background:#ffffff;
-  border-radius:12px;
-}
+.btn:hover{background:#ff4d4d}
+.like{background:#ff4d4d}
 </style>
 </head>
 
-<body>
-<div class="title-box">
+<body
+  data-anime="Kusuriya no Hitorigoto สืบคดีปริศนา หมอยาตำรับโคมแดง
+  data-ep="1"
+>
 
-  <div class="title" id="epTitle">
-    Kusuriya no Hitorigoto สืบคดีปริศนา หมอยาตำรับโคมแดง ตอนที่ 3
-  </div>
-
-  <div class="top-title">
-    รวมทุกตอน Kusuriya no Hitorigoto ตอนที่ 1–24 พากย์ไทย จบแล้ว
-  </div>
+<div class="title">
+  Kusuriya no Hitorigoto ตอนที่ 1
   
+  </span>
+</div>
+
+<div class="top-title">
+  รวมทุกตอน 1–24 
+</div>
+
+<div class="stats">
+  👀 กำลังดู: <b id="watchingNow">0</b>
+  ❤️ ถูกใจ: <b id="likeCount">0</b>
+</div>
+
 <div class="player">
     <video
     id="videoPlayer"
@@ -130,63 +119,240 @@ body{
     playsinline
     poster="https://pbs.twimg.com/media/DSJGh_9U8AAzf_Q.jpg">
     <source src="https://main.108player.com/m3u8/82cdb32263ba3fc988bd3df7/82cdb32263ba3fc988bd3df7168.m3u8">
-  </video></div>
+  </video>
 
-  <div class="controls">
-    <button class="btn" onclick="prevEp()">⬅ ตอนก่อนหน้า</button>
-    <button class="btn" onclick="showAllEp()">☰ ตอนทั้งหมด</button>
-    <button class="btn" onclick="nextEp()">ตอนถัดไป ➡</button>
   </div>
 
+<div class="controls">
+  <button class="btn" onclick="prevEp()">⬅ ตอนก่อนหน้า</button>
+    <button class="btn" onclick="showAllEp()">☰ ตอนทั้งหมด</button>
+  <button class="btn" onclick="nextEp()">ตอนถัดไป ➡</button>
 </div>
 
-<div class="footer-support">
-  สนับสนุนผลงานผ่านช่องทางที่ถูกลิขสิทธิ์
-</div>
-
+<!-- ===== FIREBASE ===== -->
+<script src="firebase.js"></script>
 <script>
-const params = new URLSearchParams(location.search);
-let ep = parseInt(params.get("ep")) || 1;
-let currentQuality = params.get("q") || "360";
+/* ================= BASIC ================= */
+const anime = document.body.dataset.anime;
+const ep    = Number(document.body.dataset.ep);
+const total = Number(document.body.dataset.total);
+epShow.textContent = ep;
 
-const video = document.getElementById("videoPlayer");
-const qualitySelect = document.getElementById("quality");
-
-const videos = {
-  1:{360:"https://files.akuma-player.xyz/view/59405c86-b886-532e-8b8c-e25d2d17a812"},
-};
-
-function loadVideo(){
-  const url = videos[ep]?.[currentQuality];
-  if(!url){
-    alert("ไม่พบวิดีโอตอนนี้");
-    return;
-  }
-  video.src = url;
-  video.load();
+/* ================= LOCAL PROGRESS ================= */
+let dbLocal = JSON.parse(localStorage.getItem("animeDB")) || {};
+if(!dbLocal[anime]){
+  dbLocal[anime] = { total, done: [] };
 }
+if(!dbLocal[anime].done.includes(ep)){
+  dbLocal[anime].done.push(ep);
+}
+localStorage.setItem("animeDB", JSON.stringify(dbLocal));
 
-qualitySelect.value = currentQuality;
-qualitySelect.onchange = () => {
-  currentQuality = qualitySelect.value;
-  history.replaceState(null,"",`?ep=${ep}&q=${currentQuality}`);
-  loadVideo();
-};
+/* ================= FIREBASE ================= */
 
+// 👀 คนดูเรียลไทม์
+const watchRef = db.ref("watching/"+anime).push(true);
+watchRef.onDisconnect().remove();
+
+db.ref("watching/"+anime).on("value", s=>{
+  watchingNow.textContent = s.numChildren();
+});
+
+// 🔢 ยอดดูสะสม (นับครั้งเดียวต่อการเข้า)
+db.ref("views/anime/"+anime).transaction(v => (v||0)+1);
+
+db.ref("likes/"+anime).on("value", s=>{
+  likeCount.textContent = s.val() || 0;
+});
+
+/* ================= CHANGE EP ================= */
 function prevEp(){
-  location.href = "ep2.html";
+  if(ep <= 1) return alert("นี่คือตอนแรกแล้ว");
+  location.href = `?ep=${ep-1}&q=${currentQuality}`;
 }
 
 function nextEp(){
-  location.href = "ep4.html";
+  location.href = "ep2.html";
 }
-
 
 function showAllEp(){
   location.href = "DarkFrame.html";
 }
+</script>
 
-loadVideo();
+</body>
+</html>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+
+.player video {
+  width: 100%;
+  max-height: 100vh;
+  background: #000;
+  object-fit: cover;
+}
+
+body{
+  margin:0;
+  min-height:100vh;
+  font-family:sans-serif;
+  background:
+    url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg")
+    center / cover no-repeat fixed;
+  color:#fff;
+}
+
+.title{
+  background:#fff;
+  color:#000;
+  padding:12px 16px;
+  border-radius:12px;
+  margin:12px;
+  font-size:18px;
+  font-weight:700;
+}
+
+.top-title{
+  background:rgba(0,0,0,.85);
+  color:#fff;
+  padding:14px;
+  border-radius:14px;
+  margin:12px;
+  text-align:center;
+}
+
+.stats{
+  margin:12px;
+  background:rgba(0,0,0,.7);
+  border-radius:12px;
+  padding:12px;
+  display:flex;
+  gap:16px;
+  justify-content:center;
+}
+
+.player{
+  max-width:720px;
+  margin:12px auto;
+  background:#000;
+  border-radius:14px;
+  overflow:hidden;
+}
+
+.player video{
+  width:100%;
+  aspect-ratio:16/9;
+  object-fit:contain;
+}
+
+.controls{
+  display:flex;
+  gap:10px;
+  margin:12px;
+}
+
+.btn{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  background:#1e1e1e;
+  color:#fff;
+  cursor:pointer;
+}
+
+.btn:hover{background:#ff4d4d}
+.like{background:#ff4d4d}
+</style>
+</head>
+
+<body
+  data-anime="Kusuriya no Hitorigoto"
+  data-ep="3"
+>
+
+<div class="title">
+  Kusuriya no Hitorigoto ตอนที่ 3
+  
+  </span>
+</div>
+
+<div class="top-title">
+  รวมทุกตอน 1–24 
+</div>
+
+<div class="stats">
+  👀 กำลังดู: <b id="watchingNow">0</b>
+  ❤️ ถูกใจ: <b id="likeCount">0</b>
+</div>
+
+<div class="player">
+    <video
+    id="videoPlayer"
+    controls
+    playsinline
+    poster="https://pbs.twimg.com/media/DSJGh_9U8AAzf_Q.jpg">
+    <source src="https://main.108player.com/m3u8/82cdb32263ba3fc988bd3df7/82cdb32263ba3fc988bd3df7168.m3u8">
+  </video>
+  
+  </div>
+
+<div class="controls">
+  <button class="btn" onclick="prevEp()">⬅ ตอนก่อนหน้า</button>
+    <button class="btn" onclick="showAllEp()">☰ ตอนทั้งหมด</button>
+  <button class="btn" onclick="nextEp()">ตอนถัดไป ➡</button>
+</div>
+
+<!-- ===== FIREBASE ===== -->
+<script src="firebase.js"></script>
+<script>
+/* ================= BASIC ================= */
+const anime = document.body.dataset.anime;
+const ep    = Number(document.body.dataset.ep);
+const total = Number(document.body.dataset.total);
+epShow.textContent = ep;
+
+/* ================= LOCAL PROGRESS ================= */
+let dbLocal = JSON.parse(localStorage.getItem("animeDB")) || {};
+if(!dbLocal[anime]){
+  dbLocal[anime] = { total, done: [] };
+}
+if(!dbLocal[anime].done.includes(ep)){
+  dbLocal[anime].done.push(ep);
+}
+localStorage.setItem("animeDB", JSON.stringify(dbLocal));
+
+/* ================= FIREBASE ================= */
+
+// 👀 คนดูเรียลไทม์
+const watchRef = db.ref("watching/"+anime).push(true);
+watchRef.onDisconnect().remove();
+
+db.ref("watching/"+anime).on("value", s=>{
+  watchingNow.textContent = s.numChildren();
+});
+
+// 🔢 ยอดดูสะสม (นับครั้งเดียวต่อการเข้า)
+db.ref("views/anime/"+anime).transaction(v => (v||0)+1);
+
+db.ref("likes/"+anime).on("value", s=>{
+  likeCount.textContent = s.val() || 0;
+});
+
+/* ================= CHANGE EP ================= */
+function prevEp(){
+  location.href = "ep1.html";
+}
+
+
+function nextEp(){
+  location.href = "ep3.html";
+}
+
+function showAllEp(){
+  location.href = "DarkFrame.html";
+}
 </script>
 
 </body>

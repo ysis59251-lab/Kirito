@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report a Problem</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
+body{
+  min-height:100vh;
+  background:#000;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+/* BG */
+#bg{
+  position:fixed;
+  inset:0;
+  background:url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center/cover;
+  z-index:-1;
+  filter:blur(2px) brightness(.6);
+}
+
+/* CARD */
+.report-card{
+  width:92%;
+  max-width:420px;
+  background:rgba(0,0,0,.75);
+  backdrop-filter:blur(10px);
+  border-radius:20px;
+  padding:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.7);
+}
+
+/* HEADER */
+.report-card h1{
+  font-size:20px;
+  margin-bottom:6px;
+}
+.report-card p{
+  font-size:13px;
+  color:#ccc;
+  margin-bottom:14px;
+}
+
+/* INPUT */
+.report-card input,
+.report-card textarea{
+  width:100%;
+  background:#000;
+  border:1px solid #333;
+  border-radius:12px;
+  color:#fff;
+  padding:10px;
+  margin-bottom:10px;
+  font-size:14px;
+}
+
+.report-card textarea{
+  min-height:110px;
+  resize:none;
+}
+
+/* BUTTON */
+.report-card button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:14px;
+  background:#ff3b3b;
+  color:#fff;
+  font-size:15px;
+  cursor:pointer;
+}
+
+/* BACK */
+.back{
+  margin-top:10px;
+  text-align:center;
+  font-size:13px;
+  color:#aaa;
+  cursor:pointer;
+}
+.back:hover{color:#fff}
+</style>
+</head>
+
+<body>
+
+<div id="bg"></div>
+
+<div class="report-card">
+  <h1>Report a Problem</h1>
+  <p>แจ้งปัญหาที่พบในการใช้งาน</p>
+
+  <input id="page" placeholder="หน้าที่พบปัญหา (เช่น หน้า Anime / ตอนที่)">
+  <textarea id="detail" placeholder="อธิบายปัญหาที่พบ..."></textarea>
+
+  <button onclick="sendReport()">Send Report</button>
+  <div class="back" onclick="history.back()">← กลับหน้าเดิม</div>
+</div>
+
+<script>
+function sendReport(){
+  const page = document.getElementById("page").value.trim();
+  const detail = document.getElementById("detail").value.trim();
+
+  if(!detail){
+    alert("กรุณาพิมพ์รายละเอียดปัญหา");
+    return;
+  }
+
+  const reports = JSON.parse(localStorage.getItem("reports") || "[]");
+
+  reports.push({
+    page: page || "ไม่ระบุหน้า",
+    detail,
+    time: new Date().toLocaleString(),
+    read: false
+  });
+
+  localStorage.setItem("reports", JSON.stringify(reports));
+
+  alert("ส่งปัญหาเรียบร้อย ขอบคุณครับ 🙏");
+  location.href = "Administrator.html"; // หรือ history.back()
+}
+</script>
+
+</body>
+</html>

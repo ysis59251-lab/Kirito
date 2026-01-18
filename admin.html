@@ -93,6 +93,38 @@ canvas{max-height:320px}
 <!-- ===== SCRIPTS ===== -->
 <script src="firebase.js"></script>
 <script>
+
+<script>
+const reportList = document.getElementById("reportList");
+
+function renderReports(){
+  const reports = JSON.parse(localStorage.getItem("reports") || "[]");
+
+  if(reports.length === 0){
+    reportList.innerHTML = "<p>ยังไม่มีแจ้งปัญหา</p>";
+    return;
+  }
+
+  reportList.innerHTML = reports.map((r,i)=>`
+    <div class="report-card ${r.read ? "read" : ""}">
+      <small>🕒 ${r.time}</small><br>
+      <small>📄 ${r.page}</small>
+      <p>${r.detail}</p>
+      ${!r.read ? `<button onclick="markRead(${i})">ทำเครื่องหมายว่าอ่านแล้ว</button>` : ""}
+    </div>
+  `).reverse().join("");
+}
+
+function markRead(index){
+  const reports = JSON.parse(localStorage.getItem("reports"));
+  reports[index].read = true;
+  localStorage.setItem("reports", JSON.stringify(reports));
+  renderReports();
+}
+
+renderReports();
+</script>
+
 /* ================= FIREBASE ================= */
 
 // ออนไลน์

@@ -8,6 +8,37 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
+
+.report-card{
+  background:#111;
+  border-radius:14px;
+  padding:12px;
+  margin-bottom:10px;
+  border-left:4px solid #ff3b3b;
+}
+
+.report-card.read{
+  opacity:.6;
+  border-left-color:#555;
+}
+
+.report-card small{
+  color:#aaa;
+  font-size:12px;
+}
+
+.report-card button{
+  margin-top:6px;
+  padding:6px 10px;
+  border:none;
+  border-radius:8px;
+  background:#ff3b3b;
+  color:#fff;
+  font-size:12px;
+  cursor:pointer;
+}
+
+
 body{background:#0b0b0b;color:#fff;font-family:system-ui;padding:16px}
 h2{color:#00ffcc}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
@@ -23,6 +54,8 @@ canvas{max-height:320px}
 </head>
 
 <body>
+<h2>📢 แจ้งปัญหาที่เข้ามา</h2>
+<div id="reportList"></div>
 
 <h2>📊 AnimeFume Dashboard</h2>
 

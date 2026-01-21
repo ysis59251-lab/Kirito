@@ -54,8 +54,17 @@ canvas{max-height:320px}
 </head>
 
 <body>
-<h2>📢 แจ้งปัญหาที่เข้ามา</h2>
-<div id="reportList"></div>
+<!-- MAIL ICON -->
+<div id="mailBox" onclick="toggleInbox()">
+  📢
+  <span id="mailCount">0</span>
+</div>
+
+<!-- INBOX -->
+<div id="inbox">
+  <h3>📬 แจ้งปัญหา</h3>
+  <div id="reportList"></div>
+</div>
 
 <h2>📊 AnimeFume Dashboard</h2>
 

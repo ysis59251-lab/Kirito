@@ -126,7 +126,10 @@ function sendReport(){
   localStorage.setItem("reports", JSON.stringify(reports));
 
   alert("ส่งปัญหาเรียบร้อย ขอบคุณครับ 🙏");
-  location.href = "Administrator.html"; // หรือ history.back()
+
+  // ล้างช่องกรอก
+  document.getElementById("page").value = "";
+  document.getElementById("detail").value = "";
 }
 </script>
 

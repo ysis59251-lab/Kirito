@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+
+<!-- ✅ สำคัญมาก -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>เลือกตอน</title>
+
+<style>
+
+    /* ====== ACCORDION ====== */
+.ep-toggle{
+  background:#111;
+  border-radius:16px;
+  padding:18px;
+  margin-bottom:14px;
+  cursor:pointer;
+  font-size:1.1rem;
+  box-shadow:0 6px 14px rgba(0,0,0,.4);
+}
+
+.ep-list{
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .45s ease;
+}
+
+.ep-list.open{
+  max-height:3000px; /* พอสำหรับ 24 ตอน */
+}
+
+/* ====== BASE ====== */
+html{
+  font-size:20px;
+}
+
+body{
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+
+  color: #fff;
+  font-family: sans-serif;
+
+  background: 
+    url("https://www.akerufeed.com/wp-content/uploads/2021/07/Wallpaper-Japanese-Cartoon-Street-22.jpg")
+    center / cover no-repeat fixed;
+
+  overflow-x: hidden; /* กันล้นด้านข้าง */
+}
+
+
+/* ====== CONTAINER ====== */
+.container{
+  width:100%;
+  max-width:540px;   /* เต็มจอมือถือ */
+  margin:0 auto;
+  padding:16px;
+}
+
+/* ====== CARD ====== */
+.card{
+  width:100%;
+  border-radius:16px;
+  overflow:hidden;
+  margin-bottom:16px;
+}
+
+.card img{
+  width:330px;
+  height:430px;       /* ❗ไม่ fix สูง */
+  display:block;
+}
+
+.overlay-text{
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+  padding:14px;
+  background:linear-gradient(transparent, rgba(0,0,0,.85));
+  font-size:1rem;
+}
+
+.card-wrap{
+  position:relative;
+}
+
+/* ====== DESCRIPTION ====== */
+.desc{
+  font-size:1rem;
+  line-height:1.6;
+  opacity:.9;
+  margin-bottom:20px;
+}
+
+/* ====== EPISODE LIST ====== */
+.episode-box{
+  width:100%;
+}
+
+.episode{
+  background:linear-gradient(135deg,#1e1e1e,#2b2b2b);
+  border-radius:16px;
+  padding:18px;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  cursor:pointer;
+  box-shadow:0 6px 14px rgba(0,0,0,.4);
+}
+
+.episode.watched{
+  background:linear-gradient(135deg,#1b3b1b,#244d24);
+}
+
+.ep-num{
+  background:#ff4d4d;
+  padding:8px 14px;
+  border-radius:12px;
+  font-weight:bold;
+}
+
+.ep-title{
+  flex:1;
+  font-size:1.05rem;
+}
+
+.status{
+  font-size:20px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h2>
+DAN DA DAN ดันดาดัน<br>
+     (ภาค1) ตอนที่ 1-12 พากย์ไทย จบแล้ว
+</h2>
+
+<div class="card-wrap">
+  <div class="card">
+    <img src="https://www.anime-seven.com/upload/85d7c29d7cf76d6100598874c9e1bcfd.jpg">
+  </div>
+
+<p class="desc">
+เรื่องย่อ
+เรื่องราวของ Ayase Momo นักเรียนสาวสายเชื่อเรื่องผีกับลี้ลับคุง เพื่อนร่วมชั้นที่เป็นโอตาคุปรากฏการณ์ลี้ลับ ทั้งคู่ต่างก็ปฏิเสธที่จะเชื่อในเรื่อง UFO กับไคอิ ดังนั้นเธอจึงมุ่งหน้าไปยังโรงพยาบาลสร้างซึ่งเป็นจุด UFO ส่วนลี้ลับคุงมุ่งหน้าไปยังอุโมงค์ที่เป็นจุดรวมวิญญาณ แต่ทว่า… ความรักแห่งโชคชะตาจะเริ่มขึ้นหรือไม่!? การต่อสู้แห่งไสยศาสตร์อันลี้ลับได้เปิดม่านขึ้นแล้ว!
+
+รวมทุกภาค Sword Art Online...
+</p>
+
+<!-- ปุ่มกดเปิดกล่อง -->
+<div class="ep-toggle" onclick="toggleEp()">
+  ▼ กล่องเลือกตอน
+</div>
+
+<!-- กล่องพับ -->
+<div id="epList" class="ep-list">
+
+  <div class="episode" onclick="openEp(1)" data-ep="1">
+    <span class="ep-num">EP 1</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode" onclick="openEp(2)" data-ep="2">
+    <span class="ep-num">EP 2</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode" onclick="openEp(3)" data-ep="3">
+    <span class="ep-num">EP 3</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode" onclick="openEp(4)" data-ep="4">
+    <span class="ep-num">EP 4</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode" onclick="openEp(5)" data-ep="5">
+    <span class="ep-num">EP 5</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+<div class="episode" onclick="openEp(6)" data-ep="6">
+    <span class="ep-num">EP 6</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode" onclick="openEp(7)" data-ep="7">
+    <span class="ep-num">EP 7</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode" onclick="openEp(8)" data-ep="8">
+    <span class="ep-num">EP 8</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode" onclick="openEp(9)" data-ep="9">
+    <span class="ep-num">EP 9</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+   <div class="episode"onclick="openEp(10)" data-ep="10">
+    <span class="ep-num">EP 10</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode"onclick="openEp(11)" data-ep="11">
+    <span class="ep-num">EP 11</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+   <div class="episode"onclick="openEp(12)" data-ep="12">
+    <span class="ep-num">EP 12</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+</div>
+</div>
+
+<script>
+let watched = JSON.parse(localStorage.getItem("watchedEpisodes")) || [];
+
+document.querySelectorAll(".episode").forEach(el=>{
+  let ep = parseInt(el.dataset.ep);
+  if(watched.includes(ep)){
+    el.classList.add("watched");
+    el.querySelector(".status").innerHTML = "✔";
+  }
+});
+
+function openEp(ep){
+  if(!watched.includes(ep)){
+    watched.push(ep);
+    localStorage.setItem("watchedEpisodes", JSON.stringify(watched));
+  }
+
+  const epLinks={
+    1:"WP1.html",
+    2:"WP2.html",
+    3:"WP3.html",
+    4:"WP4.html",
+    5:"WP5.html",
+    6:"WP6.html",
+    7:"WP7.html",
+    8:"WP8.html",
+    9:"WP9.html",
+    10:"WP10.html",
+    11:"WP11.html",
+    12:"WP12.html",
+
+  };
+
+  window.location.href=epLinks[ep];
+}
+
+function toggleEp(){
+  document.getElementById("epList").classList.toggle("open");
+}
+
+</script>
+
+</body>
+</html>

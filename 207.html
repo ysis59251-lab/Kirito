@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+
+<!-- ✅ สำคัญมาก -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>เลือกตอน</title>
+
+<style>
+
+    /* ====== ACCORDION ====== */
+.ep-toggle{
+  background:#111;
+  border-radius:16px;
+  padding:18px;
+  margin-bottom:14px;
+  cursor:pointer;
+  font-size:1.1rem;
+  box-shadow:0 6px 14px rgba(0,0,0,.4);
+}
+
+.ep-list{
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .45s ease;
+}
+
+.ep-list.open{
+  max-height:3000px; /* พอสำหรับ 24 ตอน */
+}
+
+/* ====== BASE ====== */
+html{
+  font-size:20px;
+}
+
+body{
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+
+  color: #fff;
+  font-family: sans-serif;
+
+  background: 
+    url("https://www.akerufeed.com/wp-content/uploads/2021/07/Wallpaper-Japanese-Cartoon-Street-22.jpg")
+    center / cover no-repeat fixed;
+
+  overflow-x: hidden; /* กันล้นด้านข้าง */
+}
+
+
+/* ====== CONTAINER ====== */
+.container{
+  width:100%;
+  max-width:540px;   /* เต็มจอมือถือ */
+  margin:0 auto;
+  padding:16px;
+}
+
+/* ====== CARD ====== */
+.card{
+  width:100%;
+  border-radius:16px;
+  overflow:hidden;
+  margin-bottom:16px;
+}
+
+.card img{
+  width:330px;
+  height:430px;       /* ❗ไม่ fix สูง */
+  display:block;
+}
+
+.overlay-text{
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+  padding:14px;
+  background:linear-gradient(transparent, rgba(0,0,0,.85));
+  font-size:1rem;
+}
+
+.card-wrap{
+  position:relative;
+}
+
+/* ====== DESCRIPTION ====== */
+.desc{
+  font-size:1rem;
+  line-height:1.6;
+  opacity:.9;
+  margin-bottom:20px;
+}
+
+/* ====== EPISODE LIST ====== */
+.episode-box{
+  width:100%;
+}
+
+.episode{
+  background:linear-gradient(135deg,#1e1e1e,#2b2b2b);
+  border-radius:16px;
+  padding:18px;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  cursor:pointer;
+  box-shadow:0 6px 14px rgba(0,0,0,.4);
+}
+
+.episode.watched{
+  background:linear-gradient(135deg,#1b3b1b,#244d24);
+}
+
+.ep-num{
+  background:#ff4d4d;
+  padding:8px 14px;
+  border-radius:12px;
+  font-weight:bold;
+}
+
+.ep-title{
+  flex:1;
+  font-size:1.05rem;
+}
+
+.status{
+  font-size:20px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h2>
+Nageki no Bourei wa Intai shitai วิญญาณคร่ำครวญอยากวางมือแล้ว<br>
+     ตอนที่ 1-24 พากย์ไทย จบแล้ว
+</h2>
+
+<div class="card-wrap">
+  <div class="card">
+    <img src="https://www.anime-seven.com/upload/53a88b2691e8654970633121240d30f7.jpg">
+  </div>
+
+<p class="desc">
+เรื่องย่อ
+ในยุคทองของนักล่าสมบัติเพื่อค้นหาของล้ำค่าหรือมีพลังพิเศษในดันเจี้ยน คราย (คุราอิ) เคยเป็นหัวหน้าทีมกลุ่มเพื่อนเขา จนเป็นฮันเตอร์ที่มีชื่อเสียงไปทั่ว ซึ่งในความจริงเป็นผลงานเพื่อนเขาทั้งหมด ตัวเขาเองกลับไม่ได้ทำอะไรเลย จึงต้องการแยกตัว แต่ด้วยความเข้าใจผิดหลายเรื่อง ทำให้คนอ่อนแอแบบเขากลายเป็นผู้นำกลุ่มทีมล่าสมบัติที่แข็งแกร่งอีกครั้ง
+</p>
+
+<!-- ปุ่มกดเปิดกล่อง -->
+<div class="ep-toggle" onclick="toggleEp()">
+  ▼ กล่องเลือกตอน
+</div>
+
+<!-- กล่องพับ -->
+<div id="epList" class="ep-list">
+
+  <div class="episode" onclick="openEp(1)" data-ep="1">
+    <span class="ep-num">EP 1</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode" onclick="openEp(2)" data-ep="2">
+    <span class="ep-num">EP 2</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode" onclick="openEp(3)" data-ep="3">
+    <span class="ep-num">EP 3</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode" onclick="openEp(4)" data-ep="4">
+    <span class="ep-num">EP 4</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode" onclick="openEp(5)" data-ep="5">
+    <span class="ep-num">EP 5</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+<div class="episode" onclick="openEp(6)" data-ep="6">
+    <span class="ep-num">EP 6</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode" onclick="openEp(7)" data-ep="7">
+    <span class="ep-num">EP 7</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode" onclick="openEp(8)" data-ep="8">
+    <span class="ep-num">EP 8</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode" onclick="openEp(9)" data-ep="9">
+    <span class="ep-num">EP 9</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+   <div class="episode"onclick="openEp(10)" data-ep="10">
+    <span class="ep-num">EP 10</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode"onclick="openEp(11)" data-ep="11">
+    <span class="ep-num">EP 11</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+  <div class="episode"onclick="openEp(12)" data-ep="12">
+    <span class="ep-num">EP 12</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+  
+  <div class="episode"onclick="openEp(13)" data-ep="13">
+    <span class="ep-num">EP 13</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+  
+  <div class="episode"onclick="openEp(14)" data-ep="14">
+    <span class="ep-num">EP 14</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+  
+  <div class="episode"onclick="openEp(15)" data-ep="15">
+    <span class="ep-num">EP 15</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+  
+  <div class="episode"onclick="openEp(16)" data-ep="16">
+    <span class="ep-num">EP 16</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+  
+  <div class="episode"onclick="openEp(17)" data-ep="17">
+    <span class="ep-num">EP 17</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+  
+  <div class="episode"onclick="openEp(18)" data-ep="18">
+    <span class="ep-num">EP 18</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+  
+  <div class="episode"onclick="openEp(19)" data-ep="19">
+    <span class="ep-num">EP 19</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+  
+  <div class="episode"onclick="openEp(20)" data-ep="20">
+    <span class="ep-num">EP 20</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+  
+  <div class="episode"onclick="openEp(21)" data-ep="21">
+    <span class="ep-num">EP 21</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+  
+  <div class="episode"onclick="openEp(22)" data-ep="22">
+    <span class="ep-num">EP 22</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+  
+  <div class="episode"onclick="openEp(23)" data-ep="23">
+    <span class="ep-num">EP 23</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+  
+  <div class="episode"onclick="openEp(24)" data-ep="24">
+    <span class="ep-num">EP 24</span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+</div>
+</div>
+
+<script>
+let watched = JSON.parse(localStorage.getItem("watchedEpisodes")) || [];
+
+document.querySelectorAll(".episode").forEach(el=>{
+  let ep = parseInt(el.dataset.ep);
+  if(watched.includes(ep)){
+    el.classList.add("watched");
+    el.querySelector(".status").innerHTML = "✔";
+  }
+});
+
+function openEp(ep){
+  if(!watched.includes(ep)){
+    watched.push(ep);
+    localStorage.setItem("watchedEpisodes", JSON.stringify(watched));
+  }
+
+  const epLinks={
+    1:"y1.html",
+    2:"y2.html",
+    3:"y3.html",
+    4:"y4.html",
+    5:"y5.html",
+    6:"y6.html",
+    7:"y7.html",
+    8:"y8.html",
+    9:"y9.html",
+    10:"y10.html",
+    11:"y11.html",
+    12:"y12.html",
+    13:"y12.html",
+    14:"y12.html",
+    15:"y12.html",
+    16:"y12.html",
+    17:"y12.html",
+    18:"y12.html",
+    19:"y12.html",
+    20:"y12.html",
+    21:"y12.html",
+    22:"y12.html",
+    23:"y12.html",
+    24:"y12.html",
+    
+  };
+
+  window.location.href=epLinks[ep];
+}
+
+function toggleEp(){
+  document.getElementById("epList").classList.toggle("open");
+}
+
+</script>
+
+</body>
+</html>

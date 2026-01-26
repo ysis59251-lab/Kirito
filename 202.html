@@ -10,6 +10,16 @@
 
 <style>
 
+.episode.locked{
+  opacity:.4;
+  pointer-events:none;
+  filter:grayscale(1);
+}
+
+.episode.locked .status{
+  color:#ff4d4d;
+}
+
     /* ====== ACCORDION ====== */
 .ep-toggle{
   background:#111;
@@ -311,57 +321,58 @@ Sword Art Online ซอร์ดอาร์ตออนไลน์ (ภาค1
 </div>
 
 <script>
-let watched = JSON.parse(localStorage.getItem("watchedEpisodes")) || [];
+const API_URL = "1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8";
 
-document.querySelectorAll(".episode").forEach(el=>{
-  let ep = parseInt(el.dataset.ep);
-  if(watched.includes(ep)){
-    el.classList.add("watched");
-    el.querySelector(".status").innerHTML = "✔";
-  }
-});
+const epLinks = {
+  1:"u1.html",  2:"u2.html",  3:"u3.html",  4:"u4.html",
+  5:"u5.html",  6:"u6.html",  7:"u7.html",  8:"u8.html",
+  9:"u9.html", 10:"u10.html",11:"u11.html",12:"u12.html",
+  13:"u13.html",14:"u14.html",15:"u15.html",16:"u16.html",
+  17:"u17.html",18:"u18.html",19:"u19.html",20:"u20.html",
+  21:"u21.html",22:"u22.html",23:"u23.html",24:"u24.html"
+};
+
+let epStatus = {};
+
+// 👉 โหลดสถานะจาก Google Sheet
+fetch(API_URL)
+  .then(res => res.json())
+  .then(data => {
+    data.forEach(row => {
+      epStatus[row.episode] = row.status;
+    });
+    applyLock();
+  })
+  .catch(()=>{
+    alert("โหลดสถานะตอนล้มเหลว");
+  });
+
+function applyLock(){
+  document.querySelectorAll(".episode").forEach(el=>{
+    const ep = parseInt(el.dataset.ep);
+    const statusEl = el.querySelector(".status");
+
+    if(epStatus[ep] === "completed"){
+      el.classList.add("watched");
+      statusEl.innerHTML = "✔";
+    }else{
+      el.classList.add("locked");
+      statusEl.innerHTML = "🔒";
+    }
+  });
+}
 
 function openEp(ep){
-  if(!watched.includes(ep)){
-    watched.push(ep);
-    localStorage.setItem("watchedEpisodes", JSON.stringify(watched));
+  if(epStatus[ep] !== "completed"){
+    alert("❌ ตอนนี้ยังไม่เปิดให้ดู");
+    return;
   }
-
-  const epLinks={
-    1:"u1.html",
-    2:"u2.html",
-    3:"u3.html",
-    4:"u4.html",
-    5:"u5.html",
-    6:"u6.html",
-    7:"u7.html",
-    8:"u8.html",
-    9:"u9.html",
-    10:"u10.html",
-    11:"u11.html",
-    12:"u12.html",
-    13:"u13.html",
-    14:"u14.html",
-    15:"u15.html",
-    16:"u16.html",
-    17:"u17.html",
-    18:"u18.html",
-    19:"u19.html",
-    20:"u20.html",
-    21:"u21.html",
-    22:"u22.html",
-    23:"u23.html",
-    24:"u24.html",
-
-  };
-
-  window.location.href=epLinks[ep];
+  window.location.href = epLinks[ep];
 }
 
 function toggleEp(){
   document.getElementById("epList").classList.toggle("open");
 }
-
 </script>
 
 </body>

@@ -80,7 +80,10 @@ iframe{
 </p>
 
 <!-- PLAYER -->
-<iframe id="player" allowfullscreen></iframe>
+<iframe id="player"
+  style="width:100%;height:220px;border:none;border-radius:16px;margin-bottom:16px"
+  allowfullscreen>
+</iframe>
 
 <div class="ep-toggle" onclick="toggleEp()">▼ กล่องเลือกตอน</div>
 
@@ -89,57 +92,64 @@ iframe{
 </div>
 
 <script>
-/* 🔥 ตั้งค่าตรงนี้ */
 const SHEET_ID = "1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8";
-const animeName = "Sword Art Online";
-
 const SHEET_URL =
 `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-let watched = JSON.parse(localStorage.getItem(animeName)) || [];
-const epList = document.getElementById("epList");
+const animeName = "Sword Art Online";
 const player = document.getElementById("player");
 
+let watched = JSON.parse(localStorage.getItem("watchedEpisodes")) || [];
+let videoMap = {}; // เก็บ ep -> video_url
+
+// โหลดสถานะดูแล้ว (ของเดิม ใช้ได้)
+document.querySelectorAll(".episode").forEach(el=>{
+  let ep = parseInt(el.dataset.ep);
+  if(watched.includes(ep)){
+    el.classList.add("watched");
+    el.querySelector(".status").textContent = "✔";
+  }
+});
+
+// ดึงวิดีโอจาก Google Sheet
 fetch(SHEET_URL)
 .then(r=>r.text())
 .then(t=>{
   const json = JSON.parse(t.substring(47).slice(0,-2));
-  json.table.rows.forEach(row=>{
-    if(row.c[0].v !== animeName) return;
-
-    const ep = row.c[1].v;
-    const title = row.c[2].v;
-    const url = row.c[3].v;
-
-    const div = document.createElement("div");
-    div.className = "episode";
-    if(watched.includes(ep)) div.classList.add("watched");
-
-    div.innerHTML = `
-      <span class="ep-num">EP ${ep}</span>
-      <span class="ep-title">${title}</span>
-      <span>${watched.includes(ep)?"✔":""}</span>
-    `;
-
-    div.onclick=()=>{
-      player.src = url;
-      if(!watched.includes(ep)){
-        watched.push(ep);
-        localStorage.setItem(animeName,JSON.stringify(watched));
-        div.classList.add("watched");
-        div.querySelector("span:last-child").textContent="✔";
-      }
-      window.scrollTo({top:0,behavior:"smooth"});
-    };
-
-    epList.appendChild(div);
+  json.table.rows.forEach(r=>{
+    if(r.c[0]?.v !== animeName) return;
+    const ep = r.c[1]?.v;
+    const url = r.c[3]?.v;
+    videoMap[ep] = url;
   });
 });
 
+// ✅ openEp เดิม แต่ฉลาดขึ้น
+function openEp(ep){
+  if(videoMap[ep]){
+    player.src = videoMap[ep];
+  }else{
+    alert("ยังไม่มีวิดีโอตอนนี้");
+    return;
+  }
+
+  if(!watched.includes(ep)){
+    watched.push(ep);
+    localStorage.setItem("watchedEpisodes", JSON.stringify(watched));
+  }
+
+  const el = document.querySelector(`.episode[data-ep="${ep}"]`);
+  if(el){
+    el.classList.add("watched");
+    el.querySelector(".status").textContent="✔";
+  }
+
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
 function toggleEp(){
-  epList.classList.toggle("open");
+  document.getElementById("epList").classList.toggle("open");
 }
 </script>
-
 </body>
 </html>

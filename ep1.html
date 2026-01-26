@@ -78,7 +78,7 @@ const SHEET_URL =
 
 /* ================= PARAM ================= */
 const params = new URLSearchParams(location.search);
-let anime = params.get("anime"); // อาจว่าง
+let anime = params.get("anime");
 let ep = Number(params.get("ep") || 1);
 
 let episodes = [];
@@ -90,7 +90,6 @@ fetch(SHEET_URL)
   const json = JSON.parse(t.substring(47).slice(0, -2));
   const rows = json.table.rows;
 
-  // ถ้าไม่มี anime → ใช้ชื่อเรื่องแถวแรก
   if (!anime && rows.length) {
     anime = rows[0].c[0]?.v;
   }
@@ -111,8 +110,10 @@ fetch(SHEET_URL)
 
 /* ================= INIT ================= */
 function init(){
+  const player = document.getElementById("player");
+
   if(!episodes.length){
-    document.getElementById("playerArea").innerText = "ไม่พบข้อมูลตอน";
+    player.innerText = "ไม่พบข้อมูลตอน";
     return;
   }
 
@@ -123,17 +124,14 @@ function init(){
     `${anime} ตอนที่ ${ep}`;
 
   document.getElementById("topText").innerText =
-    `รวมทุกตอน ${episodes[0].ep} – ${episodes[episodes.length-1].ep}`;
-
-  document.getElementById("watchingNow").innerText =
-    `${anime} EP.${ep}`;
+    `รวมทั้งหมด ${episodes.length} ตอน`;
 
   showVideo(current.url);
 }
 
 /* ================= VIDEO ================= */
 function showVideo(url){
-  const area = document.getElementById("playerArea");
+  const area = document.getElementById("player");
   area.innerHTML = "";
 
   if(!url){
@@ -141,10 +139,22 @@ function showVideo(url){
     return;
   }
 
-  if(url.includes("youtube") || url.includes("drive.google")){
-    area.innerHTML = `<iframe src="${url}" allowfullscreen></iframe>`;
-  }else{
-    area.innerHTML = `<video controls playsinline src="${url}"></video>`;
+  // YouTube
+  if(url.includes("youtube")){
+    const id = url.split("v=")[1]?.split("&")[0];
+    area.innerHTML =
+      `<iframe src="https://www.youtube.com/embed/${id}"
+       allowfullscreen></iframe>`;
+  }
+  // Google Drive
+  else if(url.includes("drive.google")){
+    area.innerHTML =
+      `<iframe src="${url}" allowfullscreen></iframe>`;
+  }
+  // mp4 / m3u8
+  else{
+    area.innerHTML =
+      `<video controls playsinline src="${url}"></video>`;
     const v = area.querySelector("video");
     if(v) v.onended = nextEp;
   }
@@ -165,11 +175,6 @@ function nextEp(){
     location.search =
       `?anime=${encodeURIComponent(anime)}&ep=${episodes[i+1].ep}`;
   }
-}
-
-function showAllEp(){
-  location.href =
-    "index.html?anime="+encodeURIComponent(anime);
 }
 </script>
 

@@ -71,96 +71,105 @@ body{
 </div>
 
 <script>
-/* ===== CONFIG ===== */
+/* ================= CONFIG ================= */
 const SHEET_ID = "1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8";
 const SHEET_URL =
-`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-/* ===== PARAM ===== */
-const q = new URLSearchParams(location.search);
-const anime = q.get("anime");
-let ep = Number(q.get("ep") || 1);
+/* ================= PARAM ================= */
+const params = new URLSearchParams(location.search);
+let anime = params.get("anime"); // อาจว่าง
+let ep = Number(params.get("ep") || 1);
 
-if(!anime){
-  document.body.innerHTML = "❌ ไม่พบ anime";
-  throw "";
-}
+let episodes = [];
 
-let list = [];
-
-/* ===== LOAD SHEET ===== */
+/* ================= LOAD SHEET ================= */
 fetch(SHEET_URL)
-.then(r=>r.text())
-.then(t=>{
-  const json = JSON.parse(t.substring(47).slice(0,-2));
-  json.table.rows.forEach(r=>{
-    if(r.c[0]?.v === anime){
-      list.push({
+.then(r => r.text())
+.then(t => {
+  const json = JSON.parse(t.substring(47).slice(0, -2));
+  const rows = json.table.rows;
+
+  // ถ้าไม่มี anime → ใช้ชื่อเรื่องแถวแรก
+  if (!anime && rows.length) {
+    anime = rows[0].c[0]?.v;
+  }
+
+  rows.forEach(r => {
+    if (r.c[0]?.v === anime) {
+      episodes.push({
         ep: Number(r.c[1]?.v),
         title: r.c[2]?.v || "",
         url: r.c[3]?.v || ""
       });
     }
   });
-  list.sort((a,b)=>a.ep-b.ep);
-  loadEp();
+
+  episodes.sort((a,b)=>a.ep-b.ep);
+  init();
 });
 
-/* ===== LOAD EP ===== */
-function loadEp(){
-  const data = list.find(x=>x.ep===ep) || list[0];
-  ep = data.ep;
-
-  document.getElementById("titleText").innerText =
-    `${anime} ตอนที่ ${ep} ${data.title}`;
-
-  document.getElementById("topText").innerText =
-    `ทั้งหมด ${list.length} ตอน`;
-
-  play(data.url);
-}
-
-/* ===== PLAYER ===== */
-function play(url){
-  const p = document.getElementById("player");
-  p.innerHTML = "";
-
-  if(!url){
-    p.innerText = "ยังไม่มีวิดีโอ";
+/* ================= INIT ================= */
+function init(){
+  if(!episodes.length){
+    document.getElementById("playerArea").innerText = "ไม่พบข้อมูลตอน";
     return;
   }
 
-  // YouTube
-  if(url.includes("youtube.com") || url.includes("youtu.be")){
-    const id = url.split("v=")[1]?.split("&")[0] || url.split("/").pop();
-    p.innerHTML =
-      `<iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>`;
+  const current = episodes.find(e=>e.ep === ep) || episodes[0];
+  ep = current.ep;
+
+  document.getElementById("titleText").innerText =
+    `${anime} ตอนที่ ${ep}`;
+
+  document.getElementById("topText").innerText =
+    `รวมทุกตอน ${episodes[0].ep} – ${episodes[episodes.length-1].ep}`;
+
+  document.getElementById("watchingNow").innerText =
+    `${anime} EP.${ep}`;
+
+  showVideo(current.url);
+}
+
+/* ================= VIDEO ================= */
+function showVideo(url){
+  const area = document.getElementById("playerArea");
+  area.innerHTML = "";
+
+  if(!url){
+    area.innerText = "ยังไม่มีวิดีโอ";
+    return;
   }
 
-  // Google Drive
-  else if(url.includes("drive.google")){
-    const id = url.match(/\/d\/(.+?)\//)?.[1];
-    p.innerHTML =
-      `<iframe src="https://drive.google.com/file/d/${id}/preview" allowfullscreen></iframe>`;
-  }
-
-  // Video link
-  else{
-    p.innerHTML =
-      `<video controls playsinline src="${url}"></video>`;
+  if(url.includes("youtube") || url.includes("drive.google")){
+    area.innerHTML = `<iframe src="${url}" allowfullscreen></iframe>`;
+  }else{
+    area.innerHTML = `<video controls playsinline src="${url}"></video>`;
+    const v = area.querySelector("video");
+    if(v) v.onended = nextEp;
   }
 }
 
-/* ===== NAV ===== */
+/* ================= NAV ================= */
 function prevEp(){
-  const i=list.findIndex(x=>x.ep===ep);
-  if(i>0)
-    location.search=`?anime=${anime}&ep=${list[i-1].ep}`;
+  const i = episodes.findIndex(e=>e.ep === ep);
+  if(i > 0){
+    location.search =
+      `?anime=${encodeURIComponent(anime)}&ep=${episodes[i-1].ep}`;
+  }
 }
+
 function nextEp(){
-  const i=list.findIndex(x=>x.ep===ep);
-  if(i<list.length-1)
-    location.search=`?anime=${anime}&ep=${list[i+1].ep}`;
+  const i = episodes.findIndex(e=>e.ep === ep);
+  if(i < episodes.length-1){
+    location.search =
+      `?anime=${encodeURIComponent(anime)}&ep=${episodes[i+1].ep}`;
+  }
+}
+
+function showAllEp(){
+  location.href =
+    "index.html?anime="+encodeURIComponent(anime);
 }
 </script>
 

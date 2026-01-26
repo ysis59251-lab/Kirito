@@ -10,41 +10,25 @@ body{
   margin:0;
   min-height:100vh;
   font-family:sans-serif;
-  background:
-    url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg")
-    center / cover no-repeat fixed;
+  background:url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg")
+  center/cover no-repeat fixed;
   color:#fff;
 }
-
 .title{
   background:#fff;
   color:#000;
   padding:12px 16px;
   border-radius:12px;
   margin:12px;
-  font-size:18px;
   font-weight:700;
 }
-
 .top-title{
-  background:rgba(0,0,0,.85);
-  color:#fff;
-  padding:14px;
-  border-radius:14px;
+  background:rgba(0,0,0,.8);
+  padding:12px;
+  border-radius:12px;
   margin:12px;
   text-align:center;
 }
-
-.stats{
-  margin:12px;
-  background:rgba(0,0,0,.7);
-  border-radius:12px;
-  padding:12px;
-  display:flex;
-  gap:16px;
-  justify-content:center;
-}
-
 .player{
   max-width:720px;
   margin:12px auto;
@@ -52,21 +36,17 @@ body{
   border-radius:14px;
   overflow:hidden;
 }
-
 .player iframe,
 .player video{
   width:100%;
   aspect-ratio:16/9;
   border:none;
-  background:#000;
 }
-
 .controls{
   display:flex;
   gap:10px;
   margin:12px;
 }
-
 .btn{
   flex:1;
   padding:12px;
@@ -74,7 +54,6 @@ body{
   border-radius:12px;
   background:#1e1e1e;
   color:#fff;
-  cursor:pointer;
 }
 .btn:hover{background:#ff4d4d}
 </style>
@@ -82,118 +61,106 @@ body{
 
 <body>
 
-<div class="title" id="titleText">กำลังโหลด...</div>
+<div class="title" id="titleText">กำลังโหลด…</div>
 <div class="top-title" id="topText"></div>
-
-<div class="stats">
-  👀 กำลังดู: <b id="watchingNow">–</b>
-</div>
-
-<div class="player" id="playerArea"></div>
+<div class="player" id="player"></div>
 
 <div class="controls">
-  <button class="btn" onclick="prevEp()">⬅ ตอนก่อนหน้า</button>
-  <button class="btn" onclick="showAllEp()">☰ ตอนทั้งหมด</button>
-  <button class="btn" onclick="nextEp()">ตอนถัดไป ➡</button>
+  <button class="btn" onclick="prevEp()">⬅ ก่อนหน้า</button>
+  <button class="btn" onclick="nextEp()">ถัดไป ➡</button>
 </div>
 
 <script>
-/* ================= CONFIG ================= */
+/* ===== CONFIG ===== */
 const SHEET_ID = "1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8";
 const SHEET_URL =
-  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-/* ================= PARAM ================= */
-const params = new URLSearchParams(location.search);
-const anime = params.get("anime");
-let ep = Number(params.get("ep") || 1);
+/* ===== PARAM ===== */
+const q = new URLSearchParams(location.search);
+const anime = q.get("anime");
+let ep = Number(q.get("ep") || 1);
 
 if(!anime){
-  document.getElementById("playerArea").innerText =
-    "ไม่พบชื่อเรื่อง (anime)";
-  throw new Error("NO ANIME PARAM");
+  document.body.innerHTML = "❌ ไม่พบ anime";
+  throw "";
 }
 
-let episodes = [];
+let list = [];
 
-/* ================= LOAD SHEET ================= */
+/* ===== LOAD SHEET ===== */
 fetch(SHEET_URL)
 .then(r=>r.text())
 .then(t=>{
   const json = JSON.parse(t.substring(47).slice(0,-2));
   json.table.rows.forEach(r=>{
     if(r.c[0]?.v === anime){
-      episodes.push({
+      list.push({
         ep: Number(r.c[1]?.v),
         title: r.c[2]?.v || "",
         url: r.c[3]?.v || ""
       });
     }
   });
-
-  // ✅ เรียงตอน
-  episodes.sort((a,b)=>a.ep-b.ep);
-  init();
+  list.sort((a,b)=>a.ep-b.ep);
+  loadEp();
 });
 
-/* ================= INIT ================= */
-function init(){
-  if(!episodes.length){
-    document.getElementById("playerArea").innerText = "ไม่พบข้อมูลตอน";
-    return;
-  }
-
-  const current = episodes.find(e=>e.ep === ep) || episodes[0];
-  ep = current.ep;
+/* ===== LOAD EP ===== */
+function loadEp(){
+  const data = list.find(x=>x.ep===ep) || list[0];
+  ep = data.ep;
 
   document.getElementById("titleText").innerText =
-    `${anime} ตอนที่ ${ep}`;
+    `${anime} ตอนที่ ${ep} ${data.title}`;
 
   document.getElementById("topText").innerText =
-    `รวมทุกตอน ${episodes[0].ep} – ${episodes[episodes.length-1].ep}`;
+    `ทั้งหมด ${list.length} ตอน`;
 
-  showVideo(current.url);
+  play(data.url);
 }
 
-/* ================= VIDEO ================= */
-function showVideo(url){
-  const area = document.getElementById("playerArea");
-  area.innerHTML = "";
+/* ===== PLAYER ===== */
+function play(url){
+  const p = document.getElementById("player");
+  p.innerHTML = "";
 
   if(!url){
-    area.innerText = "ยังไม่มีวิดีโอตอนนี้";
+    p.innerText = "ยังไม่มีวิดีโอ";
     return;
   }
 
-  if(url.includes("youtube") || url.includes("drive.google")){
-    area.innerHTML = `<iframe src="${url}" allowfullscreen></iframe>`;
-  }else{
-    area.innerHTML = `<video controls playsinline src="${url}"></video>`;
-    const v = area.querySelector("video");
-    if(v) v.onended = nextEp; // ▶️ เล่นตอนถัดไปอัตโนมัติ
+  // YouTube
+  if(url.includes("youtube.com") || url.includes("youtu.be")){
+    const id = url.split("v=")[1]?.split("&")[0] || url.split("/").pop();
+    p.innerHTML =
+      `<iframe src="https://www.youtube.com/embed/${id}" allowfullscreen></iframe>`;
+  }
+
+  // Google Drive
+  else if(url.includes("drive.google")){
+    const id = url.match(/\/d\/(.+?)\//)?.[1];
+    p.innerHTML =
+      `<iframe src="https://drive.google.com/file/d/${id}/preview" allowfullscreen></iframe>`;
+  }
+
+  // Video link
+  else{
+    p.innerHTML =
+      `<video controls playsinline src="${url}"></video>`;
   }
 }
 
-/* ================= NAV ================= */
+/* ===== NAV ===== */
 function prevEp(){
-  const i = episodes.findIndex(e=>e.ep === ep);
-  if(i > 0){
-    location.search =
-      `?anime=${encodeURIComponent(anime)}&ep=${episodes[i-1].ep}`;
-  }
+  const i=list.findIndex(x=>x.ep===ep);
+  if(i>0)
+    location.search=`?anime=${anime}&ep=${list[i-1].ep}`;
 }
-
 function nextEp(){
-  const i = episodes.findIndex(e=>e.ep === ep);
-  if(i < episodes.length-1){
-    location.search =
-      `?anime=${encodeURIComponent(anime)}&ep=${episodes[i+1].ep}`;
-  }
-}
-
-function showAllEp(){
-  location.href =
-    "index.html?anime="+encodeURIComponent(anime);
+  const i=list.findIndex(x=>x.ep===ep);
+  if(i<list.length-1)
+    location.search=`?anime=${anime}&ep=${list[i+1].ep}`;
 }
 </script>
 

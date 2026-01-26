@@ -112,7 +112,7 @@ fetch(SHEET_URL)
   const json = JSON.parse(t.substring(47).slice(0,-2));
 
   json.table.rows.forEach(r=>{
-    if(r.c[0]?.v !== animeName) return;
+    // if(r.c[0]?.v !== animeName) return;
 
     const ep = r.c[1]?.v;
     const url = r.c[3]?.v;

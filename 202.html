@@ -95,6 +95,18 @@ iframe{
 </div>
 
 <script>
+
+function toggleEp(){
+  const box = document.getElementById("epList");
+  box.classList.toggle("open");
+
+  if(box.classList.contains("open")){
+    setTimeout(()=>{
+      box.scrollIntoView({behavior:"smooth", block:"start"});
+    },200);
+  }
+}
+
 const SHEET_ID = "1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8";
 const SHEET_URL =
 `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;

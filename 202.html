@@ -95,6 +95,65 @@ iframe{
 </div>
 
 <script>
+const SHEET_ID = "1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8";
+const SHEET_URL =
+`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+
+const animeName = "Sword Art Online";
+const epList = document.getElementById("epList");
+const player = document.getElementById("player");
+
+let watched = JSON.parse(localStorage.getItem("watchedEpisodes")) || [];
+let videoMap = {};
+
+fetch(SHEET_URL)
+.then(r=>r.text())
+.then(t=>{
+  const json = JSON.parse(t.substring(47).slice(0,-2));
+
+  json.table.rows.forEach(r=>{
+    if(r.c[0]?.v !== animeName) return;
+
+    const ep = r.c[1]?.v;
+    const url = r.c[3]?.v;
+    videoMap[ep] = url;
+
+    const div = document.createElement("div");
+    div.className = "episode";
+    div.dataset.ep = ep;
+    div.onclick = ()=>openEp(ep);
+
+    if(watched.includes(ep)) div.classList.add("watched");
+
+    div.innerHTML = `
+      <span class="ep-num">EP ${ep}</span>
+      <span class="ep-title">พากย์ไทย</span>
+      <span class="status">${watched.includes(ep)?"✔":""}</span>
+    `;
+
+    epList.appendChild(div);
+  });
+});
+
+function openEp(ep){
+  if(!videoMap[ep]){
+    alert("ยังไม่มีวิดีโอตอนนี้");
+    return;
+  }
+
+  player.src = videoMap[ep];
+
+  if(!watched.includes(ep)){
+    watched.push(ep);
+    localStorage.setItem("watchedEpisodes", JSON.stringify(watched));
+  }
+
+  document
+    .querySelector(`.episode[data-ep="${ep}"]`)
+    ?.classList.add("watched");
+
+  window.scrollTo({top:0,behavior:"smooth"});
+}
 
 function toggleEp(){
   const box = document.getElementById("epList");
@@ -102,68 +161,9 @@ function toggleEp(){
 
   if(box.classList.contains("open")){
     setTimeout(()=>{
-      box.scrollIntoView({behavior:"smooth", block:"start"});
+      box.scrollIntoView({behavior:"smooth"});
     },200);
   }
-}
-
-const SHEET_ID = "1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8";
-const SHEET_URL =
-`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
-
-const animeName = "Sword Art Online";
-const player = document.getElementById("player");
-
-let watched = JSON.parse(localStorage.getItem("watchedEpisodes")) || [];
-let videoMap = {}; // เก็บ ep -> video_url
-
-// โหลดสถานะดูแล้ว (ของเดิม ใช้ได้)
-document.querySelectorAll(".episode").forEach(el=>{
-  let ep = parseInt(el.dataset.ep);
-  if(watched.includes(ep)){
-    el.classList.add("watched");
-    el.querySelector(".status").textContent = "✔";
-  }
-});
-
-// ดึงวิดีโอจาก Google Sheet
-fetch(SHEET_URL)
-.then(r=>r.text())
-.then(t=>{
-  const json = JSON.parse(t.substring(47).slice(0,-2));
-  json.table.rows.forEach(r=>{
-    if(r.c[0]?.v !== animeName) return;
-    const ep = r.c[1]?.v;
-    const url = r.c[3]?.v;
-    videoMap[ep] = url;
-  });
-});
-
-// ✅ openEp เดิม แต่ฉลาดขึ้น
-function openEp(ep){
-  if(videoMap[ep]){
-    player.src = videoMap[ep];
-  }else{
-    alert("ยังไม่มีวิดีโอตอนนี้");
-    return;
-  }
-
-  if(!watched.includes(ep)){
-    watched.push(ep);
-    localStorage.setItem("watchedEpisodes", JSON.stringify(watched));
-  }
-
-  const el = document.querySelector(`.episode[data-ep="${ep}"]`);
-  if(el){
-    el.classList.add("watched");
-    el.querySelector(".status").textContent="✔";
-  }
-
-  window.scrollTo({top:0,behavior:"smooth"});
-}
-
-function toggleEp(){
-  document.getElementById("epList").classList.toggle("open");
 }
 </script>
 </body>

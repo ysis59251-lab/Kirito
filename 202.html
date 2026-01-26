@@ -323,44 +323,27 @@ Sword Art Online ซอร์ดอาร์ตออนไลน์ (ภาค1
 <script>
 const API_URL = "https://script.google.com/macros/s/1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8/exec";
 
-let epData = {};
+let epLinks = {};
 
-// โหลดข้อมูลจาก Google Sheet
+// ดึง episode + video_url จาก Google Sheet
 fetch(API_URL)
   .then(res => res.json())
   .then(data => {
     data.forEach(row => {
-      epData[row.episode] = {
-        url: row.video_url,
-        status: row.status
-      };
+      epLinks[row.episode] = row.video_url;
     });
-    renderStatus();
   })
-  .catch(err => {
-    console.error(err);
-    alert("โหลดข้อมูลไม่สำเร็จ");
+  .catch(() => {
+    alert("โหลดข้อมูลจาก Sheet ไม่ได้");
   });
 
-function renderStatus(){
-  document.querySelectorAll(".episode").forEach(el=>{
-    const ep = parseInt(el.dataset.ep);
-    const statusEl = el.querySelector(".status");
-
-    if(epData[ep]){
-      statusEl.innerHTML =
-        epData[ep].status === "completed" ? "✔" : "";
-    }
-  });
-}
-
-// 👉 กดแล้วเข้า URL จาก Sheet ตรง ๆ
+// กดแล้วเด้งทันที
 function openEp(ep){
-  if(!epData[ep] || !epData[ep].url){
-    alert("ยังไม่มีลิงก์วิดีโอ");
+  if(!epLinks[ep]){
+    alert("ไม่มีลิงก์ตอนนี้");
     return;
   }
-  window.location.href = epData[ep].url;
+  window.location.href = epLinks[ep];
 }
 </script>
 

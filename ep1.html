@@ -6,14 +6,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-
-player video {
-  width: 100%;
-  max-height: 100vh;
-  background: #000;
-  object-fit: cover;
-}
-
 body{
   margin:0;
   min-height:100vh;
@@ -61,10 +53,12 @@ body{
   overflow:hidden;
 }
 
+.player iframe,
 .player video{
   width:100%;
   aspect-ratio:16/9;
-  object-fit:contain;
+  border:none;
+  background:#000;
 }
 
 .controls{
@@ -82,98 +76,107 @@ body{
   color:#fff;
   cursor:pointer;
 }
-
 .btn:hover{background:#ff4d4d}
-.like{background:#ff4d4d}
 </style>
 </head>
 
-<body
-  data-anime="Kusuriya no Hitorigoto สืบคดีปริศนา หมอยาตำรับโคมแดง
-  data-ep="1"
->
+<body>
 
-<div class="title">
-  Kusuriya no Hitorigoto ตอนที่ 1
-  
-  </span>
-</div>
+<div class="title" id="titleText">กำลังโหลด...</div>
 
-<div class="top-title">
-  รวมทุกตอน 1–24 
-</div>
+<div class="top-title" id="topText">รวมทุกตอน</div>
 
 <div class="stats">
-  👀 กำลังดู: <b id="watchingNow">0</b>
-  ❤️ ถูกใจ: <b id="likeCount">0</b>
+  👀 กำลังดู: <b id="watchingNow">-</b>
 </div>
 
-<div class="player">
-    <video
-    id="videoPlayer"
-    controls
-    playsinline
-    poster="https://pbs.twimg.com/media/DSJGh_9U8AAzf_Q.jpg">
-    <source src="https://main.108player.com/m3u8/82cdb32263ba3fc988bd3df7/82cdb32263ba3fc988bd3df7168.m3u8">
-  </video>
-
-  </div>
+<div class="player" id="playerArea">
+  <!-- วิดีโอจะมาอยู่ตรงนี้ -->
+</div>
 
 <div class="controls">
   <button class="btn" onclick="prevEp()">⬅ ตอนก่อนหน้า</button>
-    <button class="btn" onclick="showAllEp()">☰ ตอนทั้งหมด</button>
+  <button class="btn" onclick="showAllEp()">☰ ตอนทั้งหมด</button>
   <button class="btn" onclick="nextEp()">ตอนถัดไป ➡</button>
 </div>
 
-<!-- ===== FIREBASE ===== -->
-<script src="firebase.js"></script>
 <script>
-/* ================= BASIC ================= */
-const anime = document.body.dataset.anime;
-const ep    = Number(document.body.dataset.ep);
-const total = Number(document.body.dataset.total);
-epShow.textContent = ep;
+/* ================= CONFIG ================= */
+const SHEET_ID = "1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8";
+const SHEET_URL =
+`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-/* ================= LOCAL PROGRESS ================= */
-let dbLocal = JSON.parse(localStorage.getItem("animeDB")) || {};
-if(!dbLocal[anime]){
-  dbLocal[anime] = { total, done: [] };
-}
-if(!dbLocal[anime].done.includes(ep)){
-  dbLocal[anime].done.push(ep);
-}
-localStorage.setItem("animeDB", JSON.stringify(dbLocal));
+// รับค่าจาก URL
+const params = new URLSearchParams(location.search);
+const anime = params.get("anime");
+let ep = Number(params.get("ep") || 1);
 
-/* ================= FIREBASE ================= */
+let episodes = [];
 
-// 👀 คนดูเรียลไทม์
-const watchRef = db.ref("watching/"+anime).push(true);
-watchRef.onDisconnect().remove();
-
-db.ref("watching/"+anime).on("value", s=>{
-  watchingNow.textContent = s.numChildren();
+/* ================= LOAD SHEET ================= */
+fetch(SHEET_URL)
+.then(r=>r.text())
+.then(t=>{
+  const json = JSON.parse(t.substring(47).slice(0,-2));
+  json.table.rows.forEach(r=>{
+    if(r.c[0]?.v === anime){
+      episodes.push({
+        ep: r.c[1].v,
+        title: r.c[2]?.v || "",
+        url: r.c[3].v
+      });
+    }
+  });
+  init();
 });
 
-// 🔢 ยอดดูสะสม (นับครั้งเดียวต่อการเข้า)
-db.ref("views/anime/"+anime).transaction(v => (v||0)+1);
+function init(){
+  if(!episodes.length){
+    document.getElementById("playerArea").innerText = "ไม่พบข้อมูล";
+    return;
+  }
 
-db.ref("likes/"+anime).on("value", s=>{
-  likeCount.textContent = s.val() || 0;
-});
+  const current = episodes.find(e=>e.ep === ep) || episodes[0];
+  ep = current.ep;
 
-/* ================= CHANGE EP ================= */
+  document.getElementById("titleText").innerText =
+    `${anime} ตอนที่ ${ep}`;
+
+  document.getElementById("topText").innerText =
+    `รวมทุกตอน ${episodes[0].ep} – ${episodes[episodes.length-1].ep}`;
+
+  showVideo(current.url);
+}
+
+/* ================= VIDEO ================= */
+function showVideo(url){
+  const area = document.getElementById("playerArea");
+  area.innerHTML = "";
+
+  if(url.includes("youtube") || url.includes("drive.google")){
+    area.innerHTML = `<iframe src="${url}" allowfullscreen></iframe>`;
+  }else{
+    area.innerHTML = `<video controls playsinline src="${url}"></video>`;
+  }
+}
+
+/* ================= NAV ================= */
 function prevEp(){
-  /*
-  if(ep <= 1) return alert("นี่คือตอนแรกแล้ว");
-  location.href = `?ep=${ep-1}&q=${currentQuality}`;
-  */
+  const i = episodes.findIndex(e=>e.ep === ep);
+  if(i > 0){
+    location.search = `?anime=${anime}&ep=${episodes[i-1].ep}`;
+  }
 }
+
 function nextEp(){
-  location.href = "ep2.html";
+  const i = episodes.findIndex(e=>e.ep === ep);
+  if(i < episodes.length-1){
+    location.search = `?anime=${anime}&ep=${episodes[i+1].ep}`;
+  }
 }
 
 function showAllEp(){
-  location.href = "DarkFrame.html";
+  location.href = "index.html?anime="+anime;
 }
 </script>
 

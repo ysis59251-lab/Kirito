@@ -83,16 +83,13 @@ body{
 <body>
 
 <div class="title" id="titleText">กำลังโหลด...</div>
-
-<div class="top-title" id="topText">รวมทุกตอน</div>
+<div class="top-title" id="topText"></div>
 
 <div class="stats">
-  👀 กำลังดู: <b id="watchingNow">-</b>
+  👀 กำลังดู: <b id="watchingNow">–</b>
 </div>
 
-<div class="player" id="playerArea">
-  <!-- วิดีโอจะมาอยู่ตรงนี้ -->
-</div>
+<div class="player" id="playerArea"></div>
 
 <div class="controls">
   <button class="btn" onclick="prevEp()">⬅ ตอนก่อนหน้า</button>
@@ -104,12 +101,18 @@ body{
 /* ================= CONFIG ================= */
 const SHEET_ID = "1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8";
 const SHEET_URL =
-`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-// รับค่าจาก URL
+/* ================= PARAM ================= */
 const params = new URLSearchParams(location.search);
 const anime = params.get("anime");
 let ep = Number(params.get("ep") || 1);
+
+if(!anime){
+  document.getElementById("playerArea").innerText =
+    "ไม่พบชื่อเรื่อง (anime)";
+  throw new Error("NO ANIME PARAM");
+}
 
 let episodes = [];
 
@@ -121,18 +124,22 @@ fetch(SHEET_URL)
   json.table.rows.forEach(r=>{
     if(r.c[0]?.v === anime){
       episodes.push({
-        ep: r.c[1].v,
+        ep: Number(r.c[1]?.v),
         title: r.c[2]?.v || "",
-        url: r.c[3].v
+        url: r.c[3]?.v || ""
       });
     }
   });
+
+  // ✅ เรียงตอน
+  episodes.sort((a,b)=>a.ep-b.ep);
   init();
 });
 
+/* ================= INIT ================= */
 function init(){
   if(!episodes.length){
-    document.getElementById("playerArea").innerText = "ไม่พบข้อมูล";
+    document.getElementById("playerArea").innerText = "ไม่พบข้อมูลตอน";
     return;
   }
 
@@ -153,10 +160,17 @@ function showVideo(url){
   const area = document.getElementById("playerArea");
   area.innerHTML = "";
 
+  if(!url){
+    area.innerText = "ยังไม่มีวิดีโอตอนนี้";
+    return;
+  }
+
   if(url.includes("youtube") || url.includes("drive.google")){
     area.innerHTML = `<iframe src="${url}" allowfullscreen></iframe>`;
   }else{
     area.innerHTML = `<video controls playsinline src="${url}"></video>`;
+    const v = area.querySelector("video");
+    if(v) v.onended = nextEp; // ▶️ เล่นตอนถัดไปอัตโนมัติ
   }
 }
 
@@ -164,19 +178,22 @@ function showVideo(url){
 function prevEp(){
   const i = episodes.findIndex(e=>e.ep === ep);
   if(i > 0){
-    location.search = `?anime=${anime}&ep=${episodes[i-1].ep}`;
+    location.search =
+      `?anime=${encodeURIComponent(anime)}&ep=${episodes[i-1].ep}`;
   }
 }
 
 function nextEp(){
   const i = episodes.findIndex(e=>e.ep === ep);
   if(i < episodes.length-1){
-    location.search = `?anime=${anime}&ep=${episodes[i+1].ep}`;
+    location.search =
+      `?anime=${encodeURIComponent(anime)}&ep=${episodes[i+1].ep}`;
   }
 }
 
 function showAllEp(){
-  location.href = "index.html?anime="+anime;
+  location.href =
+    "index.html?anime="+encodeURIComponent(anime);
 }
 </script>
 

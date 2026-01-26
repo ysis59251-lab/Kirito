@@ -18,11 +18,14 @@
 }
 .ep-list{
   max-height:0;
-  overflow:hidden;
+  overflow-y:auto;        /* ← สำคัญ */
+  -webkit-overflow-scrolling: touch; /* ← มือถือลื่น */
   transition:max-height .45s ease;
 }
-.ep-list.open{ max-height:3000px; }
 
+.ep-list.open{
+  max-height:70vh;        /* ← ไม่ใช้ 3000px */
+}
 /* ===== BASE ===== */
 body{
   margin:0;

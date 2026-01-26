@@ -322,55 +322,45 @@ Sword Art Online ซอร์ดอาร์ตออนไลน์ (ภาค1
 
 <script>
 const API_URL = "https://script.google.com/macros/s/1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8/exec";
-const epLinks = {
-  1:"u1.html",  2:"u2.html",  3:"u3.html",  4:"u4.html",
-  5:"u5.html",  6:"u6.html",  7:"u7.html",  8:"u8.html",
-  9:"u9.html", 10:"u10.html",11:"u11.html",12:"u12.html",
-  13:"u13.html",14:"u14.html",15:"u15.html",16:"u16.html",
-  17:"u17.html",18:"u18.html",19:"u19.html",20:"u20.html",
-  21:"u21.html",22:"u22.html",23:"u23.html",24:"u24.html"
-};
 
-let epStatus = {};
+let epData = {};
 
-// 👉 โหลดสถานะจาก Google Sheet
+// โหลดข้อมูลจาก Google Sheet
 fetch(API_URL)
   .then(res => res.json())
   .then(data => {
     data.forEach(row => {
-      epStatus[row.episode] = row.status;
+      epData[row.episode] = {
+        url: row.video_url,
+        status: row.status
+      };
     });
-    applyLock();
+    renderStatus();
   })
-  .catch(()=>{
-    alert("โหลดสถานะตอนล้มเหลว");
+  .catch(err => {
+    console.error(err);
+    alert("โหลดข้อมูลไม่สำเร็จ");
   });
 
-function applyLock(){
+function renderStatus(){
   document.querySelectorAll(".episode").forEach(el=>{
     const ep = parseInt(el.dataset.ep);
     const statusEl = el.querySelector(".status");
 
-    if(epStatus[ep] === "completed"){
-      el.classList.add("watched");
-      statusEl.innerHTML = "✔";
-    }else{
-      el.classList.add("locked");
-      statusEl.innerHTML = "🔒";
+    if(epData[ep]){
+      statusEl.innerHTML =
+        epData[ep].status === "completed" ? "✔" : "";
     }
   });
 }
 
+// 👉 กดแล้วเข้า URL จาก Sheet ตรง ๆ
 function openEp(ep){
-  if(epStatus[ep] !== "completed"){
-    alert("❌ ตอนนี้ยังไม่เปิดให้ดู");
+  if(!epData[ep] || !epData[ep].url){
+    alert("ยังไม่มีลิงก์วิดีโอ");
     return;
   }
-  window.location.href = epLinks[ep];
-}
-
-function toggleEp(){
-  document.getElementById("epList").classList.toggle("open");
+  window.location.href = epData[ep].url;
 }
 </script>
 

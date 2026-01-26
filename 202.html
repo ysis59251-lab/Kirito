@@ -2,15 +2,11 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-
-<!-- ✅ สำคัญมาก -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>เลือกตอน</title>
 
 <style>
-    
-    /* ====== ACCORDION ====== */
+/* ===== ACCORDION ===== */
 .ep-toggle{
   background:#111;
   border-radius:16px;
@@ -20,356 +16,129 @@
   font-size:1.1rem;
   box-shadow:0 6px 14px rgba(0,0,0,.4);
 }
-
 .ep-list{
   max-height:0;
   overflow:hidden;
   transition:max-height .45s ease;
 }
+.ep-list.open{ max-height:3000px; }
 
-.ep-list.open{
-  max-height:3000px; /* พอสำหรับ 24 ตอน */
-}
-
-/* ====== BASE ====== */
-html{
-  font-size:20px;
-}
-
+/* ===== BASE ===== */
 body{
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  max-width: 100%;
-  min-height: 100vh;
-
-  color: #fff;
-  font-family: sans-serif;
-
-  background: 
-    url("https://www.akerufeed.com/wp-content/uploads/2021/07/Wallpaper-Japanese-Cartoon-Street-22.jpg")
-    center / cover no-repeat fixed;
-
-  overflow-x: hidden; /* กันล้นด้านข้าง */
+  margin:0;
+  color:#fff;
+  font-family:sans-serif;
+  background:url("https://www.akerufeed.com/wp-content/uploads/2021/07/Wallpaper-Japanese-Cartoon-Street-22.jpg")
+  center/cover fixed;
 }
+.container{ max-width:540px; margin:auto; padding:16px; }
 
+/* ===== CARD ===== */
+.card img{ width:330px;height:430px;border-radius:16px; }
+.desc{ line-height:1.6; opacity:.9; }
 
-/* ====== CONTAINER ====== */
-.container{
+/* ===== PLAYER ===== */
+iframe{
   width:100%;
-  max-width:540px;   /* เต็มจอมือถือ */
-  margin:0 auto;
-  padding:16px;
-}
-
-/* ====== CARD ====== */
-.card{
-  width:100%;
+  height:220px;
+  border:none;
   border-radius:16px;
-  overflow:hidden;
-  margin-bottom:16px;
+  margin:16px 0;
 }
 
-.card img{
-  width:330px;
-  height:430px;       /* ❗ไม่ fix สูง */
-  display:block;
-}
-
-.overlay-text{
-  position:absolute;
-  bottom:0;
-  left:0;
-  right:0;
-  padding:14px;
-  background:linear-gradient(transparent, rgba(0,0,0,.85));
-  font-size:1rem;
-}
-
-.card-wrap{
-  position:relative;
-}
-
-/* ====== DESCRIPTION ====== */
-.desc{
-  font-size:1rem;
-  line-height:1.6;
-  opacity:.9;
-  margin-bottom:20px;
-}
-
-/* ====== EPISODE LIST ====== */
-.episode-box{
-  width:100%;
-}
-
+/* ===== EP ===== */
 .episode{
   background:linear-gradient(135deg,#1e1e1e,#2b2b2b);
   border-radius:16px;
   padding:18px;
   margin-bottom:14px;
   display:flex;
-  align-items:center;
   gap:14px;
   cursor:pointer;
-  box-shadow:0 6px 14px rgba(0,0,0,.4);
 }
-
 .episode.watched{
   background:linear-gradient(135deg,#1b3b1b,#244d24);
 }
-
 .ep-num{
   background:#ff4d4d;
   padding:8px 14px;
   border-radius:12px;
-  font-weight:bold;
 }
-
-.ep-title{
-  flex:1;
-  font-size:1.05rem;
-}
-
-.status{
-  font-size:20px;
-}
+.ep-title{ flex:1; }
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<h2>
-Sword Art Online ซอร์ดอาร์ตออนไลน์<br>
-    (ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว
-</h2>
+<h2>Sword Art Online (ภาค 1)</h2>
 
-<div class="card-wrap">
-  <div class="card">
-    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
-  </div>
+<img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
 
 <p class="desc">
-เรื่องย่อ
-เรื่องราวของโปรแกรมเมอร์อัจฉริยะ คิริงายะ คาสึโตะ เขาได้เข้าร่วมเล่นเกมเสมือนจริงที่มีชื่อว่า Sword Art Online หรือ SAO ซึ่งเมื่อเขาเล่นเกมส์ ต้องพบว่าตนเองไม่สามารถล็อกเอาท์ออกจากเกมได้ เหล่าผู้เล่นเกมทั้งหมดต้องติดอยู่ภายในเกมโดยไม่มีใครรู้ว่าผู้พัฒนาเกมมีเป้าหมายที่แท้จริงอย่างไรกันแน่!! ทางออกจากเกมนี้ไปได้มีเพียงต้องเคลียร์เกมให้สำเร็จให้ได้ หรือโอเวอร์ในเกมก็หมายถึง การตายของผู้เล่นที่เกิดขึ้นจริง ดังนั้น เพื่อตอบสนองเงื่อนไขของการเคลียร์เกมนี้และออกจากโลกเสมือนจริง คาสึโตะจึงต้องเคลียร์เกมนี้ให้สำเร็จ หรือเขาต้องพบกับความตาย!
-
+เรื่องราวของ Sword Art Online ...
 </p>
 
-<!-- ปุ่มกดเปิดกล่อง -->
-<div class="ep-toggle" onclick="toggleEp()">
-  ▼ กล่องเลือกตอน
-</div>
+<!-- PLAYER -->
+<iframe id="player" allowfullscreen></iframe>
 
-<!-- กล่องพับ -->
-<div id="epList" class="ep-list">
+<div class="ep-toggle" onclick="toggleEp()">▼ กล่องเลือกตอน</div>
 
-  <div class="episode" onclick="openEp(1)" data-ep="1">
-    <span class="ep-num">EP 1</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
+<div id="epList" class="ep-list"></div>
 
-  <div class="episode" onclick="openEp(2)" data-ep="2">
-    <span class="ep-num">EP 2</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-
-  <div class="episode" onclick="openEp(3)" data-ep="3">
-    <span class="ep-num">EP 3</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-  <div class="episode" onclick="openEp(4)" data-ep="4">
-    <span class="ep-num">EP 4</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-  <div class="episode" onclick="openEp(5)" data-ep="5">
-    <span class="ep-num">EP 5</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-
-<div class="episode" onclick="openEp(6)" data-ep="6">
-    <span class="ep-num">EP 6</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-  <div class="episode" onclick="openEp(7)" data-ep="7">
-    <span class="ep-num">EP 7</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-  <div class="episode" onclick="openEp(8)" data-ep="8">
-    <span class="ep-num">EP 8</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-  <div class="episode" onclick="openEp(9)" data-ep="9">
-    <span class="ep-num">EP 9</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-   <div class="episode"onclick="openEp(10)" data-ep="10">
-    <span class="ep-num">EP 10</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-  <div class="episode"onclick="openEp(11)" data-ep="11">
-    <span class="ep-num">EP 11</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-   <div class="episode"onclick="openEp(12)" data-ep="12">
-    <span class="ep-num">EP 12</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-   <div class="episode"onclick="openEp(13)" data-ep="13">
-    <span class="ep-num">EP 13</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-  <div class="episode"onclick="openEp(14)" data-ep="14">
-    <span class="ep-num">EP 14</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-  <div class="episode"onclick="openEp(15)" data-ep="15">
-    <span class="ep-num">EP 15</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-  <div class="episode"onclick="openEp(16)" data-ep="16">
-    <span class="ep-num">EP 16</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-  <div class="episode"onclick="openEp(17)" data-ep="17">
-    <span class="ep-num">EP 17</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-
-<div class="episode"onclick="openEp(18)" data-ep="18">
-    <span class="ep-num">EP 18</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-  <div class="episode"onclick="openEp(19)" data-ep="19">
-    <span class="ep-num">EP 19</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-
-<div class="episode"onclick="openEp(20)" data-ep="20">
-    <span class="ep-num">EP 20</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-  <div class="episode"onclick="openEp(21)" data-ep="21">
-    <span class="ep-num">EP 21</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-  <div class="episode"onclick="openEp(22)" data-ep="22">
-    <span class="ep-num">EP 22</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-  <div class="episode"onclick="openEp(23)" data-ep="23">
-    <span class="ep-num">EP 23</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-  
-  <div class="episode"onclick="openEp(24)" data-ep="24">
-    <span class="ep-num">EP 24</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-
-  <div class="episode"onclick="openEp(25)" data-ep="25">
-    <span class="ep-num">EP 25</span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
-
-</div>
 </div>
 
 <script>
-let watched = JSON.parse(localStorage.getItem("watchedEpisodes")) || [];
+/* 🔥 ตั้งค่าตรงนี้ */
+const SHEET_ID = "1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8";
+const animeName = "Sword Art Online";
 
-document.querySelectorAll(".episode").forEach(el=>{
-  let ep = parseInt(el.dataset.ep);
-  if(watched.includes(ep)){
-    el.classList.add("watched");
-    el.querySelector(".status").innerHTML = "✔";
-  }
+const SHEET_URL =
+`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+
+let watched = JSON.parse(localStorage.getItem(animeName)) || [];
+const epList = document.getElementById("epList");
+const player = document.getElementById("player");
+
+fetch(SHEET_URL)
+.then(r=>r.text())
+.then(t=>{
+  const json = JSON.parse(t.substring(47).slice(0,-2));
+  json.table.rows.forEach(row=>{
+    if(row.c[0].v !== animeName) return;
+
+    const ep = row.c[1].v;
+    const title = row.c[2].v;
+    const url = row.c[3].v;
+
+    const div = document.createElement("div");
+    div.className = "episode";
+    if(watched.includes(ep)) div.classList.add("watched");
+
+    div.innerHTML = `
+      <span class="ep-num">EP ${ep}</span>
+      <span class="ep-title">${title}</span>
+      <span>${watched.includes(ep)?"✔":""}</span>
+    `;
+
+    div.onclick=()=>{
+      player.src = url;
+      if(!watched.includes(ep)){
+        watched.push(ep);
+        localStorage.setItem(animeName,JSON.stringify(watched));
+        div.classList.add("watched");
+        div.querySelector("span:last-child").textContent="✔";
+      }
+      window.scrollTo({top:0,behavior:"smooth"});
+    };
+
+    epList.appendChild(div);
+  });
 });
 
-function openEp(ep){
-  if(!watched.includes(ep)){
-    watched.push(ep);
-    localStorage.setItem("watchedEpisodes", JSON.stringify(watched));
-  }
-
-  const epLinks={
-    1:"MP1.html",
-    2:"MP2.html",
-    3:"MP3.html",
-    4:"MP4.html",
-    5:"MP5.html",
-    6:"MP6.html",
-    7:"MP7.html",
-    8:"MP8.html",
-    9:"MP9.html",
-    10:"MP10.html",
-    11:"MP11.html",
-    12:"MP12.html",
-    13:"MP13.html",
-    14:"MP14.html",
-    15:"MP15.html",
-    16:"MP16.html",
-    17:"MP17.html",
-    18:"MP18.html",
-    19:"MP19.html",
-    20:"MP20.html",
-    21:"MP21.html",
-    22:"MP22.html",
-    23:"MP23.html",
-    24:"MP24.html",
-    24:"MP24.html",
-    
-  };
-
-  window.location.href=epLinks[ep];
-}
-
 function toggleEp(){
-  document.getElementById("epList").classList.toggle("open");
+  epList.classList.toggle("open");
 }
-
 </script>
 
 </body>

@@ -122,13 +122,6 @@ fetch(API_URL)
     ready = true;
   });
 
-function openEp(ep){
-  if(!ready) return alert("กำลังโหลดข้อมูล");
-  const link = epLinks[String(ep)];
-  if(!link) return alert("ยังไม่มีลิงก์ตอนนี้");
-  location.href = link;
-}
-
 function toggleEp(){
   document.getElementById("epList").classList.toggle("open");
 }

@@ -122,6 +122,11 @@ fetch(API_URL)
     ready = true;
   });
 
+function openEp(ep){
+  const link = epLinks[String(ep)];
+  if(link) location.href = link;
+}
+
 function toggleEp(){
   document.getElementById("epList").classList.toggle("open");
 }

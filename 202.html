@@ -6,80 +6,103 @@
 <title>เลือกตอน</title>
 
 <style>
-html{font-size:20px}
+/* ====== BASE ====== */
+html{font-size:20px;}
 body{
   margin:0;
   color:#fff;
   font-family:sans-serif;
   background:url("https://www.akerufeed.com/wp-content/uploads/2021/07/Wallpaper-Japanese-Cartoon-Street-22.jpg")
-  center/cover no-repeat fixed;
+    center/cover no-repeat fixed;
   overflow-x:hidden;
 }
 
+/* ====== CONTAINER ====== */
 .container{
   max-width:540px;
   margin:auto;
   padding:16px;
 }
 
+/* ====== CARD ====== */
+.card-wrap{position:relative;}
+.card img{
+  width:100%;
+  border-radius:16px;
+}
+
+/* ====== DESC ====== */
+.desc{line-height:1.6;opacity:.9}
+
+/* ====== ACCORDION ====== */
 .ep-toggle{
   background:#111;
   border-radius:16px;
   padding:18px;
-  margin-bottom:14px;
+  margin:16px 0;
   cursor:pointer;
+  box-shadow:0 6px 14px rgba(0,0,0,.4);
 }
 
+/* ⭐ แก้ตรงนี้ */
 .ep-list{
   display:none;
-  max-height:70vh;          /* ⭐ แก้ตรงนี้ */
-  overflow-y:auto;          /* ⭐ สำคัญ */
+  max-height:70vh;
+  overflow-y:auto;
   -webkit-overflow-scrolling:touch;
 }
+.ep-list.open{display:block}
 
-.ep-list.open{
-  display:block;
-}
-
+/* ====== EP ====== */
 .episode{
-  background:#222;
+  background:linear-gradient(135deg,#1e1e1e,#2b2b2b);
   border-radius:16px;
   padding:18px;
   margin-bottom:14px;
   display:flex;
-  gap:14px;
   align-items:center;
+  gap:14px;
   cursor:pointer;
 }
-
 .ep-num{
   background:#ff4d4d;
   padding:8px 14px;
   border-radius:12px;
+  font-weight:bold;
 }
+.ep-title{flex:1}
 </style>
 </head>
 
 <body>
 <div class="container">
 
-<h2>SAO ภาค 1</h2>
+<h2>Sword Art Online ภาค 1 (พากย์ไทย)</h2>
 
-<div class="ep-toggle" onclick="toggleEp()">
-  ▼ กล่องเลือกตอน
+<div class="card-wrap">
+  <div class="card">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+  </div>
 </div>
 
+<p class="desc">
+เรื่องย่อ… (ของเดิม)
+</p>
+
+<div class="ep-toggle" onclick="toggleEp()">▼ กล่องเลือกตอน</div>
+
 <div id="epList" class="ep-list">
-  <div class="episode" onclick="openEp(1)"><span class="ep-num">EP1</span></div>
-  <div class="episode" onclick="openEp(2)"><span class="ep-num">EP2</span></div>
-  <div class="episode" onclick="openEp(3)"><span class="ep-num">EP3</span></div>
-  <div class="episode" onclick="openEp(4)"><span class="ep-num">EP4</span></div>
-  <div class="episode" onclick="openEp(5)"><span class="ep-num">EP5</span></div>
-  <div class="episode" onclick="openEp(6)"><span class="ep-num">EP6</span></div>
-  <div class="episode" onclick="openEp(7)"><span class="ep-num">EP7</span></div>
-  <div class="episode" onclick="openEp(8)"><span class="ep-num">EP8</span></div>
-  <div class="episode" onclick="openEp(9)"><span class="ep-num">EP9</span></div>
-  <div class="episode" onclick="openEp(10)"><span class="ep-num">EP10</span></div>
+  <!-- EP 1-24 -->
+  <script>
+    for(let i=1;i<=24;i++){
+      document.write(`
+        <div class="episode" onclick="openEp(${i})">
+          <span class="ep-num">EP ${i}</span>
+          <span class="ep-title">พากย์ไทย</span>
+        </div>
+      `)
+    }
+  </script>
 </div>
 
 </div>
@@ -87,26 +110,27 @@ body{
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbwTIvc9DXZk9H4M6jzccbiER4aDervYtJw0Drt7Ax_TyG9hnzyJrI8NIhwr2HH0NLu0/exec";
 let epLinks = {};
-let loaded = false;
+let ready = false;
 
+/* โหลดลิงก์จาก Sheet */
 fetch(API_URL)
   .then(r=>r.json())
-  .then(d=>{
-    d.forEach(row=>{
+  .then(data=>{
+    data.forEach(row=>{
       epLinks[String(row.episode)] = row.video_url;
     });
-    loaded = true;
+    ready = true;
   });
 
-function toggleEp(){
-  document.getElementById("epList").classList.toggle("open");
-}
-
 function openEp(ep){
-  if(!loaded) return alert("กำลังโหลดข้อมูล");
+  if(!ready) return alert("กำลังโหลดข้อมูล");
   const link = epLinks[String(ep)];
   if(!link) return alert("ยังไม่มีลิงก์ตอนนี้");
   location.href = link;
+}
+
+function toggleEp(){
+  document.getElementById("epList").classList.toggle("open");
 }
 </script>
 

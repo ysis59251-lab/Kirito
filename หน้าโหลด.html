@@ -7,18 +7,18 @@
 
 <style>
 
-.ad-box {
-  width: 100%;
-  max-width: 728px; /* ปรับขนาดได้ */
-  margin: 16px auto;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-  border-radius: 12px;
-  overflow: hidden;
+.top-banner{
+  background: transparent !important; /* ❌ ไม่มีพื้นหลัง */
+  padding: 0;
+  margin: 12px;
+  border-radius: 16px;
 }
-.ad-box img {
-  display: block;
+
+.top-banner img{
   width: 100%;
   height: auto;
+  display: block;
+  background: transparent; /* ❌ กันพื้นหลังขาว */
 }
 
 /* ===== BOTTOM SLIDE + NUMBER BAR ===== */
@@ -338,10 +338,8 @@ body{background:#000;color:#fff;min-height:100vh}
 
 <div class="ad-box">
   <a href="https://your-ad-link.com" target="_blank">
-    <img src="https://e7.pngegg.com/pngimages/656/33/png-clipart-anime-autumn-rendering-mangaka-anime-cg-artwork-manga.png"
-         alt="โฆษณา"
-         style="width:100%; height:auto; border-radius:12px;">
-  </a>
+    <img <div class="top-banner">
+  <img src="https://e7.pngegg.com/pngimages/656/33/png-clipart-anime-autumn-rendering-mangaka-anime-cg-artwork-manga.png" alt="banner">
 </div>
 
 <section class="hot-section">

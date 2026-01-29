@@ -7,18 +7,21 @@
 
 <style>
 
-.ad-box{
+.png-slot{
   width:100%;
-  text-align:center;
-  margin:15px 0;
+  max-width:350px;   /* ปรับขนาดช่องได้ */
+  margin:auto;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+
+  /* ❌ ห้ามใส่ background */
 }
 
-.ad-box img{
+.png-slot img{
   max-width:100%;
   height:auto;
   display:block;
-  margin:auto;
-}
 }
 /* ===== BOTTOM SLIDE + NUMBER BAR ===== */
 .bottom-area{
@@ -335,10 +338,8 @@ body{background:#000;color:#fff;min-height:100vh}
   <input class="search" placeholder="ค้นหาอนิเมะ...">
 </header>
 
-<div class="ad-box">
-  <a href="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQF9Cucf-8dl-KHfOTnN50c-be9y4-wzMx1ZNu4ucvSlg&s=10" target="_blank">
-    <img src="ads.png" alt="โฆษณา">
-  </a>
+<div class="png-slot">
+  <img src="ads.png" alt="https://e7.pngegg.com/pngimages/656/33/png-clipart-anime-autumn-rendering-mangaka-anime-cg-artwork-manga.png">
 </div>
 <section class="hot-section">
   <h2>🔥 ยอดฮิต</h2>

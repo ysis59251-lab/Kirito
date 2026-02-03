@@ -1,157 +1,207 @@
-<!DOCTYPE html>  <html lang="th">  
-<head>  
-<meta charset="UTF-8">  
-<title>DarkFrame Watch</title>  
-<meta name="viewport" content="width=device-width, initial-scale=1.0">  <style>  
-  
-player video {  
-  width: 100%;  
-  max-height: 100vh;  
-  background: #000;  
-  object-fit: cover;  
-}  
-  
-body{  
-  margin:0;  
-  min-height:100vh;  
-  font-family:sans-serif;  
-  background:  
-    url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg")  
-    center / cover no-repeat fixed;  
-  color:#fff;  
-}  
-  
-.title{  
-  background:#fff;  
-  color:#000;  
-  padding:12px 16px;  
-  border-radius:12px;  
-  margin:12px;  
-  font-size:18px;  
-  font-weight:700;  
-}  
-  
-.top-title{  
-  background:rgba(0,0,0,.85);  
-  color:#fff;  
-  padding:14px;  
-  border-radius:14px;  
-  margin:12px;  
-  text-align:center;  
-}  
-  
-.stats{  
-  margin:12px;  
-  background:rgba(0,0,0,.7);  
-  border-radius:12px;  
-  padding:12px;  
-  display:flex;  
-  gap:16px;  
-  justify-content:center;  
-}  
-  
-.player{  
-  max-width:720px;  
-  margin:12px auto;  
-  background:#000;  
-  border-radius:14px;  
-  overflow:hidden;  
-}  
-  
-.player video{  
-  width:100%;  
-  aspect-ratio:16/9;  
-  object-fit:contain;  
-}  
-  
-.controls{  
-  display:flex;  
-  gap:10px;  
-  margin:12px;  
-}  
-  
-.btn{  
-  flex:1;  
-  padding:12px;  
-  border:none;  
-  border-radius:12px;  
-  background:#1e1e1e;  
-  color:#fff;  
-  cursor:pointer;  
-}  
-  
-.btn:hover{background:#ff4d4d}  
-.like{background:#ff4d4d}  
-</style>  </head>  <body  
-  data-anime="Kusuriya no Hitorigoto สืบคดีปริศนา หมอยาตำรับโคมแดง  
-  data-ep="1"  
->  <div class="title">  
-  Kusuriya no Hitorigoto ตอนที่ 1    </span>  
-</div>  <div class="top-title">  
-  รวมทุกตอน 1–24   
-</div>  <div class="stats">  
-  👀 กำลังดู: <b id="watchingNow">0</b>  
-  ❤️ ถูกใจ: <b id="likeCount">0</b>  
-</div>  <div class="player">  
-    <video  
-    id="videoPlayer"  
-    controls  
-    playsinline  
-    poster="https://pbs.twimg.com/media/DSJGh_9U8AAzf_Q.jpg">  
-    <source src="https://main.108player.com/m3u8/82cdb32263ba3fc988bd3df7/82cdb32263ba3fc988bd3df7168.m3u8">  
-  </video>    </div>  <div class="controls">  
-  <button class="btn" onclick="prevEp()">⬅ ตอนก่อนหน้า</button>  
-    <button class="btn" onclick="showAllEp()">☰ ตอนทั้งหมด</button>  
-  <button class="btn" onclick="nextEp()">ตอนถัดไป ➡</button>  
-</div>  <!-- ===== FIREBASE ===== -->  <script src="firebase.js"></script>  <script>  
-/* ================= BASIC ================= */  
-const anime = document.body.dataset.anime;  
-const ep    = Number(document.body.dataset.ep);  
-const total = Number(document.body.dataset.total);  
-epShow.textContent = ep;  
-  
-/* ================= LOCAL PROGRESS ================= */  
-let dbLocal = JSON.parse(localStorage.getItem("animeDB")) || {};  
-if(!dbLocal[anime]){  
-  dbLocal[anime] = { total, done: [] };  
-}  
-if(!dbLocal[anime].done.includes(ep)){  
-  dbLocal[anime].done.push(ep);  
-}  
-localStorage.setItem("animeDB", JSON.stringify(dbLocal));  
-  
-/* ================= FIREBASE ================= */  
-  
-// 👀 คนดูเรียลไทม์  
-const watchRef = db.ref("watching/"+anime).push(true);  
-watchRef.onDisconnect().remove();  
-  
-db.ref("watching/"+anime).on("value", s=>{  
-  watchingNow.textContent = s.numChildren();  
-});  
-  
-// 🔢 ยอดดูสะสม (นับครั้งเดียวต่อการเข้า)  
-db.ref("views/anime/"+anime).transaction(v => (v||0)+1);  
-  
-db.ref("likes/"+anime).on("value", s=>{  
-  likeCount.textContent = s.val() || 0;  
-});  
-  
-/* ================= CHANGE EP ================= */  
-function prevEp(){  
-  /*  
-  if(ep <= 1) return alert("นี่คือตอนแรกแล้ว");  
-  location.href = `?ep=${ep-1}&q=${currentQuality}`;  
-  */  
-}  
-function nextEp(){  
-  location.href = "ep2.html";  
-}  
-  
-function showAllEp(){  
-  location.href = "DarkFrame.html";  
-}  
-</script> 
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
 
-</body>  
+<!-- ✅ สำคัญมาก -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>เลือกตอน</title>
+
+<style>
+
+    /* ====== ACCORDION ====== */
+.ep-toggle{
+  background:#111;
+  border-radius:16px;
+  padding:18px;
+  margin-bottom:14px;
+  cursor:pointer;
+  font-size:1.1rem;
+  box-shadow:0 6px 14px rgba(0,0,0,.4);
+}
+
+.ep-list{
+  max-height:0;
+  overflow:hidden;
+  transition:max-height .45s ease;
+}
+
+.ep-list.open{
+  max-height:3000px; /* พอสำหรับ 24 ตอน */
+}
+
+/* ====== BASE ====== */
+html{
+  font-size:20px;
+}
+
+body{
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  min-height: 100vh;
+
+  color: #fff;
+  font-family: sans-serif;
+
+  background: 
+    url("https://www.akerufeed.com/wp-content/uploads/2021/07/Wallpaper-Japanese-Cartoon-Street-22.jpg")
+    center / cover no-repeat fixed;
+
+  overflow-x: hidden; /* กันล้นด้านข้าง */
+}
+
+
+/* ====== CONTAINER ====== */
+.container{
+  width:100%;
+  max-width:540px;   /* เต็มจอมือถือ */
+  margin:0 auto;
+  padding:16px;
+}
+
+/* ====== CARD ====== */
+.card{
+  width:100%;
+  border-radius:16px;
+  overflow:hidden;
+  margin-bottom:16px;
+}
+
+.card img{
+  width:330px;
+  height:430px;       /* ❗ไม่ fix สูง */
+  display:block;
+}
+
+.overlay-text{
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+  padding:14px;
+  background:linear-gradient(transparent, rgba(0,0,0,.85));
+  font-size:1rem;
+}
+
+.card-wrap{
+  position:relative;
+}
+
+/* ====== DESCRIPTION ====== */
+.desc{
+  font-size:1rem;
+  line-height:1.6;
+  opacity:.9;
+  margin-bottom:20px;
+}
+
+/* ====== EPISODE LIST ====== */
+.episode-box{
+  width:100%;
+}
+
+.episode{
+  background:linear-gradient(135deg,#1e1e1e,#2b2b2b);
+  border-radius:16px;
+  padding:18px;
+  margin-bottom:14px;
+  display:flex;
+  align-items:center;
+  gap:14px;
+  cursor:pointer;
+  box-shadow:0 6px 14px rgba(0,0,0,.4);
+}
+
+.episode.watched{
+  background:linear-gradient(135deg,#1b3b1b,#244d24);
+}
+
+.ep-num{
+  background:#ff4d4d;
+  padding:8px 14px;
+  border-radius:12px;
+  font-weight:bold;
+}
+
+.ep-title{
+  flex:1;
+  font-size:1.05rem;
+}
+
+.status{
+  font-size:20px;
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+
+<h2>
+Sword Art Online ซอร์ดอาร์ตออนไลน์ (ภาค1) <br>
+ตอนที่ 1–25 พากย์ไทย จบเเล้ว
+</h2>
+
+<div class="card-wrap">
+  <div class="card">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+  </div>
+
+<p class="desc">
+เรื่องย่อ
+เรื่องราวของโปรแกรมเมอร์อัจฉริยะ คิริงายะ คาสึโตะ เขาได้เข้าร่วมเล่นเกมเสมือนจริงที่มีชื่อว่า Sword Art Online หรือ SAO ซึ่งเมื่อเขาเล่นเกมส์ ต้องพบว่าตนเองไม่สามารถล็อกเอาท์ออกจากเกมได้ เหล่าผู้เล่นเกมทั้งหมดต้องติดอยู่ภายในเกมโดยไม่มีใครรู้ว่าผู้พัฒนาเกมมีเป้าหมายที่แท้จริงอย่างไรกันแน่!! ทางออกจากเกมนี้ไปได้มีเพียงต้องเคลียร์เกมให้สำเร็จให้ได้ หรือโอเวอร์ในเกมก็หมายถึง การตายของผู้เล่นที่เกิดขึ้นจริง ดังนั้น เพื่อตอบสนองเงื่อนไขของการเคลียร์เกมนี้และออกจากโลกเสมือนจริง คาสึโตะจึงต้องเคลียร์เกมนี้ให้สำเร็จ หรือเขาต้องพบกับความตาย!
+</p>
+
+<!-- ปุ่มกดเปิดกล่อง -->
+<div class="ep-toggle" onclick="toggleEp()">
+  ▼ กล่อง
+</div>
+
+<!-- กล่องพับ -->
+<div id="epList" class="ep-list">
+
+  <div class="episode" onclick="openEp(1)" data-ep="1">
+    <span class="ep-num">รวม </span>
+    <span class="ep-title"> พากย์ไทย</span>
+    <span class="status"></span>
+  </div>
+
+</div>
+</div>
+
+<script>
+let watched = JSON.parse(localStorage.getItem("watchedEpisodes")) || [];
+
+document.querySelectorAll(".episode").forEach(el=>{
+  let ep = parseInt(el.dataset.ep);
+  if(watched.includes(ep)){
+    el.classList.add("watched");
+    el.querySelector(".status").innerHTML = "✔";
+  }
+});
+
+function openEp(ep){
+  if(!watched.includes(ep)){
+    watched.push(ep);
+    localStorage.setItem("watchedEpisodes", JSON.stringify(watched));
+  }
+
+  const epLinks={
+    1:"u1.html",
+
+  };
+
+  window.location.href=epLinks[ep];
+}
+
+function toggleEp(){
+  document.getElementById("epList").classList.toggle("open");
+}
+
+</script>
+
+</body>
 </html>

@@ -166,21 +166,22 @@ canvas{max-height:320px}
 <!-- ===== SCRIPTS ===== -->
 <script src="firebase.js"></script>
 <script>
-fetch("หน้าโหลด.html")   // ← ชื่อหน้าเว็บหลักของมึง
+/* ================== LOAD FROM MAIN PAGE ================== */
+fetch("หน้าโหลด.html")
   .then(res => res.text())
   .then(html => {
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(html, "text/html");
-
+    const doc   = new DOMParser().parseFromString(html, "text/html");
     const cards = doc.querySelectorAll(".anime-card");
     const admin = document.getElementById("adminList");
 
+    const viewData = JSON.parse(localStorage.getItem("animeViews") || "{}");
     admin.innerHTML = "";
 
     cards.forEach(card => {
       const img   = card.querySelector("img")?.src || "";
       const text  = card.querySelector(".overlay-text")?.innerText || "";
       const title = card.dataset.title || "ไม่ทราบชื่อ";
+      const views = viewData[title] || 0;
 
       admin.innerHTML += `
         <div style="
@@ -194,33 +195,44 @@ fetch("หน้าโหลด.html")   // ← ชื่อหน้าเว�
         ">
           <img src="${img}" style="width:80px;border-radius:6px">
           <div style="flex:1">
-            <pre style="margin:0;white-space:pre-wrap">${text}</pre>
-            <button
-              style="
-                margin-top:6px;
-                background:#ff3b3b;
-                border:none;
-                padding:6px 10px;
+            <b style="color:#00ffcc">${title}</b>
+            <pre style="margin:4px 0;white-space:pre-wrap">${text}</pre>
+
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="
+                background:#222;
+                padding:4px 8px;
                 border-radius:8px;
-                color:#fff;
-                cursor:pointer
-              "
-              onclick="deleteAnime('${title.replace(/'/g,"\\'")}')"
-            >
-              ลบ
-            </button>
+                font-size:12px;
+                color:#00ffcc
+              ">
+                👁️ ${views}
+              </span>
+
+              <button
+                style="
+                  background:#ff3b3b;
+                  border:none;
+                  padding:6px 10px;
+                  border-radius:8px;
+                  color:#fff;
+                  cursor:pointer
+                "
+                onclick="deleteAnime('${title.replace(/'/g,"\\'")}')"
+              >
+                ลบ
+              </button>
+            </div>
           </div>
         </div>
       `;
     });
   });
 
-/* ===== REPORT SYSTEM (ไม่แตะ) ===== */
-
+/* ================== REPORT SYSTEM ================== */
 const reportList = document.getElementById("reportList");
 const mailCount  = document.getElementById("mailCount");
-
-let currentMode = "inbox";
+let currentMode  = "inbox";
 
 function getReports(){
   return JSON.parse(localStorage.getItem("reports") || "[]");
@@ -266,7 +278,6 @@ function renderReports(mode="inbox"){
     if(mode === "inbox"){
       div.onclick = ()=> markRead(index);
     }
-
     reportList.appendChild(div);
   });
 }
@@ -288,7 +299,7 @@ function toggleInbox(){
 
 renderReports("inbox");
 
-/* ===== DELETE ===== */
+/* ================== DELETE ================== */
 function deleteAnime(title){
   if(!confirm("ลบเรื่องนี้ออกจากหน้าเว็บ?")) return;
 
@@ -297,8 +308,7 @@ function deleteAnime(title){
     list.push(title);
     localStorage.setItem("hiddenAnime", JSON.stringify(list));
   }
-
-  alert("ลบแล้ว (รีหน้าเว็บหลักเพื่อดูผล)");
+  location.reload();
 }
 </script>
 

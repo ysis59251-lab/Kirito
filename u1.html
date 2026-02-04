@@ -6,6 +6,14 @@
 <title>AnimeFume</title>
 
 <style>
+
+.anime-img{
+  width:100%;
+  max-width:300px;
+  display:block;
+  margin:20px auto;
+}
+
 *{box-sizing:border-box}
 body{
   margin:0;
@@ -138,12 +146,15 @@ button:active{
 </div>
 
 <div class="control">
-  <button onclick="openModal()">📺 เลือกตอน</button>
+  <button onclick="openModal()"> เลือกตอน</button>
 </div>
 
 <div class="modal" id="modal">
   <div class="modal-content" id="episodeList"></div>
 </div>
+
+<img src="https://www.pngarts.com/files/12/Manga-Anime-Girl-Transparent-Image.png"
+     alt="Anime Girl"
 
 <script>
 const SHEET_ID = "1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8";

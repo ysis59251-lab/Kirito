@@ -144,10 +144,8 @@ canvas{max-height:320px}
   <div class="card">⏳ เหลือ<br><b id="eWait">0</b></div>
 </div>
 
-<!-- ===== GRAPHS ===== -->
-<div class="section">
-  <canvas id="dailyChart"></canvas>
-</div>
+<h2>📋 ข้อมูลจากหน้าเว็บ</h2>
+<div id="adminList"></div>
 
 <div class="section">
   <canvas id="pieChart"></canvas>
@@ -168,6 +166,40 @@ canvas{max-height:320px}
 <!-- ===== SCRIPTS ===== -->
 <script src="firebase.js"></script>
 <script>
+
+fetch("index.html")   // ← เปลี่ยนเป็นชื่อหน้าเว็บหลักของมึง
+  .then(res => res.text())
+  .then(html => {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, "text/html");
+
+    const cards = doc.querySelectorAll(".anime-card");
+    const admin = document.getElementById("adminList");
+
+    admin.innerHTML = "";
+
+    cards.forEach(card => {
+      const img = card.querySelector("img")?.src || "";
+      const text = card.querySelector(".overlay-text")?.innerText || "";
+
+      admin.innerHTML += `
+        <div style="
+          display:flex;
+          gap:10px;
+          margin-bottom:12px;
+          background:#111;
+          padding:10px;
+          border-radius:10px;
+          border:1px solid #222
+        ">
+          <img src="${img}" style="width:80px;border-radius:6px">
+          <div>
+            <pre style="margin:0;white-space:pre-wrap">${text}</pre>
+          </div>
+        </div>
+      `;
+    });
+  });
 
 /* ================= REPORT SYSTEM ================= */
 

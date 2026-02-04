@@ -166,10 +166,7 @@ canvas{max-height:320px}
 <!-- ===== SCRIPTS ===== -->
 <script src="firebase.js"></script>
 <script>
-
-<button onclick="deleteAnime('${title}')">ลบ</button>
-
-fetch("หน้าโหลด.html")   // ← เปลี่ยนเป็นชื่อหน้าเว็บหลักของมึง
+fetch("หน้าโหลด.html")   // ← ชื่อหน้าเว็บหลักของมึง
   .then(res => res.text())
   .then(html => {
     const parser = new DOMParser();
@@ -181,8 +178,9 @@ fetch("หน้าโหลด.html")   // ← เปลี่ยนเป็�
     admin.innerHTML = "";
 
     cards.forEach(card => {
-      const img = card.querySelector("img")?.src || "";
-      const text = card.querySelector(".overlay-text")?.innerText || "";
+      const img   = card.querySelector("img")?.src || "";
+      const text  = card.querySelector(".overlay-text")?.innerText || "";
+      const title = card.dataset.title || "ไม่ทราบชื่อ";
 
       admin.innerHTML += `
         <div style="
@@ -195,22 +193,35 @@ fetch("หน้าโหลด.html")   // ← เปลี่ยนเป็�
           border:1px solid #222
         ">
           <img src="${img}" style="width:80px;border-radius:6px">
-          <div>
+          <div style="flex:1">
             <pre style="margin:0;white-space:pre-wrap">${text}</pre>
+            <button
+              style="
+                margin-top:6px;
+                background:#ff3b3b;
+                border:none;
+                padding:6px 10px;
+                border-radius:8px;
+                color:#fff;
+                cursor:pointer
+              "
+              onclick="deleteAnime('${title.replace(/'/g,"\\'")}')"
+            >
+              ลบ
+            </button>
           </div>
         </div>
       `;
     });
   });
 
-/* ================= REPORT SYSTEM ================= */
+/* ===== REPORT SYSTEM (ไม่แตะ) ===== */
 
 const reportList = document.getElementById("reportList");
 const mailCount  = document.getElementById("mailCount");
 
-let currentMode = "inbox"; // inbox | full
+let currentMode = "inbox";
 
-/* ---------- STORAGE ---------- */
 function getReports(){
   return JSON.parse(localStorage.getItem("reports") || "[]");
 }
@@ -218,7 +229,6 @@ function saveReports(data){
   localStorage.setItem("reports", JSON.stringify(data));
 }
 
-/* ---------- RENDER ---------- */
 function renderReports(mode="inbox"){
   const reports = getReports();
   reportList.innerHTML = "";
@@ -248,9 +258,7 @@ function renderReports(mode="inbox"){
       <small>📄 ${r.page}</small>
       <p>${r.detail}</p>
       ${mode==="full" && !r.read
-        ? `<button onclick="markRead(${index})">
-             ทำเครื่องหมายว่าอ่านแล้ว
-           </button>`
+        ? `<button onclick="markRead(${index})">ทำเครื่องหมายว่าอ่านแล้ว</button>`
         : ""
       }
     `;
@@ -263,17 +271,14 @@ function renderReports(mode="inbox"){
   });
 }
 
-/* ---------- ACTION ---------- */
 function markRead(index){
   const reports = getReports();
   if(!reports[index]) return;
-
   reports[index].read = true;
   saveReports(reports);
   renderReports(currentMode);
 }
 
-/* ---------- INBOX ---------- */
 function toggleInbox(){
   const box = document.getElementById("inbox");
   box.style.display = box.style.display === "flex" ? "none" : "flex";
@@ -281,15 +286,9 @@ function toggleInbox(){
   renderReports("inbox");
 }
 
-/* ---------- FULL PAGE ---------- */
-function openFullReports(){
-  currentMode = "full";
-  renderReports("full");
-}
-
-/* ---------- INIT ---------- */
 renderReports("inbox");
 
+/* ===== DELETE ===== */
 function deleteAnime(title){
   if(!confirm("ลบเรื่องนี้ออกจากหน้าเว็บ?")) return;
 
@@ -301,7 +300,6 @@ function deleteAnime(title){
 
   alert("ลบแล้ว (รีหน้าเว็บหลักเพื่อดูผล)");
 }
-
 </script>
 
 </body>

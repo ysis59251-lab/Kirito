@@ -167,6 +167,8 @@ canvas{max-height:320px}
 <script src="firebase.js"></script>
 <script>
 
+<button onclick="deleteAnime('${title}')">ลบ</button>
+
 fetch("หน้าโหลด.html")   // ← เปลี่ยนเป็นชื่อหน้าเว็บหลักของมึง
   .then(res => res.text())
   .then(html => {
@@ -287,6 +289,19 @@ function openFullReports(){
 
 /* ---------- INIT ---------- */
 renderReports("inbox");
+
+function deleteAnime(title){
+  if(!confirm("ลบเรื่องนี้ออกจากหน้าเว็บ?")) return;
+
+  const list = JSON.parse(localStorage.getItem("hiddenAnime") || "[]");
+  if(!list.includes(title)){
+    list.push(title);
+    localStorage.setItem("hiddenAnime", JSON.stringify(list));
+  }
+
+  alert("ลบแล้ว (รีหน้าเว็บหลักเพื่อดูผล)");
+}
+
 </script>
 
 </body>

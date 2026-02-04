@@ -2,209 +2,211 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<title>DarkFrame Watch</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anime Player</title>
 
 <style>
-html, body{
-  margin:0;
-  padding:0;
-  width:100%;
-  min-height:100%;
-}
-
-/* body ต้องมีพื้นหลัง */
+*{box-sizing:border-box}
 body{
+  margin:0;
   font-family:sans-serif;
   color:#fff;
-  background:url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg")
-    center/cover no-repeat fixed;
+  background:
+    linear-gradient(rgba(0,0,0,.75),rgba(0,0,0,.9)),
+    url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg")
+    center/cover fixed;
 }
 
-/* วิดีโอพื้นหลัง */
-.bg-video{
-  position:fixed;
-  top:50%;
-  left:50%;
-  width:100vw;
-  height:100vh;
-  object-fit:cover;
-  transform:translate(-50%, -50%);
-  z-index:-1;
+/* ===== HEADER ===== */
+.header{
+  padding:14px;
+  text-align:center;
+  font-size:22px;
+  font-weight:800;
+  letter-spacing:.5px;
+  background:linear-gradient(90deg,#e50914,#b20710);
+  box-shadow:0 6px 20px rgba(0,0,0,.6);
+}
+
+/* ===== PLAYER ===== */
+.player{
+  max-width:900px;
+  margin:14px auto;
+  aspect-ratio:16/9;
   background:#000;
+  border-radius:18px;
+  overflow:hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.05),
+    0 20px 50px rgba(0,0,0,.85);
+}
+.player iframe{
+  width:100%;
+  height:100%;
+  border:0;
 }
 
-/* กล่องต่าง ๆ */
-.title{
-  background:#fff;
-  color:#000;
-  padding:12px 16px;
+/* ===== CONTROL ===== */
+.control{
+  padding:16px;
+  text-align:center;
+}
+button{
+  background:linear-gradient(135deg,#e50914,#b20710);
+  color:#fff;
+  border:none;
+  padding:14px 26px;
+  border-radius:40px;
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+  box-shadow:0 8px 22px rgba(229,9,20,.45);
+  transition:.25s;
+}
+button:hover{
+  transform:translateY(-2px);
+  background:linear-gradient(135deg,#ff1b26,#c8000a);
+}
+button:active{
+  transform:none;
+}
+
+/* ===== MODAL ===== */
+.modal{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.9);
+  z-index:10;
+}
+.modal-content{
+  background:linear-gradient(180deg,#111,#0b0b0b);
+  max-width:520px;
+  margin:60px auto;
+  padding:12px;
+  border-radius:18px;
+  max-height:70vh;
+  overflow:auto;
+  box-shadow:0 20px 50px rgba(0,0,0,.8);
+  animation:fadeUp .25s ease;
+}
+@keyframes fadeUp{
+  from{transform:translateY(30px);opacity:0}
+  to{transform:none;opacity:1}
+}
+
+/* ===== EP LIST ===== */
+.ep{
+  padding:14px;
+  margin-bottom:6px;
   border-radius:12px;
-  margin:12px;
+  cursor:pointer;
+  background:rgba(255,255,255,.03);
+  transition:.2s;
+}
+.ep:hover{
+  background:rgba(255,255,255,.08);
+}
+.ep.active{
+  background:linear-gradient(135deg,#e50914,#b20710);
   font-weight:700;
 }
 
-.top-title{
-  background:rgba(0,0,0,.8);
-  padding:12px;
-  border-radius:12px;
-  margin:12px;
-  text-align:center;
+/* ===== SCROLL ===== */
+.modal-content::-webkit-scrollbar{
+  width:6px;
+}
+.modal-content::-webkit-scrollbar-thumb{
+  background:#444;
+  border-radius:10px;
 }
 
-.player{
-  max-width:720px;
-  margin:12px auto;
-  background:#000;
-  border-radius:14px;
-  overflow:hidden;
-}
-
-.player video,
-.player iframe{
-  width:100%;
-  aspect-ratio:16/9;
-  border:none;
-}
-
-.controls{
-  display:flex;
-  gap:10px;
-  margin:12px;
-}
-
-.btn{
-  flex:1;
-  padding:12px;
-  border:none;
-  border-radius:12px;
-  background:#1e1e1e;
-  color:#fff;
-}
-
-.btn:hover{
-  background:#ff4d4d;
+/* ===== MOBILE ===== */
+@media(max-width:600px){
+  .header{font-size:18px}
+  button{width:100%}
 }
 </style>
 </head>
 
 <body>
 
-<div class="title" id="titleText">กำลังโหลด…</div>
-<div class="top-title" id="topText"></div>
-<div class="player" id="player"></div>
+<div class="header">🎬 Anime Player</div>
 
-<div class="controls">
-  <button class="btn" onclick="prevEp()">⬅ ก่อนหน้า</button>
-  <button class="btn" onclick="nextEp()">ถัดไป ➡</button>
+<div class="player">
+  <iframe id="video" allowfullscreen></iframe>
+</div>
+
+<div class="control">
+  <button onclick="openModal()">📺 เลือกตอน</button>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-content" id="episodeList"></div>
 </div>
 
 <script>
-/* ================= CONFIG ================= */
 const SHEET_ID = "1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8";
-const SHEET_URL =
-  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
-
-/* ================= PARAM ================= */
-const params = new URLSearchParams(location.search);
-let anime = params.get("anime");
-let ep = Number(params.get("ep") || 1);
+const API = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
 let episodes = [];
+let current = "";
 
-/* ================= LOAD SHEET ================= */
-fetch(SHEET_URL)
-.then(r => r.text())
-.then(t => {
-  const json = JSON.parse(t.substring(47).slice(0, -2));
-  const rows = json.table.rows;
-
-  if (!anime && rows.length) {
-    anime = rows[0].c[0]?.v;
-  }
-
-  rows.forEach(r => {
-    if (r.c[0]?.v === anime) {
-      episodes.push({
-        ep: Number(r.c[1]?.v),
-        title: r.c[2]?.v || "",
-        url: r.c[3]?.v || ""
-      });
-    }
-  });
-
-  episodes.sort((a,b)=>a.ep-b.ep);
-  init();
+fetch(API)
+.then(res => res.text())
+.then(text => {
+  const json = JSON.parse(text.substring(47).slice(0,-2));
+  episodes = json.table.rows.map(r => ({
+    ep: r.c[1]?.v,
+    title: r.c[2]?.v,
+    url: r.c[3]?.v
+  }));
+  renderEpisodes();
+  if(episodes[0]) play(episodes[0].url);
 });
 
-/* ================= INIT ================= */
-function init(){
-  const player = document.getElementById("player");
-
-  if(!episodes.length){
-    player.innerText = "ไม่พบข้อมูลตอน";
-    return;
-  }
-
-  const current = episodes.find(e=>e.ep === ep) || episodes[0];
-  ep = current.ep;
-
-  document.getElementById("titleText").innerText =
-    `${anime} ตอนที่ ${ep}`;
-
-  document.getElementById("topText").innerText =
-    `รวมทั้งหมด ${episodes.length} ตอน`;
-
-  showVideo(current.url);
+function renderEpisodes(){
+  const box = document.getElementById("episodeList");
+  box.innerHTML = "";
+  episodes.forEach(e=>{
+    const div = document.createElement("div");
+    div.className = "ep";
+    div.innerText = `ตอนที่ ${e.ep} • ${e.title}`;
+    div.onclick = ()=>play(e.url);
+    box.appendChild(div);
+  });
 }
 
-/* ================= VIDEO ================= */
-function showVideo(url){
-  const area = document.getElementById("player");
-  area.innerHTML = "";
-
-  if(!url){
-    area.innerText = "ยังไม่มีวิดีโอ";
-    return;
+function play(url){
+  if(url.includes("drive.google.com")){
+    const id = url.match(/\/d\/(.+?)\//)[1];
+    url = `https://drive.google.com/file/d/${id}/preview`;
   }
-
-  // YouTube
-  if(url.includes("youtube")){
-    const id = url.split("v=")[1]?.split("&")[0];
-    area.innerHTML =
-      `<iframe src="https://www.youtube.com/embed/${id}"
-       allowfullscreen></iframe>`;
-  }
-  // Google Drive
-  else if(url.includes("drive.google")){
-    area.innerHTML =
-      `<iframe src="${url}" allowfullscreen></iframe>`;
-  }
-  // mp4 / m3u8
-  else{
-    area.innerHTML =
-      `<video controls playsinline src="${url}"></video>`;
-    const v = area.querySelector("video");
-    if(v) v.onended = nextEp;
-  }
+  document.getElementById("video").src = url;
+  current = url;
+  highlight();
+  closeModal();
 }
 
-/* ================= NAV ================= */
-function prevEp(){
-  const i = episodes.findIndex(e=>e.ep === ep);
-  if(i > 0){
-    location.search =
-      `?anime=${encodeURIComponent(anime)}&ep=${episodes[i-1].ep}`;
-  }
+function highlight(){
+  document.querySelectorAll(".ep").forEach((e,i)=>{
+    e.classList.toggle(
+      "active",
+      episodes[i].url &&
+      current.includes(
+        episodes[i].url.split("/d/")[1]
+      )
+    );
+  });
 }
 
-function nextEp(){
-  const i = episodes.findIndex(e=>e.ep === ep);
-  if(i < episodes.length-1){
-    location.search =
-      `?anime=${encodeURIComponent(anime)}&ep=${episodes[i+1].ep}`;
-  }
+function openModal(){
+  document.getElementById("modal").style.display="block";
 }
+function closeModal(){
+  document.getElementById("modal").style.display="none";
+}
+document.getElementById("modal").onclick = closeModal;
 </script>
 
 </body>

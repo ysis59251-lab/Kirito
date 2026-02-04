@@ -629,6 +629,13 @@ body{background:#000;color:#fff;min-height:100vh}
 
 </section>
 
+const title = document.querySelector('.anime-card')?.dataset.title;
+if(title){
+  const views = JSON.parse(localStorage.getItem("animeViews") || "{}");
+  views[title] = (views[title] || 0) + 1;
+  localStorage.setItem("animeViews", JSON.stringify(views));
+}
+
 const hiddenList = JSON.parse(localStorage.getItem("hiddenAnime") || "[]");
 
 document.querySelectorAll(".anime-card").forEach(card=>{

@@ -173,6 +173,15 @@ Kusuriya no Hitorigoto (The Apothecary Diaries) สืบคดีปริศ�
 </div>
 
 <script>
+
+const title = document.body.dataset.title || document.title;
+
+if(title){
+  const views = JSON.parse(localStorage.getItem("animeViews") || "{}");
+  views[title] = (views[title] || 0) + 1;
+  localStorage.setItem("animeViews", JSON.stringify(views));
+}
+
 let watched = JSON.parse(localStorage.getItem("watchedEpisodes")) || [];
 
 document.querySelectorAll(".episode").forEach(el=>{

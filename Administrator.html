@@ -4,33 +4,111 @@
 <meta charset="UTF-8">
 <title>เข้าสู่ระบบแอดมิน</title>
 <style>
+*{
+  box-sizing:border-box;
+}
+
 body{
-  background:#111;
+  background:
+    radial-gradient(circle at top, #1b1b1b, #0a0a0a);
   color:#fff;
-  font-family:sans-serif;
+  font-family: 'Segoe UI', system-ui, sans-serif;
   display:flex;
   justify-content:center;
   align-items:center;
   height:100vh;
+  margin:0;
 }
+
+/* กล่องล็อกอิน */
 .login-box{
-  background:#1e1e1e;
-  padding:24px;
-  border-radius:12px;
+  background:rgba(30,30,30,.95);
+  padding:28px;
+  border-radius:16px;
   width:320px;
+  box-shadow:
+    0 20px 40px rgba(0,0,0,.6),
+    0 0 0 1px rgba(255,255,255,.04);
+  animation:fadeUp .5s ease;
 }
-input,button{
+
+@keyframes fadeUp{
+  from{
+    opacity:0;
+    transform:translateY(20px);
+  }
+  to{
+    opacity:1;
+    transform:none;
+  }
+}
+
+.login-box h2{
+  text-align:center;
+  margin:0 0 8px;
+  letter-spacing:.5px;
+}
+
+.login-box .warn{
+  font-size:13px;
+  color:#ff7777;
+  text-align:center;
+  margin-bottom:16px;
+}
+
+/* input */
+input{
   width:100%;
-  padding:10px;
-  margin:8px 0;
-}
-button{
-  background:#ff4d4d;
-  border:none;
+  padding:12px;
+  margin:10px 0;
+  border-radius:10px;
+  border:1px solid #333;
+  background:#111;
   color:#fff;
-  cursor:pointer;
+  outline:none;
+  transition:.25s;
 }
-#error{color:#ff4d4d}
+
+input::placeholder{
+  color:#777;
+}
+
+input:focus{
+  border-color:#ff4d4d;
+  box-shadow:0 0 0 2px rgba(255,77,77,.25);
+}
+
+/* ปุ่ม */
+button{
+  width:100%;
+  padding:12px;
+  margin-top:14px;
+  border-radius:12px;
+  border:none;
+  background:linear-gradient(135deg,#ff4d4d,#ff1f1f);
+  color:#fff;
+  font-size:15px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.25s;
+}
+
+button:hover{
+  transform:translateY(-1px);
+  box-shadow:0 8px 20px rgba(255,77,77,.4);
+}
+
+button:active{
+  transform:scale(.98);
+}
+
+/* error */
+#error{
+  color:#ff4d4d;
+  font-size:13px;
+  text-align:center;
+  margin-top:10px;
+}
 </style>
 </head>
 <body>

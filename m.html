@@ -159,24 +159,23 @@ button:active{
      alt="Anime Girl">
 
 <script>
-const SHEET_ID = "1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8";
+const SHEET_ID = "1oc0x4XqdUuodeYa_Pqv9-Z9cCpHxGsnhuQAFr1b566k";
 const API = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
 let episodes = [];
-let current = "";
 
 fetch(API)
-.then(res => res.text())
-.then(text => {
-  const json = JSON.parse(text.substring(47).slice(0,-2));
-  episodes = json.table.rows.map(r => ({
-    ep: r.c[1]?.v,
-    title: r.c[2]?.v,
-    url: r.c[3]?.v
-  }));
-  renderEpisodes();
-  if(episodes[0]) play(episodes[0].url);
-});
+  .then(res => res.text())
+  .then(text => {
+    const json = JSON.parse(text.substring(47).slice(0, -2));
+    episodes = json.table.rows.map(r => ({
+      ep: r.c[0]?.v,
+      title: r.c[1]?.v,
+      url: r.c[2]?.v
+    }));
+    console.log(episodes); // เช็กใน console
+    renderEpisodes();
+  });
 
 function renderEpisodes(){
   const box = document.getElementById("episodeList");

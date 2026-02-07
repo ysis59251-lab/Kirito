@@ -160,23 +160,23 @@ button:active{
 
 <script>
 const SHEET_ID = "1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
-const API = "https://script.google.com/macros/s/AKfycby5-yk68lWMiDfvrCGaO09GQzWG9Zej9zIhXYecRr3i3RcayY9xd0wmcqrCQaAtAb32hA/exec`";
+const API = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
 let episodes = [];
 let current = "";
 
 fetch(API)
-.then(res => res.text())
-.then(text => {
-  const json = JSON.parse(text.substring(47).slice(0,-2));
-  episodes = json.table.rows.map(r => ({
-    ep: r.c[1]?.v,
-    title: r.c[2]?.v,
-    url: r.c[3]?.v
-  }));
-  renderEpisodes();
-  if(episodes[0]) play(episodes[0].url);
-});
+  .then(res => res.text())
+  .then(text => {
+    const json = JSON.parse(text.substring(47).slice(0, -2));
+    episodes = json.table.rows.map(r => ({
+      ep: r.c[1]?.v,
+      title: r.c[2]?.v,
+      url: r.c[3]?.v
+    }));
+    renderEpisodes();
+    if (episodes[0]) play(episodes[0].url);
+  });
 
 function renderEpisodes(){
   const box = document.getElementById("episodeList");

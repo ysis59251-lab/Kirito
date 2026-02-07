@@ -126,17 +126,31 @@ button.restore{background:#00cfa8}
 
 <script>
 
-function toggleReports(){
-  const box = document.getElementById("reportInbox");
-  box.style.display = box.style.display === "block" ? "none" : "block";
-  renderReports();
+/* ================== REPORT INBOX ================== */
+
+function getReports(){
+  return JSON.parse(localStorage.getItem("reports") || "[]");
 }
 
-function renderReports(){
+function saveReports(data){
+  localStorage.setItem("reports", JSON.stringify(data));
+}
+
+function toggleInbox(){
+  const inbox = document.getElementById("inbox");
+  inbox.style.display = inbox.style.display === "flex" ? "none" : "flex";
+  renderInbox();
+}
+
+function renderInbox(){
+  const reports = getReports();
   const list = document.getElementById("reportList");
-  const reports = JSON.parse(localStorage.getItem("reports") || "[]");
+  const badge = document.getElementById("mailCount");
 
   list.innerHTML = "";
+
+  const unread = reports.filter(r => !r.read).length;
+  badge.textContent = unread;
 
   if(reports.length === 0){
     list.innerHTML = `<p style="color:#777;font-size:13px">ยังไม่มีแจ้งปัญหา</p>`;
@@ -144,6 +158,8 @@ function renderReports(){
   }
 
   reports.slice().reverse().forEach((r,i)=>{
+    const index = reports.length - 1 - i;
+
     list.innerHTML += `
       <div style="
         background:#000;
@@ -152,19 +168,25 @@ function renderReports(){
         padding:8px;
         margin-bottom:8px;
         font-size:12px;
-      ">
+      " onclick="markRead(${index})">
         <small style="color:#aaa">🕒 ${r.time}</small><br>
         <small style="color:#aaa">📄 ${r.page}</small>
-        <p style="margin:6px 0">${r.detail}</p>
-        ${!r.read ? `
-          <button onclick="markRead(${reports.length-1-i})"
-            style="background:#ff3b3b;border:none;padding:4px 8px;border-radius:6px;color:#fff">
-            อ่านแล้ว
-          </button>` : ""}
+        <p style="margin-top:6px">${r.detail}</p>
       </div>
     `;
   });
 }
+
+function markRead(index){
+  const reports = getReports();
+  if(!reports[index]) return;
+  reports[index].read = true;
+  saveReports(reports);
+  renderInbox();
+}
+
+/* โหลด badge ตอนเปิดหน้า */
+renderInbox();
 
 function markRead(index){
   const reports = JSON.parse(localStorage.getItem("reports") || "[]");

@@ -125,6 +125,55 @@ button.restore{background:#00cfa8}
 </div>
 
 <script>
+
+function toggleReports(){
+  const box = document.getElementById("reportInbox");
+  box.style.display = box.style.display === "block" ? "none" : "block";
+  renderReports();
+}
+
+function renderReports(){
+  const list = document.getElementById("reportList");
+  const reports = JSON.parse(localStorage.getItem("reports") || "[]");
+
+  list.innerHTML = "";
+
+  if(reports.length === 0){
+    list.innerHTML = `<p style="color:#777;font-size:13px">ยังไม่มีแจ้งปัญหา</p>`;
+    return;
+  }
+
+  reports.slice().reverse().forEach((r,i)=>{
+    list.innerHTML += `
+      <div style="
+        background:#000;
+        border:1px solid ${r.read ? "#222" : "#ff3b3b"};
+        border-radius:10px;
+        padding:8px;
+        margin-bottom:8px;
+        font-size:12px;
+      ">
+        <small style="color:#aaa">🕒 ${r.time}</small><br>
+        <small style="color:#aaa">📄 ${r.page}</small>
+        <p style="margin:6px 0">${r.detail}</p>
+        ${!r.read ? `
+          <button onclick="markRead(${reports.length-1-i})"
+            style="background:#ff3b3b;border:none;padding:4px 8px;border-radius:6px;color:#fff">
+            อ่านแล้ว
+          </button>` : ""}
+      </div>
+    `;
+  });
+}
+
+function markRead(index){
+  const reports = JSON.parse(localStorage.getItem("reports") || "[]");
+  if(!reports[index]) return;
+  reports[index].read = true;
+  localStorage.setItem("reports", JSON.stringify(reports));
+  renderReports();
+}
+
 /* ================== LOAD MAIN PAGE ================== */
 fetch("หน้าโหลด.html")
 .then(res=>res.text())

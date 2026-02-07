@@ -627,21 +627,25 @@ body{background:#000;color:#fff;min-height:100vh}
   </div>
 </a>
 
-</section>
+<section>
 
-const title = document.querySelector('.anime-card')?.dataset.title;
-if(title){
+// นับวิว
+document.querySelectorAll('.anime-card').forEach(card=>{
+  const title = card.dataset.title;
+  if(!title) return;
+
   const views = JSON.parse(localStorage.getItem("animeViews") || "{}");
   views[title] = (views[title] || 0) + 1;
   localStorage.setItem("animeViews", JSON.stringify(views));
-}
+});
 
+// ซ่อนอนิเมะ
 const hiddenList = JSON.parse(localStorage.getItem("hiddenAnime") || "[]");
 
 document.querySelectorAll(".anime-card").forEach(card=>{
   const title = card.dataset.title;
   if(hiddenList.includes(title)){
-    card.remove(); // ลบออกจากหน้า
+    card.remove();
   }
 });
 

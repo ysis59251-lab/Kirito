@@ -6,6 +6,215 @@
 <title>AnimeFume</title>
 
 <style>
+
+.anime-img{
+  width:100%;
+  max-width:300px;
+  display:block;
+  margin:20px auto;
+  filter: drop-shadow(0 12px 30px rgba(0,0,0,.8));
+}
+
+/* ===== BOTTOM SLIDE + NUMBER BAR ===== */
+.bottom-area{
+  position: fixed;
+  left: 50%;
+  bottom: -200px;              /* ซ่อนไว้ใต้จอ */
+  transform: translateX(-50%);
+
+  width:260px;
+  z-index:20;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+
+  transition: bottom .35s ease;
+}
+
+/* โชว์ → ลอยขึ้นมากลางล่าง */
+.bottom-area.show{
+  bottom: 20px;
+}
+
+/* ===== กรอบเลข ===== */
+#numberBox{
+  display:flex;
+  gap:8px;
+  padding:10px 12px;
+
+  background:rgba(0,0,0,.75);
+  backdrop-filter:blur(8px);
+  border-radius:16px;
+
+  box-shadow:0 6px 18px rgba(0,0,0,.6);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+/* ===== เลข ===== */
+.num{
+  width:40px;
+  height:40px;
+  background:#1c1c1c;
+  color:#fff;
+
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s ease;
+}
+
+.num:hover{
+  background:#ff3b3b;
+  transform:scale(1.05);
+}
+
+/* ===== ปุ่ม ◀ ▶ ===== */
+.bottom-nav{
+  width:260px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.bottom-nav button{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  border:none;
+  background:#111;
+  color:#fff;
+  font-size:18px;
+}
+
+/* ===== ปุ่มเรียก ===== */
+.toggle-bottom{
+  position:fixed;
+  bottom:20px;
+  right:15px;
+
+  width:46px;
+  height:46px;
+  border-radius:50%;
+
+  background:#ff3b3b;
+  color:#fff;
+  border:none;
+  font-size:20px;
+
+  z-index:30;
+  cursor:pointer;
+}
+
+.fab{
+  position:fixed;
+  bottom:20px;
+  right:15px;
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  background:#ff3b3b;
+  color:#fff;
+  border:none;
+  font-size:20px;
+  z-index:30;
+  cursor:pointer;
+}
+
+.footer{
+  width:100%;
+  background:#000;        /* ดำสนิท */
+  padding:25px 12px;
+  text-align:center;
+}
+
+.footer p{
+  font-family: Arial, Helvetica, sans-serif;
+  font-size:13px;
+  color:#b5b5b5;
+  font-weight:400;
+  line-height:1.7;
+  margin:0;
+}
+
+.footer a{
+  color:#4da3ff;
+  text-decoration:none;
+}
+
+.footer a:hover{
+  text-decoration:underline;
+}
+
+/* ===== REPORT BUTTON ===== */
+#reportBtn{
+  position:fixed;
+  top:15px;
+  right:15px;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:#ff3b3b;
+  color:#fff;
+  font-size:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  z-index:1001;
+}
+
+/* ===== REPORT BOX ===== */
+#reportBox{
+  position:fixed;
+  top:70px;
+  right:-320px;              /* ซ่อน */
+  width:280px;
+  background:#111;
+  border-radius:16px;
+  padding:14px;
+  z-index:1000;
+
+  transition:.35s ease;
+  box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+
+#reportBox.show{
+  right:15px;                /* โผล่ */
+}
+
+#reportBox h3{
+  font-size:16px;
+  margin-bottom:8px;
+}
+
+#reportBox textarea{
+  width:100%;
+  height:90px;
+  background:#000;
+  border:1px solid #333;
+  border-radius:10px;
+  color:#fff;
+  padding:8px;
+  resize:none;
+}
+
+#reportBox button{
+  margin-top:10px;
+  width:100%;
+  padding:8px;
+  border:none;
+  border-radius:10px;
+  background:#ff3b3b;
+  color:#fff;
+  font-size:14px;
+  cursor:pointer;
+}
+
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
 body{background:#000;color:#fff;min-height:100vh}
 
@@ -81,7 +290,7 @@ body{background:#000;color:#fff;min-height:100vh}
   text-decoration:none;color:#fff;
   position:relative;
 }
-.img-box img{width:100%;height:220px;object-fit:cover}
+.img-box img{width:100%;height:320px;object-fit:cover; display:block}
 .overlay-text{
   position:absolute;bottom:0;left:0;width:100%;
   padding:10px;font-size:13px;
@@ -98,62 +307,22 @@ body{background:#000;color:#fff;min-height:100vh}
 .new{background:#00c853}
 .recommend{background:#ffd600;color:#000}
 
-/* ===== BOTTOM NAV (เพิ่มอย่างเดียว) ===== */
-.bottom-area{
-  position:fixed;
-  bottom:12px;
-  left:0;
-  width:100%;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:8px;
-  z-index:20;
-}
-.center-box{
-  width:260px;
-  padding:10px;
-  background:rgba(0,0,0,.7);
-  border-radius:14px;
-  display:flex;
-  justify-content:center;
-  gap:8px;
-}
-.num{
-  width:42px;height:42px;
-  background:#222;color:#fff;
-  border-radius:10px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  cursor:pointer;
-}
-.num:hover{background:#ff3b3b}
-.bottom-nav{
-  width:260px;
-  display:flex;
-  justify-content:space-between;
-}
-.bottom-nav button{
-  width:44px;height:44px;
-  border-radius:50%;
-  border:none;
-  background:#111;color:#fff;
-  font-size:18px;
-}
 </style>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#000000">
 </head>
 
 <body>
 
 <div id="bg"></div>
-
+<div id="reportBtn">⚠</div>
 <div id="menuBtn">☰</div>
 <div id="menuDropdown">
-  <a href="index">หน้าแรก</a>
-  <a href="index2">ซับไทย</a>
+  <a href="#">หน้าแรก</a>
+  <a href="index2.html">ซับไทย</a>
   <a href="">พากย์ไทย</a>
-  <a href="Administrator.html">แอดมิน</a>
+  <a href="Administrator.html">เเอดมิน</a>
+  <a href="DMCA.html">DMCA</a>
 </div>
 
 <header class="header">
@@ -161,83 +330,389 @@ body{background:#000;color:#fff;min-height:100vh}
   <input class="search" placeholder="ค้นหาอนิเมะ...">
 </header>
 
+<img class="anime-img"
+     src="https://www.pngarts.com/files/12/Manga-Anime-Girl-Transparent-Image.png"
+     alt="Anime Girl">
+
 <section class="hot-section">
   <h2>🔥 ยอดฮิต</h2>
   <div class="hot-slider" id="hotSlider"></div>
 </section>
 
+</header>
+
 <section class="anime-list" id="animeList">
 
-<a href="ByteWorld101.html" class="anime-card" data-title="Mizu Zokusei">
+<a href="ByteWorld401.html" class="anime-card" data-title="Kusuriya no Hitorigoto">
   <div class="img-box">
     <img src="https://kusuriyanohitorigoto.jp/season1/gallery/img/keyvisual/02.jpg">
-    <div class="overlay-text">Mizu Zokusei<br>1–24 พากย์ไทย</div>
+    <div class="overlay-text"> Kusuriya no Hitorigoto สืบคดีปริศนา หมอยาตำรับโคมแดง<br>1–24 พากย์ไทย จบเเล้ว</div>
     <div class="badge recommend">⭐ แนะนำ</div>
   </div>
 </a>
 
-<a href="202.html" class="anime-card" data-title="SAO">
+<a href="402.html" class="anime-card" data-title="SAO">
   <div class="img-box">
     <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
-    <div class="overlay-text">Sword Art Online<br>1–25</div>
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
   </div>
 </a>
 
-<a href="203.html" class="anime-card" data-title="DANDADAN">
+<a href="403.html" class="anime-card" data-title="DANDADAN">
   <div class="img-box">
     <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3G46VISYTyNvhfCIRxvFe6KExkWlNdekrUg88tKYhZ7wA0NNXGmQg74rj&s=10">
-    <div class="overlay-text">DAN DA DAN<br>1–12</div>
+    <div class="overlay-text">DAN DA DAN ดันดาดัน<br>
+        (ภาค1) ตอนที่ 1-12 พากย์ไทย จบแล้ว</div>
     <div class="badge new">🆕 ใหม่</div>
   </div>
 </a>
 
+<a href="404.html" class="anime-card" data-title="My Gift Lvl 9999 Unlimited Gacha">
+  <div class="img-box">
+    <img src="https://www.anime-seven.com/upload/85d7c29d7cf76d6100598874c9e1bcfd.jpg">
+    <div class="overlay-text">    My Gift Lvl 9999 Unlimited Gacha ผมถูกเพื่อนที่เชื่อใจหลอกไปฆ่า เลยใช้กิฟต์สุ่มกาชาพาพวกพ้องเลเวล 9999 กลับมาล้างแค้น ตอนที่ 1-12 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="405.html" class="anime-card" data-title="Silent Witch Chinmoku no Majo no Kakushigoto">
+  <div class="img-box">
+    <img src="https://www.anime-seven.com/upload/aaf91b2836ab6d41a1acec8ca79cfbe2.jpg">
+    <div class="overlay-text">    Silent Witch Chinmoku no Majo no Kakushigoto ไซเลนต์วิตช์ ความลับของแม่มดแห่งความเงียบ ตอนที่ 1-13 ซับไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="406.html" class="anime-card" data-title="Kimi wa Meido-sama">
+  <div class="img-box">
+    <img src="https://www.anime-seven.com/upload/6c96ac07bb4b2a20ef3b2b15377e9193.jpg">
+    <div class="overlay-text">    Kimi wa Meido-sama เมดสาวนักฆ่า ตอนที่ 1-12 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="407.html" class="anime-card" data-title="Nageki no Bourei wa Intai shitai">
+  <div class="img-box">
+    <img src="https://www.anime-seven.com/upload/53a88b2691e8654970633121240d30f7.jpg">
+    <div class="overlay-text">    Nageki no Bourei wa Intai shitai วิญญาณคร่ำครวญอยากวางมือแล้ว ตอนที่ 1-24 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="408.html" class="anime-card" data-title="Tondemo Skill de Isekai Hourou Meshi">
+  <div class="img-box">
+    <img src="https://fairyanime.net/uploads/04a96ee4753e64c743c5e95f9e7a221fq60EXAw.jpg">
+    <div class="overlay-text">    Tondemo Skill de Isekai Hourou Meshi สกิลสุดพิสดารกับมื้ออาหารในต่างโลก(ภาคที่1) ตอนที่ 1-12 พากย์ไทย<br></div>
+  </div>
+</a>
+
+<a href="409.html" class="anime-card" data-title="Kaoru Hana wa Rin to Saku">
+  <div class="img-box">
+    <img src="https://www.anime-seven.com/upload/9a667d65232d6d5fb3ef573753d0dda4.jpg">
+    <div class="overlay-text">    Kaoru Hana wa Rin to Saku ดอกรักผลิบานที่กลางใจ ตอนที่ 1-13 ซับไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="410.html" class="anime-card" data-title="Tondemo Skill de Isekai Hourou Meshi">
+  <div class="img-box">
+    <img src="https://fairyanime.net/uploads/55dd4adee6ae357f588c3a72e2393925HFcUDMr.jpg">
+    <div class="overlay-text">    Tondemo Skill de Isekai Hourou Meshi สกิลสุดพิสดารกับมื้ออาหารในต่างโลก(ภาคที่2) ตอนที่ 1-12 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="411.html" class="anime-card" data-title="Kusuriya no Hitorigoto 2nd Season">
+  <div class="img-box">
+    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTg093pynkDWQiUyuFN7w0FFjYqRy5OZUFwMpRuW8MVDXv_wh6O7rf1k_ZK&s=10">
+    <div class="overlay-text">    Kusuriya no Hitorigoto 2nd Season สืบคดีปริศนา หมอยาตำรับโคมแดง(ภาค2) ตอนที่ 1-24 พากย์ไทย<br></div>
+  </div>
+</a>
+
+<a href="412.html" class="anime-card" data-title="Kizoku Tensei">
+  <div class="img-box">
+    <img src="https://www.anime-seven.com/upload/bebfdacb0124f30d803644a24458e744.jpg">
+    <div class="overlay-text">    Kizoku Tensei เกิดใหม่มาเป็นผู้สูงศักดิ์ สุดแกร่งไร้เทียมทานแต่กำเนิด ตอนที่ 1-3 ซับไทย ยังไม่จบ<br></div>
+  </div>
+</a>
+
+<a href="413.html" class="anime-card" data-title="Yuusha-kei ni Shosu: Choubatsu Yuusha 9004-tai Keimu Kiroku">
+  <div class="img-box">
+    <img src="https://www.anime-seven.com/upload/c6f3d080d2720f1d9d4e4ddb5fe4e912.jpg">
+    <div class="overlay-text">    Yuusha-kei ni Shosu: Choubatsu Yuusha 9004-tai Keimu Kiroku ผู้กล้าโทษประหาร : บันทึกการรับโทษของหน่วยผู้กล้าต้องโทษ 9004 ตอนที่ 1-3 ซับไทย ยังไม่จบ<br></div>
+  </div>
+</a>
+
+<a href="414.html" class="anime-card" data-title="Oshi no Ko Season 3">
+  <div class="img-box">
+    <img src="https://www.anime-seven.com/upload/65a3e1e8cf98f56175989689150bf403.jpg">
+    <div class="overlay-text">    Oshi no Ko Season 3 เกิดใหม่เป็นลูกโอชิ (ภาค3) ตอนที่ 1-2 ซับไทย ยังไม่จบ
+    <br></div>
+  </div>
+</a>
+
+<a href="415.html" class="anime-card" data-title="Hazure Skill Kinomi Master">
+  <div class="img-box">
+    <img src="https://animeruka.com/wp-content/uploads/2025/01/sy8OTK68SerisyO3QaoSAp4NehX-204x300.jpg">
+    <div class="overlay-text">    Hazure Skill Kinomi Master สกิลไร้ประโยชน์ มาสเตอร์ผลไม้ ตอนที่1-12 ซับไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="416.html" class="anime-card" data-title="IS Infinite Stratos 2">
+  <div class="img-box">
+    <img src="https://k35tanmai.com/wp-content/uploads/2025/11/IS-Infinite-Stratos-2-374x524-1.jpg">
+    <div class="overlay-text">    IS Infinite Stratos 2 ปฏิบัติการรักจักรกลทะยานฟ้า ภาค 2 ตอนที่ 1-12 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="417.html" class="anime-card" data-title="Dead Mount Death Play">
+  <div class="img-box">
+    <img src="https://img.shirokami.me/images/2023/07/31/e2ff123f347b9c34bdd689c6ff468e3b.jpg">
+    <div class="overlay-text">    Dead Mount Death Play เดด เมานท์ เดธ เพลย์(ภาค1) ตอนที่ 1-12 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="418.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="419.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="420.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="421.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="422.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="423.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="424.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="425.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="426.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="427.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="428.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="429.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="430.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="431.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="432.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="433.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="434.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="435.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="436.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="437.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="438.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="439.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
+
+<a href="440.html" class="anime-card" data-title="SAO">
+  <div class="img-box">
+    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <div class="overlay-text">    Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว<br></div>
+  </div>
+</a>
 </section>
 
+<div class="footer">
+  <footer>
+    <p>
+      © <span id="year"></span> AnimeFume<br>
+      ดูอนิเมะซับไทย <br>
+      ดูอนิเมะพากย์ไทย <br>
+      อัปเดตไวที่เว็บ <br>
+      <a href="https://kirito-sandy.vercel.app/">kirito-sandy.vercel.app</a>
+    </p>
+  </footer>
+</div>
+
 <!-- ===== NAV ล่างสุด ===== -->
-<div class="bottom-area">
+<div class="bottom-area" id="bottomNav">
   <div class="center-box" id="numberBox"></div>
+
   <div class="bottom-nav">
     <button onclick="prevSet()">◀</button>
     <button onclick="nextSet()">▶</button>
   </div>
 </div>
 
+<!-- ปุ่มลอย -->
+<button class="fab" onclick="toggleBottom()">☰</button>
+
 <script src="firebase.js"></script>
 <script>
-/* ===== MENU ===== */
-const menuBtn=document.getElementById("menuBtn")
-const menu=document.getElementById("menuDropdown")
-menuBtn.onclick=(e)=>{
-  e.stopPropagation()
-  menu.style.display=menu.style.display==="flex"?"none":"flex"
-}
-document.addEventListener("click",()=>menu.style.display="none")
 
-/* ===== BOTTOM NAV LOGIC ===== */
-const pageMap = {
-  1: "pageMap1.html",
-  2: "pageMap2.html",
-  3: "pageMap3.html",
-  4: "pageMap4.html",
-  5: "pageMap5.html",
-  6: "pageMap6.html",
-  7: "pageMap7.html",
-  8: "pageMap8.html",
-  9: "pageMap9.html",
-  10: "pageMap10.html",
-  11: "pageMap11.html",
-  12: "pageMap12.html",
-  13: "pageMap13.html",
-  14: "pageMap14.html",
-  15: "pageMap15.html",
-  16: "pageMap16.html",
-  17: "pageMap17.html",
-  18: "pageMap18.html",
-  19: "pageMap19.html",
-  20: "pageMap20.html",
+// นับวิว
+document.querySelectorAll('.anime-card').forEach(card=>{
+  const title = card.dataset.title;
+  if(!title) return;
+
+  const views = JSON.parse(localStorage.getItem("animeViews") || "{}");
+  views[title] = (views[title] || 0) + 1;
+  localStorage.setItem("animeViews", JSON.stringify(views));
+});
+
+// ซ่อนอนิเมะ
+const hiddenList = JSON.parse(localStorage.getItem("hiddenAnime") || "[]");
+
+document.querySelectorAll(".anime-card").forEach(card=>{
+  const title = card.dataset.title;
+  if(hiddenList.includes(title)){
+    card.remove();
+  }
+});
+
+/* ===== TOGGLE BOTTOM ===== */
+function toggleBottom(){
+  document.getElementById("bottomNav").classList.toggle("show");
+}
+
+/* ===== YEAR ===== */
+document.getElementById("year").textContent = new Date().getFullYear();
+
+/* ===== REPORT ===== */
+document.getElementById("reportBtn").onclick = ()=>{
+  location.href = "Report a Problem.html";
 };
 
-let page = 1, per = 5;
+/* ===== MENU ===== */
+const menuBtn = document.getElementById("menuBtn");
+const menu = document.getElementById("menuDropdown");
+
+menuBtn.onclick = (e)=>{
+  e.stopPropagation();
+  menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+};
+document.addEventListener("click", ()=> menu.style.display = "none");
+
+/* ===== BOTTOM NAV ===== */
+const pageMap = {
+  1:"pageMap1.html", 2:"pageMap2.html", 3:"pageMap3.html",
+  4:"pageMap4.html", 5:"pageMap5.html", 6:"pageMap6.html",
+  7:"pageMap7.html", 8:"pageMap8.html", 9:"pageMap9.html",
+  10:"pageMap10.html",11:"pageMap11.html",12:"pageMap12.html",
+  13:"pageMap13.html",14:"pageMap14.html",15:"pageMap15.html",
+  16:"pageMap16.html",17:"pageMap17.html",18:"pageMap18.html",
+  19:"pageMap19.html",20:"pageMap20.html"
+};
+
+let page = 1;
+const per = 5;
+const maxPage = Math.ceil(Object.keys(pageMap).length / per);
 
 function render(){
   const box = document.getElementById("numberBox");
@@ -246,20 +721,23 @@ function render(){
   const start = (page - 1) * per + 1;
 
   for(let i = start; i < start + per; i++){
-    if(!pageMap[i]) continue; // ❗ ไม่มีหน้า → ไม่สร้างเลข
+    if(!pageMap[i]) continue;
 
     const d = document.createElement("div");
     d.className = "num";
     d.textContent = i;
-    d.onclick = () => location.href = pageMap[i];
-
+    d.onclick = ()=>{
+      location.href = pageMap[i];
+    };
     box.appendChild(d);
   }
 }
 
 function nextSet(){
-  page++;
-  render();
+  if(page < maxPage){
+    page++;
+    render();
+  }
 }
 
 function prevSet(){
@@ -269,8 +747,10 @@ function prevSet(){
   }
 }
 
+/* เรียกครั้งแรก */
 render();
 </script>
 
+<button class="fab" onclick="toggleBottom()">☰</button>
 </body>
 </html>

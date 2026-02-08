@@ -108,6 +108,26 @@ button.restore{background:#00cfa8}
   <div id="reportList"></div>
 </div>
 
+onChildAdded(
+  query(ref(db,"visitors"), limitToLast(1)),
+  snap=>{
+    const v = snap.val();
+
+    alertBox.style.display="block";
+    alertBox.innerHTML=`
+      👀 มีคนเข้าเว็บ<br>
+      🌍 ${v.country||"-"} / ${v.city||"-"}<br>
+      🌐 IP: ${v.ip||"-"}<br>
+      📡 ${v.isp||"-"}<br>
+      📄 หน้า: ${v.page||"-"}
+    `;
+
+    setTimeout(()=>{
+      alertBox.style.display="none";
+    },4000);
+  }
+);
+
 <h2>📊 AnimeFume Dashboard</h2>
 
 <div class="cards">

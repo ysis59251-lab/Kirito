@@ -5,56 +5,79 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>AnimeFume Admin</title>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 body{margin:0;background:#0b0b0b;color:#fff;font-family:system-ui;padding:16px}
-h2{color:#00ffcc}
+h2,h3{color:#00ffcc}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
-.card{background:#111;border:1px solid #222;border-radius:14px;padding:14px}
-.section{margin-top:18px;background:#111;border:1px solid #222;border-radius:16px;padding:14px}
-.item{background:#000;border:1px solid #222;border-radius:10px;padding:8px 10px;margin-bottom:6px;font-size:13px}
-.new{border-color:#ff3b3b}
-.small{font-size:12px;opacity:.7}
-button{background:#ff3b3b;border:none;border-radius:8px;padding:4px 8px;color:#fff}
-.restore{background:#00cfa8}
+.card{background:#111;padding:14px;border-radius:14px;border:1px solid #222}
+.section{margin-top:20px;background:#111;padding:16px;border-radius:16px;border:1px solid #222}
+
+.report{background:#000;border:1px solid #222;border-radius:10px;padding:10px;margin-bottom:8px;font-size:13px}
+button{background:#ff3b3b;border:none;padding:6px 12px;border-radius:8px;color:#fff;cursor:pointer}
+button.restore{background:#00cfa8}
+
+/* floating admin menu */
+#adminBtn{
+  position:fixed;bottom:20px;right:20px;
+  width:56px;height:56px;border-radius:50%;
+  background:#00ffcc;color:#000;
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;cursor:pointer;z-index:99
+}
+#adminPanel{
+  position:fixed;bottom:90px;right:20px;
+  width:320px;max-height:70vh;
+  background:#111;border-radius:16px;
+  padding:14px;display:none;overflow:auto;
+  border:1px solid #222;z-index:99
+}
 </style>
 </head>
 
 <body>
 
-<h2>📊 AnimeFume Admin (ระบบเดิม)</h2>
+<div id="adminBtn" onclick="toggleAdmin()">⚙️</div>
 
-<div class="cards">
-  <div class="card">👁️ ยอดดูรวม<br><b id="totalViews">0</b></div>
-  <div class="card">🟢 ออนไลน์<br><b id="onlineCount">0</b></div>
-  <div class="card">📅 วันนี้<br><b id="todayViews">0</b></div>
-</div>
+<div id="adminPanel">
+  <h2>📊 Admin Dashboard</h2>
 
-<div class="section">
-  <h3>🟢 คนออนไลน์จริง</h3>
-  <div id="onlineList"></div>
-</div>
+  <div class="cards">
+    <div class="card">🟢 ออนไลน์ตอนนี้<br><b id="onlineCount">0</b></div>
+    <div class="card">👁 ยอดดูรวม<br><b id="views">0</b></div>
+    <div class="card">📚 อนิเมะทั้งหมด<br><b id="animeCount">0</b></div>
+  </div>
 
-<div class="section">
-  <h3>📢 แจ้งปัญหา</h3>
-  <div id="reportList"></div>
-</div>
+  <div class="section">
+    <h3>📋 อนิเมะหน้าเว็บ</h3>
+    <div id="animeList"></div>
+  </div>
 
-<div class="section">
-  <h3>📚 อนิเมะหน้าแรก</h3>
-  <div id="animeList"></div>
-</div>
+  <div class="section">
+    <h3>🗑 อนิเมะที่ถูกซ่อน</h3>
+    <div id="hiddenList"></div>
+  </div>
 
-<div class="section">
-  <h3>♻ อนิเมะที่ถูกซ่อน</h3>
-  <div id="trashList"></div>
+  <div class="section">
+    <h3>📢 แจ้งปัญหา</h3>
+    <div id="reportList"></div>
+  </div>
+
+  <div class="section">
+    <h3>📈 กราฟยอดดู</h3>
+    <canvas id="viewChart" height="120"></canvas>
+  </div>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
-  getDatabase, ref, onValue, get, set, remove, update
+  getDatabase, ref, onValue, onChildAdded,
+  set, remove, get, update
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+/* ===== FIREBASE ===== */
 const firebaseConfig={
   apiKey:"API_KEY",
   authDomain:"PROJECT.firebaseapp.com",
@@ -62,87 +85,106 @@ const firebaseConfig={
   projectId:"PROJECT",
   appId:"APP_ID"
 };
-
 const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 
-/* ===== STATS (ระบบเดิม) ===== */
-onValue(ref(db,"stats/totalViews"),s=>totalViews.textContent=s.val()||0);
-const today=new Date().toISOString().slice(0,10);
-onValue(ref(db,"stats/daily/"+today),s=>todayViews.textContent=s.val()||0);
+/* ===== UI ===== */
+window.toggleAdmin=()=>{
+  adminPanel.style.display =
+    adminPanel.style.display==="block"?"none":"block";
+};
 
-/* ===== ONLINE USERS (เข้า–ออกจริง) ===== */
+/* ===== ONLINE USER ===== */
 onValue(ref(db,"onlineUsers"),s=>{
-  onlineList.innerHTML="";
+  onlineCount.textContent = s.exists()
+    ? Object.keys(s.val()).length : 0;
+});
+
+/* ===== VIEWS ===== */
+onValue(ref(db,"animeViews"),s=>{
+  views.textContent = s.val() || 0;
+});
+
+/* ===== ANIME LIST (ระบบเดิม) ===== */
+onValue(ref(db,"animeList"),s=>{
+  animeList.innerHTML="";
   if(!s.exists()){
-    onlineCount.textContent=0;
-    onlineList.innerHTML="<div class='small'>ไม่มีคนออนไลน์</div>";
+    animeList.innerHTML="ไม่มีอนิเมะ";
+    animeCount.textContent=0;
     return;
   }
   const data=s.val();
-  onlineCount.textContent=Object.keys(data).length;
-  Object.values(data).forEach(u=>{
-    onlineList.innerHTML+=`
-      <div class="item">
-        🟢 ${u.page}<br>
-        <span class="small">${new Date(u.last).toLocaleTimeString()}</span>
-      </div>`;
-  });
-});
-
-/* ===== REPORTS ===== */
-onValue(ref(db,"reports"),s=>{
-  reportList.innerHTML="";
-  if(!s.exists()) return reportList.innerHTML="ไม่มีแจ้งปัญหา";
-  s.forEach(c=>{
-    const r=c.val();
-    reportList.innerHTML+=`
-      <div class="item ${r.read?"":"new"}"
-       onclick="read('${c.key}')">
-        <b>${r.page}</b>
-        <div>${r.detail}</div>
-        <span class="small">${r.time}</span>
-      </div>`;
-  });
-});
-window.read=id=>update(ref(db,"reports/"+id),{read:true});
-
-/* ===== ANIME LIST (หน้าแรกจริง) ===== */
-onValue(ref(db,"animeList"),s=>{
-  animeList.innerHTML="";
-  if(!s.exists()) return;
-  s.forEach(c=>{
+  animeCount.textContent=Object.keys(data).length;
+  Object.entries(data).forEach(([id,a])=>{
     animeList.innerHTML+=`
-      <div class="item">
-        ${c.val().title||c.key}
-        <button onclick="hide('${c.key}')">ซ่อน</button>
+      <div class="report">
+        <b>${a.title}</b> (${a.ep||0} ตอน)<br>
+        <button onclick="hideAnime('${id}')">ซ่อน</button>
       </div>`;
   });
 });
 
+/* ===== HIDDEN ===== */
 onValue(ref(db,"hiddenAnime"),s=>{
-  trashList.innerHTML="";
-  if(!s.exists()) return;
-  s.forEach(c=>{
-    trashList.innerHTML+=`
-      <div class="item">
-        ${c.val().title||c.key}
-        <button class="restore" onclick="restore('${c.key}')">คืนค่า</button>
+  hiddenList.innerHTML="";
+  if(!s.exists()){
+    hiddenList.innerHTML="ถังว่าง";
+    return;
+  }
+  Object.entries(s.val()).forEach(([id,a])=>{
+    hiddenList.innerHTML+=`
+      <div class="report">
+        <b>${a.title}</b><br>
+        <button class="restore"
+          onclick="restoreAnime('${id}')">กู้คืน</button>
       </div>`;
   });
 });
 
-window.hide=async id=>{
-  const s=await get(ref(db,"animeList/"+id));
-  await set(ref(db,"hiddenAnime/"+id),s.val());
+window.hideAnime=async id=>{
+  const snap=await get(ref(db,"animeList/"+id));
+  if(!snap.exists())return;
+  await set(ref(db,"hiddenAnime/"+id),snap.val());
   await remove(ref(db,"animeList/"+id));
 };
-window.restore=async id=>{
-  const s=await get(ref(db,"hiddenAnime/"+id));
-  await set(ref(db,"animeList/"+id),s.val());
+
+window.restoreAnime=async id=>{
+  const snap=await get(ref(db,"hiddenAnime/"+id));
+  if(!snap.exists())return;
+  await set(ref(db,"animeList/"+id),snap.val());
   await remove(ref(db,"hiddenAnime/"+id));
 };
-</script>
 
+/* ===== REPORT ===== */
+onChildAdded(ref(db,"reports"),s=>{
+  const r=s.val();
+  reportList.innerHTML=`
+    <div class="report">
+      <small>${r.time||""}</small><br>
+      <b>${r.page||""}</b>
+      <p>${r.detail||""}</p>
+    </div>`+reportList.innerHTML;
+});
+
+/* ===== CHART ===== */
+let chart;
+onValue(ref(db,"viewStats"),s=>{
+  if(!s.exists())return;
+  const d=s.val();
+  const labels=Object.keys(d).sort();
+  const values=labels.map(k=>d[k]);
+  if(chart)chart.destroy();
+  chart=new Chart(viewChart,{
+    type:"line",
+    data:{labels,datasets:[{
+      data:values,
+      borderColor:"#00ffcc",
+      backgroundColor:"rgba(0,255,204,.15)",
+      fill:true,tension:.35
+    }]},
+    options:{plugins:{legend:{display:false}}}
+  });
+});
+</script>
 </body>
 </html>

@@ -655,7 +655,7 @@ Oshi no Ko Season 3 เกิดใหม่เป็นลูกโอชิ(�
 <button class="fab" onclick="toggleBottom()">☰</button>
 
 <script type="module">
-/* ===== FIREBASE ===== */
+/* ================= FIREBASE ================= */
 import { initializeApp } from
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
@@ -667,92 +667,62 @@ import {
 } from
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* 🔧 CONFIG */
+/* 🔧 ใส่ config จริงของคุณ */
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_DOMAIN",
-  databaseURL: "YOUR_DB_URL",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_BUCKET",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "API_KEY",
+  authDomain: "PROJECT.firebaseapp.com",
+  databaseURL: "https://PROJECT.firebaseio.com",
+  projectId: "PROJECT",
+  storageBucket: "PROJECT.appspot.com",
+  messagingSenderId: "SENDER_ID",
+  appId: "APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ===== COUNT VIEWS ===== */
+/* ================= VIEW COUNT ================= */
 const today = new Date().toISOString().slice(0,10);
 
-// รวมยอดทั้งหมด
-runTransaction(ref(db,"stats/totalViews"),v=>(v||0)+1);
+// รวมทั้งหมด
+runTransaction(ref(db,"stats/totalViews"), v => (v||0)+1);
 
-// ยอดรายวัน
-runTransaction(ref(db,"stats/daily/"+today),v=>(v||0)+1);
+// รายวัน
+runTransaction(ref(db,"stats/daily/"+today), v => (v||0)+1);
 
-/* ===== COUNT PER ANIME ===== */
+// ต่ออนิเมะ (ใช้ชื่อไฟล์เป็น id → ไม่ชน)
 document.querySelectorAll(".anime-card").forEach(card=>{
-  const id = card.dataset.id || card.dataset.title;
-  if(!id) return;
-  runTransaction(ref(db,"animeViews/"+id),v=>(v||0)+1);
+  const href = card.getAttribute("href");
+  if(!href) return;
+
+  const id = href.replace(".html","");
+  runTransaction(ref(db,"animeViews/"+id), v => (v||0)+1);
 });
 
-/* ===== HIDE / RESTORE ANIME ===== */
-onValue(ref(db,"animeList"),snap=>{
+/* ================= HIDE / SHOW ANIME ================= */
+onValue(ref(db,"animeList"), snap=>{
+  if(!snap.exists()) return; // กันเว็บหายหมด
+
   document.querySelectorAll(".anime-card").forEach(card=>{
-    const id = card.dataset.id || card.dataset.title;
-    if(!snap.child(id).exists()){
-      card.remove();
+    const id = card.getAttribute("href").replace(".html","");
+    const enabled = snap.child(id).val();
+    if(enabled === false){
+      card.style.display = "none";
     }
   });
 });
 
-/* ===== GRAPH (ADMIN PAGE) ===== */
-const ctx = document.getElementById("viewChart");
-if(ctx){
-  onValue(ref(db,"stats/daily"),snap=>{
-    const labels=[], data=[];
-    snap.forEach(d=>{
-      labels.push(d.key);
-      data.push(d.val());
-    });
+/* ================= YEAR ================= */
+const yearEl=document.getElementById("year");
+if(yearEl) yearEl.textContent=new Date().getFullYear();
 
-    new Chart(ctx,{
-      type:"line",
-      data:{
-        labels,
-        datasets:[{
-          label:"ยอดเข้าชม",
-          data,
-          borderColor:"#00ffcc",
-          tension:.3
-        }]
-      },
-      options:{
-        plugins:{legend:{display:false}},
-        scales:{
-          x:{ticks:{color:"#aaa"}},
-          y:{ticks:{color:"#aaa"}}
-        }
-      }
-    });
-  });
+/* ================= REPORT ================= */
+const reportBtn=document.getElementById("reportBtn");
+if(reportBtn){
+  reportBtn.onclick=()=>location.href="Report a Problem.html";
 }
 
-/* ===== UI SYSTEM ===== */
-window.toggleBottom=()=>{
-  document.getElementById("bottomNav")?.classList.toggle("show");
-};
-
-document.getElementById("year") &&
-(document.getElementById("year").textContent =
- new Date().getFullYear());
-
-document.getElementById("reportBtn") &&
-(document.getElementById("reportBtn").onclick=
- ()=>location.href="Report a Problem.html");
-
-/* ===== MENU ===== */
+/* ================= MENU ================= */
 const menuBtn=document.getElementById("menuBtn");
 const menu=document.getElementById("menuDropdown");
 if(menuBtn && menu){
@@ -765,7 +735,13 @@ if(menuBtn && menu){
     ()=>menu.style.display="none");
 }
 
-/* ===== PAGINATION ===== */
+/* ================= BOTTOM NAV ================= */
+window.toggleBottom=()=>{
+  document.getElementById("bottomNav")
+    ?.classList.toggle("show");
+};
+
+/* ================= PAGINATION ================= */
 const pageMap={
   1:"pageMap1.html",2:"pageMap2.html",3:"pageMap3.html",
   4:"pageMap4.html",5:"pageMap5.html",6:"pageMap6.html",
@@ -793,6 +769,7 @@ function render(){
     box.appendChild(d);
   }
 }
+
 window.nextSet=()=>{if(page<maxPage){page++;render()}};
 window.prevSet=()=>{if(page>1){page--;render()}};
 render();

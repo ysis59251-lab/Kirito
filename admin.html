@@ -75,7 +75,6 @@ h2{color:#00ffcc}
   flex-direction:column;
   z-index:999;
 }
-
 .report-item{
   background:#000;
   border:1px solid #222;
@@ -96,10 +95,25 @@ button{
   font-size:12px
 }
 button.restore{background:#00cfa8}
+
+#alert{
+  position:fixed;
+  top:20px;
+  right:20px;
+  background:#111;
+  color:#0f0;
+  padding:12px;
+  border-radius:10px;
+  display:none;
+  z-index:9999;
+}
 </style>
 </head>
 
 <body>
+
+<!-- ALERT -->
+<div id="alert"></div>
 
 <!-- MAIL -->
 <div id="mailBox" onclick="toggleInbox()">📢<span id="mailCount">0</span></div>
@@ -107,26 +121,6 @@ button.restore{background:#00cfa8}
   <h3>📬 แจ้งปัญหา</h3>
   <div id="reportList"></div>
 </div>
-
-onChildAdded(
-  query(ref(db,"visitors"), limitToLast(1)),
-  snap=>{
-    const v = snap.val();
-
-    alertBox.style.display="block";
-    alertBox.innerHTML=`
-      👀 มีคนเข้าเว็บ<br>
-      🌍 ${v.country||"-"} / ${v.city||"-"}<br>
-      🌐 IP: ${v.ip||"-"}<br>
-      📡 ${v.isp||"-"}<br>
-      📄 หน้า: ${v.page||"-"}
-    `;
-
-    setTimeout(()=>{
-      alertBox.style.display="none";
-    },4000);
-  }
-);
 
 <h2>📊 AnimeFume Dashboard</h2>
 
@@ -143,8 +137,44 @@ onChildAdded(
   <div id="trashBox"></div>
 </div>
 
-<script>
-/* ===== REPORT SYSTEM (localStorage) ===== */
+<!-- ================= SCRIPT ================= -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onChildAdded, query, limitToLast } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+/* ===== FIREBASE CONFIG ===== */
+const firebaseConfig = {
+  apiKey: "API_KEY",
+  authDomain: "PROJECT.firebaseapp.com",
+  databaseURL: "https://PROJECT.firebaseio.com",
+  projectId: "PROJECT",
+};
+/* ========================== */
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* ===== VISITOR ALERT ===== */
+const alertBox = document.getElementById("alert");
+
+onChildAdded(
+  query(ref(db,"visitors"), limitToLast(1)),
+  snap=>{
+    const v = snap.val() || {};
+    alertBox.style.display="block";
+    alertBox.innerHTML=`
+      👀 มีคนเข้าเว็บ<br>
+      🌍 ${v.country||"-"} / ${v.city||"-"}<br>
+      🌐 IP: ${v.ip||"-"}<br>
+      📡 ${v.isp||"-"}<br>
+      📄 หน้า: ${v.page||"-"}
+    `;
+    setTimeout(()=>alertBox.style.display="none",4000);
+  }
+);
+
+/* ===== REPORT SYSTEM ===== */
 const KEY_REPORT="reports";
 const KEY_HIDDEN="hiddenAnime";
 const KEY_VIEWS="animeViews";
@@ -152,11 +182,11 @@ const KEY_VIEWS="animeViews";
 const getReports=()=>JSON.parse(localStorage.getItem(KEY_REPORT)||"[]");
 const saveReports=d=>localStorage.setItem(KEY_REPORT,JSON.stringify(d));
 
-function toggleInbox(){
+window.toggleInbox=()=>{
   const box=document.getElementById("inbox");
   box.style.display=box.style.display==="flex"?"none":"flex";
   renderInbox();
-}
+};
 
 function renderInbox(){
   const reports=getReports();
@@ -164,8 +194,7 @@ function renderInbox(){
   const badge=document.getElementById("mailCount");
 
   list.innerHTML="";
-  const unread=reports.filter(r=>!r.read).length;
-  badge.textContent=unread;
+  badge.textContent=reports.filter(r=>!r.read).length;
 
   if(!reports.length){
     list.innerHTML="<p style='color:#777'>ยังไม่มีแจ้งปัญหา</p>";
@@ -177,96 +206,22 @@ function renderInbox(){
     list.innerHTML+=`
       <div class="report-item ${r.read?"":"new"}"
         onclick="markRead(${index})">
-        <small style="color:#aaa">🕒 ${r.time}</small><br>
-        <small style="color:#aaa">📄 ${r.page}</small>
+        <small>🕒 ${r.time}</small><br>
+        <small>📄 ${r.page}</small>
         <p>${r.detail}</p>
       </div>`;
   });
 }
 
 window.markRead=index=>{
-  const reports=getReports();
-  if(!reports[index])return;
-  reports[index].read=true;
-  saveReports(reports);
+  const r=getReports();
+  if(!r[index])return;
+  r[index].read=true;
+  saveReports(r);
   renderInbox();
 };
 
 renderInbox();
-
-/* ===== LOAD ANIME LIST ===== */
-fetch("./หน้าโหลด.html")
-.then(r=>r.text())
-.then(html=>{
-  const doc=new DOMParser().parseFromString(html,"text/html");
-  const cards=[...doc.querySelectorAll(".anime-card")];
-  const admin=document.getElementById("adminList");
-
-  const viewsData=JSON.parse(localStorage.getItem(KEY_VIEWS)||"{}");
-  const hidden=JSON.parse(localStorage.getItem(KEY_HIDDEN)||"[]");
-
-  let totalViews=0;
-  admin.innerHTML="";
-
-  cards.forEach(card=>{
-    const title=card.dataset.title||"ไม่ทราบชื่อ";
-    if(hidden.includes(title))return;
-
-    const img=card.querySelector("img")?.src||"";
-    const text=card.querySelector(".overlay-text")?.innerText||"";
-    const views=viewsData[title]||0;
-    totalViews+=views;
-
-    admin.innerHTML+=`
-      <div style="display:flex;gap:10px;margin-bottom:12px;
-      background:#111;padding:10px;border-radius:10px;border:1px solid #222">
-        <img src="${img}" style="width:80px;border-radius:6px">
-        <div style="flex:1">
-          <b style="color:#00ffcc">${title}</b>
-          <pre style="white-space:pre-wrap">${text}</pre>
-          <span style="background:#222;padding:4px 8px;border-radius:8px;font-size:12px">
-            👁️ ${views}
-          </span>
-          <button onclick="deleteAnime('${title.replace(/'/g,"\\'")}')">ลบ</button>
-        </div>
-      </div>`;
-  });
-
-  document.getElementById("views").innerText=totalViews;
-  document.getElementById("aCount").innerText=cards.length-hidden.length;
-  loadTrash();
-});
-
-/* ===== DELETE / RESTORE ===== */
-window.deleteAnime=title=>{
-  if(!confirm("ซ่อนเรื่องนี้?"))return;
-  const h=JSON.parse(localStorage.getItem(KEY_HIDDEN)||"[]");
-  if(!h.includes(title))h.push(title);
-  localStorage.setItem(KEY_HIDDEN,JSON.stringify(h));
-  location.reload();
-};
-
-function loadTrash(){
-  const box=document.getElementById("trashBox");
-  const hidden=JSON.parse(localStorage.getItem(KEY_HIDDEN)||"[]");
-  box.innerHTML=hidden.length?"":"<p style='color:#777'>ไม่มีรายการ</p>";
-
-  hidden.forEach(t=>{
-    box.innerHTML+=`
-      <div style="display:flex;justify-content:space-between;
-      background:#000;padding:8px;border-radius:8px;margin-bottom:6px">
-        <span>${t}</span>
-        <button class="restore" onclick="restoreAnime('${t.replace(/'/g,"\\'")}')">กู้คืน</button>
-      </div>`;
-  });
-}
-
-window.restoreAnime=title=>{
-  let h=JSON.parse(localStorage.getItem(KEY_HIDDEN)||"[]");
-  h=h.filter(x=>x!==title);
-  localStorage.setItem(KEY_HIDDEN,JSON.stringify(h));
-  location.reload();
-};
 </script>
 
 </body>

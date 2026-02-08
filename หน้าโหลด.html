@@ -654,55 +654,119 @@ Oshi no Ko Season 3 เกิดใหม่เป็นลูกโอชิ(�
 <!-- ปุ่มลอย -->
 <button class="fab" onclick="toggleBottom()">☰</button>
 
-<script src="firebase.js"></script>
 <script type="module">
+/* ===== FIREBASE ===== */
+import { initializeApp } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
+import {
+  getDatabase,
+  ref,
+  onValue,
+  runTransaction
+} from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+/* 🔧 CONFIG */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_DOMAIN",
+  databaseURL: "YOUR_DB_URL",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_BUCKET",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
 
 const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
 /* ===== COUNT VIEWS ===== */
-document.querySelectorAll(".anime-card").forEach(card=>{
-  const title = card.dataset.title;
-  if(!title) return;
+const today = new Date().toISOString().slice(0,10);
 
-  const views = JSON.parse(localStorage.getItem("animeViews") || "{}");
-  views[title] = (views[title] || 0) + 1;
-  localStorage.setItem("animeViews", JSON.stringify(views));
+// รวมยอดทั้งหมด
+runTransaction(ref(db,"stats/totalViews"),v=>(v||0)+1);
+
+// ยอดรายวัน
+runTransaction(ref(db,"stats/daily/"+today),v=>(v||0)+1);
+
+/* ===== COUNT PER ANIME ===== */
+document.querySelectorAll(".anime-card").forEach(card=>{
+  const id = card.dataset.id || card.dataset.title;
+  if(!id) return;
+  runTransaction(ref(db,"animeViews/"+id),v=>(v||0)+1);
 });
 
-/* ===== HIDE ANIME ===== */
-const hiddenList = JSON.parse(localStorage.getItem("hiddenAnime") || "[]");
-document.querySelectorAll(".anime-card").forEach(card=>{
-  if(hiddenList.includes(card.dataset.title)){
-    card.remove();
-  }
+/* ===== HIDE / RESTORE ANIME ===== */
+onValue(ref(db,"animeList"),snap=>{
+  document.querySelectorAll(".anime-card").forEach(card=>{
+    const id = card.dataset.id || card.dataset.title;
+    if(!snap.child(id).exists()){
+      card.remove();
+    }
+  });
 });
+
+/* ===== GRAPH (ADMIN PAGE) ===== */
+const ctx = document.getElementById("viewChart");
+if(ctx){
+  onValue(ref(db,"stats/daily"),snap=>{
+    const labels=[], data=[];
+    snap.forEach(d=>{
+      labels.push(d.key);
+      data.push(d.val());
+    });
+
+    new Chart(ctx,{
+      type:"line",
+      data:{
+        labels,
+        datasets:[{
+          label:"ยอดเข้าชม",
+          data,
+          borderColor:"#00ffcc",
+          tension:.3
+        }]
+      },
+      options:{
+        plugins:{legend:{display:false}},
+        scales:{
+          x:{ticks:{color:"#aaa"}},
+          y:{ticks:{color:"#aaa"}}
+        }
+      }
+    });
+  });
+}
 
 /* ===== UI SYSTEM ===== */
-window.toggleBottom = ()=>{
+window.toggleBottom=()=>{
   document.getElementById("bottomNav")?.classList.toggle("show");
 };
 
 document.getElementById("year") &&
-(document.getElementById("year").textContent = new Date().getFullYear());
+(document.getElementById("year").textContent =
+ new Date().getFullYear());
 
 document.getElementById("reportBtn") &&
-(document.getElementById("reportBtn").onclick = ()=>{
-  location.href = "Report a Problem.html";
-});
+(document.getElementById("reportBtn").onclick=
+ ()=>location.href="Report a Problem.html");
 
 /* ===== MENU ===== */
-const menuBtn = document.getElementById("menuBtn");
-const menu = document.getElementById("menuDropdown");
+const menuBtn=document.getElementById("menuBtn");
+const menu=document.getElementById("menuDropdown");
 if(menuBtn && menu){
-  menuBtn.onclick = e=>{
+  menuBtn.onclick=e=>{
     e.stopPropagation();
-    menu.style.display = menu.style.display==="flex"?"none":"flex";
+    menu.style.display=
+      menu.style.display==="flex"?"none":"flex";
   };
-  document.addEventListener("click",()=>menu.style.display="none");
+  document.addEventListener("click",
+    ()=>menu.style.display="none");
 }
 
 /* ===== PAGINATION ===== */
-const pageMap = {
+const pageMap={
   1:"pageMap1.html",2:"pageMap2.html",3:"pageMap3.html",
   4:"pageMap4.html",5:"pageMap5.html",6:"pageMap6.html",
   7:"pageMap7.html",8:"pageMap8.html",9:"pageMap9.html",
@@ -710,7 +774,9 @@ const pageMap = {
 };
 
 let page=1, per=5;
-const maxPage=Math.ceil(Object.keys(pageMap).length/per);
+const maxPage=Math.ceil(
+  Object.keys(pageMap).length/per
+);
 
 function render(){
   const box=document.getElementById("numberBox");
@@ -727,10 +793,8 @@ function render(){
     box.appendChild(d);
   }
 }
-
-window.nextSet=()=>{ if(page<maxPage){page++;render()} };
-window.prevSet=()=>{ if(page>1){page--;render()} };
-
+window.nextSet=()=>{if(page<maxPage){page++;render()}};
+window.prevSet=()=>{if(page>1){page--;render()}};
 render();
 </script>
 

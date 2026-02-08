@@ -123,34 +123,7 @@ button.restore{background:#00cfa8}
   <div id="trashBox"></div>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onChildAdded, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-/* ===== FIREBASE CONFIG ===== */
-const firebaseConfig = {
-  apiKey: "YOUR_KEY",
-  authDomain: "YOUR_DOMAIN",
-  databaseURL: "YOUR_DB_URL",
-  projectId: "YOUR_PROJECT_ID",
-};
-/* ========================== */
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-/* ===== VISITOR ALERT ===== */
-const alertBox = document.getElementById("alert");
-
-onChildAdded(
-  query(ref(db,"visitors"), limitToLast(1)),
-  snap=>{
-    alertBox.style.display="block";
-    alertBox.innerText="👀 มีคนเข้า: "+(snap.val().page||"ไม่ทราบหน้า");
-    setTimeout(()=>alertBox.style.display="none",3000);
-  }
-);
-
+<script>
 /* ===== REPORT SYSTEM (localStorage) ===== */
 const KEY_REPORT="reports";
 const KEY_HIDDEN="hiddenAnime";

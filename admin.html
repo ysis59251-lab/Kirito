@@ -108,6 +108,17 @@ button.restore{background:#00cfa8}
   <div id="reportList"></div>
 </div>
 
+<div id="alert" style="
+position:fixed;
+top:20px;
+right:20px;
+background:#111;
+color:#0f0;
+padding:12px;
+border-radius:8px;
+display:none;
+">มีคนเข้าเว็บ!</div>
+
 <h2>📊 AnimeFume Dashboard</h2>
 
 <div class="cards">
@@ -124,7 +135,23 @@ button.restore{background:#00cfa8}
   <div id="trashBox"></div>
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const alertBox = document.getElementById("alert");
+
+onChildAdded(ref(db, "visitors"), snap => {
+  alertBox.style.display = "block";
+  alertBox.innerText = "👀 มีคนเข้า: " + snap.val().page;
+
+  setTimeout(() => {
+    alertBox.style.display = "none";
+  }, 3000);
+});
 
 /* ================== REPORT INBOX ================== */
 

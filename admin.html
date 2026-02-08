@@ -158,22 +158,6 @@ const db = getDatabase(app);
 /* ===== VISITOR ALERT ===== */
 const alertBox = document.getElementById("alert");
 
-onChildAdded(
-  query(ref(db,"visitors"), limitToLast(1)),
-  snap=>{
-    const v = snap.val() || {};
-    alertBox.style.display="block";
-    alertBox.innerHTML=`
-      👀 มีคนเข้าเว็บ<br>
-      🌍 ${v.country||"-"} / ${v.city||"-"}<br>
-      🌐 IP: ${v.ip||"-"}<br>
-      📡 ${v.isp||"-"}<br>
-      📄 หน้า: ${v.page||"-"}
-    `;
-    setTimeout(()=>alertBox.style.display="none",4000);
-  }
-);
-
 /* ===== REPORT SYSTEM ===== */
 const KEY_REPORT="reports";
 const KEY_HIDDEN="hiddenAnime";

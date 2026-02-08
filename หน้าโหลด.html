@@ -655,7 +655,31 @@ Oshi no Ko Season 3 เกิดใหม่เป็นลูกโอชิ(�
 <button class="fab" onclick="toggleBottom()">☰</button>
 
 <script src="firebase.js"></script>
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "API_KEY",
+  authDomain: "PROJECT.firebaseapp.com",
+  databaseURL: "https://PROJECT.firebaseio.com",
+  projectId: "PROJECT",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// ดึง IP
+fetch("https://api.ipify.org?format=json")
+.then(res => res.json())
+.then(data => {
+  push(ref(db, "visitors"), {
+    time: Date.now(),
+    page: location.pathname,
+    ip: data.ip,
+    userAgent: navigator.userAgent
+  });
+});
 
 // นับวิว
 document.querySelectorAll('.anime-card').forEach(card=>{

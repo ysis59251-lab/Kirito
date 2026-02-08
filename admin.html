@@ -3,69 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>AnimeFume Dashboard</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>AnimeFume Admin</title>
 
 <style>
-body{background:#0b0b0b;color:#fff;font-family:system-ui;padding:16px}
+body{
+  margin:0;
+  font-family:system-ui;
+  background:#0b0b0b;
+  color:#fff;
+  padding:16px
+}
 h2{color:#00ffcc}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
-.card{background:#111;padding:14px;border-radius:12px;border:1px solid #222}
-.section{margin-top:20px;background:#111;padding:16px;border-radius:14px;border:1px solid #222}
 
-/* inbox */
-#mailBox{position:fixed;top:16px;right:16px;width:48px;height:48px;background:#ff3b3b;
-border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;cursor:pointer}
-#mailCount{position:absolute;top:-6px;right:-6px;background:#000;font-size:11px;
-padding:2px 6px;border-radius:10px}
-#inbox{position:fixed;top:80px;right:16px;width:320px;max-height:420px;
-background:#111;border-radius:14px;padding:12px;display:none;flex-direction:column;overflow:auto}
-.report-item{background:#000;border:1px solid #222;border-radius:10px;
-padding:8px;margin-bottom:8px;font-size:12px}
-.report-item.new{border-color:#ff3b3b}
-button{background:#ff3b3b;border:none;padding:6px 10px;border-radius:8px;color:#fff;cursor:pointer}
-button.restore{background:#00cfa8}
+.list{
+  display:grid;
+  gap:10px;
+  margin-top:16px
+}
+.item{
+  background:#111;
+  border:1px solid #222;
+  border-radius:12px;
+  padding:12px;
+  display:flex;
+  align-items:center;
+  gap:12px
+}
+.item img{
+  width:56px;
+  height:78px;
+  object-fit:cover;
+  border-radius:8px
+}
+.info{flex:1}
+.info small{opacity:.6}
+
+button{
+  border:none;
+  padding:8px 12px;
+  border-radius:8px;
+  cursor:pointer;
+  color:#fff;
+  font-size:13px
+}
+.hide{background:#ff3b3b}
+.show{background:#00cfa8}
 </style>
 </head>
 
 <body>
 
-<!-- inbox -->
-<div id="mailBox" onclick="toggleInbox()">📢<span id="mailCount">0</span></div>
-<div id="inbox">
-  <h3>📬 แจ้งปัญหา</h3>
-  <div id="reportList"></div>
-</div>
+<h2>📋 AnimeFume Admin</h2>
+<p style="opacity:.6">รายการอนิเมะจากหน้าแรกทั้งหมด</p>
 
-<h2>📊 AnimeFume Dashboard</h2>
-
-<div class="cards">
-  <div class="card">👁️ ยอดดูรวม<br><b id="views">0</b></div>
-  <div class="card">📚 เรื่องทั้งหมด<br><b id="aCount">0</b></div>
-</div>
-
-<div class="section">
-  <h3>📈 กราฟยอดดู (รายวัน)</h3>
-  <canvas id="viewChart" height="120"></canvas>
-</div>
-
-<h2>📋 รายการอนิเมะ</h2>
-<div id="adminList"></div>
-
-<div class="section">
-  <h3>🗑 อนิเมะที่ถูกซ่อน</h3>
-  <div id="trashBox"></div>
-</div>
+<div id="animeList" class="list"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  getDatabase, ref, onValue, onChildAdded,
-  update, set, remove, get
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, update } from
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* ===== FIREBASE ===== */
+/* 🔥 FIREBASE */
 const firebaseConfig={
   apiKey:"YOUR_API_KEY",
   authDomain:"YOUR_PROJECT.firebaseapp.com",
@@ -76,105 +74,41 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 
-/* ===== REPORT ===== */
-const reports=[];
-onChildAdded(ref(db,"reports"),s=>{
-  reports.push({id:s.key,...s.val()});
-  renderInbox();
-});
+/* ===== LOAD ANIME ===== */
+const box=document.getElementById("animeList");
 
-window.toggleInbox=()=>{
-  inbox.style.display=inbox.style.display==="flex"?"none":"flex";
-};
+onValue(ref(db,"animeList"),snap=>{
+  box.innerHTML="";
+  if(!snap.exists()){
+    box.innerHTML="ยังไม่มีอนิเมะ";
+    return;
+  }
 
-window.markRead=id=>{
-  update(ref(db,"reports/"+id),{read:true});
-};
+  Object.entries(snap.val()).forEach(([id,a])=>{
+    const on=a.enabled!==false;
 
-function renderInbox(){
-  mailCount.textContent=reports.filter(r=>!r.read).length;
-  reportList.innerHTML="";
-  reports.slice().reverse().forEach(r=>{
-    reportList.innerHTML+=`
-      <div class="report-item ${r.read?"":"new"}"
-        onclick="markRead('${r.id}')">
-        <small>${r.time}</small><br>
-        <small>${r.page}</small>
-        <p>${r.detail}</p>
-      </div>`;
-  });
-}
-
-/* ===== STATS ===== */
-onValue(ref(db,"animeViews"),s=>{
-  views.textContent=s.val()||0;
-});
-onValue(ref(db,"animeList"),s=>{
-  aCount.textContent=s.exists()?Object.keys(s.val()).length:0;
-});
-
-/* ===== ANIME LIST ===== */
-onValue(ref(db,"animeList"),s=>{
-  adminList.innerHTML="";
-  if(!s.exists()) return adminList.innerHTML="ไม่มีอนิเมะ";
-  Object.entries(s.val()).forEach(([id,a])=>{
-    adminList.innerHTML+=`
-      <div class="report-item">
-        <b>${a.title}</b> (${a.ep||0} ตอน)<br>
-        <button onclick="hideAnime('${id}')">🗑 ซ่อน</button>
-      </div>`;
+    box.innerHTML+=`
+      <div class="item">
+        <img src="${a.cover||''}">
+        <div class="info">
+          <b>${a.title}</b><br>
+          <small>${a.ep||0} ตอน • ${on?"แสดงอยู่":"ซ่อนอยู่"}</small>
+        </div>
+        <button class="${on?'hide':'show'}"
+          onclick="toggleAnime('${id}',${on})">
+          ${on?"ซ่อน":"คืนค่า"}
+        </button>
+      </div>
+    `;
   });
 });
 
-onValue(ref(db,"hiddenAnime"),s=>{
-  trashBox.innerHTML="";
-  if(!s.exists()) return trashBox.innerHTML="ถังว่าง";
-  Object.entries(s.val()).forEach(([id,a])=>{
-    trashBox.innerHTML+=`
-      <div class="report-item">
-        <b>${a.title}</b><br>
-        <button class="restore"
-          onclick="restoreAnime('${id}')">♻️ กู้คืน</button>
-      </div>`;
+/* ===== TOGGLE ===== */
+window.toggleAnime=(id,on)=>{
+  update(ref(db,"animeList/"+id),{
+    enabled: !on
   });
-});
-
-window.hideAnime=async id=>{
-  if(!confirm("ซ่อนอนิเมะนี้?"))return;
-  const snap=await get(ref(db,"animeList/"+id));
-  if(!snap.exists())return;
-  await set(ref(db,"hiddenAnime/"+id),snap.val());
-  await remove(ref(db,"animeList/"+id));
 };
-
-window.restoreAnime=async id=>{
-  if(!confirm("กู้คืนอนิเมะนี้?"))return;
-  const snap=await get(ref(db,"hiddenAnime/"+id));
-  if(!snap.exists())return;
-  await set(ref(db,"animeList/"+id),snap.val());
-  await remove(ref(db,"hiddenAnime/"+id));
-};
-
-/* ===== VIEW CHART ===== */
-const ctx=document.getElementById("viewChart");
-let chart;
-onValue(ref(db,"viewStats"),s=>{
-  if(!s.exists())return;
-  const data=s.val();
-  const labels=Object.keys(data).sort();
-  const values=labels.map(d=>data[d]);
-  if(chart) chart.destroy();
-  chart=new Chart(ctx,{
-    type:"line",
-    data:{labels,datasets:[{
-      data:values,label:"ยอดดู",
-      borderColor:"#00ffcc",
-      backgroundColor:"rgba(0,255,204,.15)",
-      tension:.35,fill:true
-    }]},
-    options:{plugins:{legend:{display:false}}}
-  });
-});
 </script>
 
 </body>

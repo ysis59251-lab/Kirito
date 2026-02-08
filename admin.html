@@ -117,6 +117,7 @@ color:#0f0;
 padding:12px;
 border-radius:8px;
 display:none;
+z-index:9999;
 ">มีคนเข้าเว็บ!</div>
 
 <h2>📊 AnimeFume Dashboard</h2>
@@ -129,7 +130,6 @@ display:none;
 <h2>📋 รายการอนิเมะ</h2>
 <div id="adminList"></div>
 
-<!-- ===== TRASH ===== -->
 <div class="section">
   <h3>🗑 อนิเมะที่ถูกซ่อน (กู้คืนได้)</h3>
   <div id="trashBox"></div>
@@ -137,185 +137,155 @@ display:none;
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onChildAdded } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onChildAdded, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+/* ===== FIREBASE CONFIG ===== */
+const firebaseConfig = {
+  apiKey: "YOUR_KEY",
+  authDomain: "YOUR_DOMAIN",
+  databaseURL: "YOUR_DB_URL",
+  projectId: "YOUR_PROJECT_ID",
+};
+/* ========================== */
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+/* ===== VISITOR ALERT ===== */
 const alertBox = document.getElementById("alert");
 
-onChildAdded(ref(db, "visitors"), snap => {
-  alertBox.style.display = "block";
-  alertBox.innerText = "👀 มีคนเข้า: " + snap.val().page;
+onChildAdded(
+  query(ref(db,"visitors"), limitToLast(1)),
+  snap=>{
+    alertBox.style.display="block";
+    alertBox.innerText="👀 มีคนเข้า: "+(snap.val().page||"ไม่ทราบหน้า");
+    setTimeout(()=>alertBox.style.display="none",3000);
+  }
+);
 
-  setTimeout(() => {
-    alertBox.style.display = "none";
-  }, 3000);
-});
+/* ===== REPORT SYSTEM (localStorage) ===== */
+const KEY_REPORT="reports";
+const KEY_HIDDEN="hiddenAnime";
+const KEY_VIEWS="animeViews";
 
-/* ================== REPORT INBOX ================== */
-
-function getReports(){
-  return JSON.parse(localStorage.getItem("reports") || "[]");
-}
-
-function saveReports(data){
-  localStorage.setItem("reports", JSON.stringify(data));
-}
+const getReports=()=>JSON.parse(localStorage.getItem(KEY_REPORT)||"[]");
+const saveReports=d=>localStorage.setItem(KEY_REPORT,JSON.stringify(d));
 
 function toggleInbox(){
-  const inbox = document.getElementById("inbox");
-  inbox.style.display = inbox.style.display === "flex" ? "none" : "flex";
+  const box=document.getElementById("inbox");
+  box.style.display=box.style.display==="flex"?"none":"flex";
   renderInbox();
 }
 
 function renderInbox(){
-  const reports = getReports();
-  const list = document.getElementById("reportList");
-  const badge = document.getElementById("mailCount");
+  const reports=getReports();
+  const list=document.getElementById("reportList");
+  const badge=document.getElementById("mailCount");
 
-  list.innerHTML = "";
+  list.innerHTML="";
+  const unread=reports.filter(r=>!r.read).length;
+  badge.textContent=unread;
 
-  const unread = reports.filter(r => !r.read).length;
-  badge.textContent = unread;
-
-  if(reports.length === 0){
-    list.innerHTML = `<p style="color:#777;font-size:13px">ยังไม่มีแจ้งปัญหา</p>`;
+  if(!reports.length){
+    list.innerHTML="<p style='color:#777'>ยังไม่มีแจ้งปัญหา</p>";
     return;
   }
 
   reports.slice().reverse().forEach((r,i)=>{
-    const index = reports.length - 1 - i;
-
-    list.innerHTML += `
-      <div style="
-        background:#000;
-        border:1px solid ${r.read ? "#222" : "#ff3b3b"};
-        border-radius:10px;
-        padding:8px;
-        margin-bottom:8px;
-        font-size:12px;
-      " onclick="markRead(${index})">
+    const index=reports.length-1-i;
+    list.innerHTML+=`
+      <div class="report-item ${r.read?"":"new"}"
+        onclick="markRead(${index})">
         <small style="color:#aaa">🕒 ${r.time}</small><br>
         <small style="color:#aaa">📄 ${r.page}</small>
-        <p style="margin-top:6px">${r.detail}</p>
-      </div>
-    `;
+        <p>${r.detail}</p>
+      </div>`;
   });
 }
 
-function markRead(index){
-  const reports = getReports();
-  if(!reports[index]) return;
-  reports[index].read = true;
+window.markRead=index=>{
+  const reports=getReports();
+  if(!reports[index])return;
+  reports[index].read=true;
   saveReports(reports);
   renderInbox();
-}
+};
 
-/* โหลด badge ตอนเปิดหน้า */
 renderInbox();
 
-function markRead(index){
-  const reports = JSON.parse(localStorage.getItem("reports") || "[]");
-  if(!reports[index]) return;
-  reports[index].read = true;
-  localStorage.setItem("reports", JSON.stringify(reports));
-  renderReports();
-}
-
-/* ================== LOAD MAIN PAGE ================== */
-fetch("หน้าโหลด.html")
-.then(res=>res.text())
+/* ===== LOAD ANIME LIST ===== */
+fetch("./หน้าโหลด.html")
+.then(r=>r.text())
 .then(html=>{
-  const doc = new DOMParser().parseFromString(html,"text/html");
-  const cards = doc.querySelectorAll(".anime-card");
-  const admin = document.getElementById("adminList");
+  const doc=new DOMParser().parseFromString(html,"text/html");
+  const cards=[...doc.querySelectorAll(".anime-card")];
+  const admin=document.getElementById("adminList");
 
-  const viewData = JSON.parse(localStorage.getItem("animeViews")||"{}");
-  const hidden = JSON.parse(localStorage.getItem("hiddenAnime")||"[]");
+  const viewsData=JSON.parse(localStorage.getItem(KEY_VIEWS)||"{}");
+  const hidden=JSON.parse(localStorage.getItem(KEY_HIDDEN)||"[]");
 
-  let totalViews = 0;
-  admin.innerHTML = "";
+  let totalViews=0;
+  admin.innerHTML="";
 
   cards.forEach(card=>{
-    const title = card.dataset.title || "ไม่ทราบชื่อ";
-    const img = card.querySelector("img")?.src || "";
-    const text = card.querySelector(".overlay-text")?.innerText || "";
-    const views = viewData[title] || 0;
-    totalViews += views;
+    const title=card.dataset.title||"ไม่ทราบชื่อ";
+    if(hidden.includes(title))return;
 
-    if(hidden.includes(title)) return;
+    const img=card.querySelector("img")?.src||"";
+    const text=card.querySelector(".overlay-text")?.innerText||"";
+    const views=viewsData[title]||0;
+    totalViews+=views;
 
-    admin.innerHTML += `
+    admin.innerHTML+=`
       <div style="display:flex;gap:10px;margin-bottom:12px;
-        background:#111;padding:10px;border-radius:10px;border:1px solid #222">
+      background:#111;padding:10px;border-radius:10px;border:1px solid #222">
         <img src="${img}" style="width:80px;border-radius:6px">
         <div style="flex:1">
           <b style="color:#00ffcc">${title}</b>
-          <pre style="white-space:pre-wrap;margin:4px 0">${text}</pre>
-          <div style="display:flex;gap:8px;align-items:center">
-            <span style="background:#222;padding:4px 8px;border-radius:8px;font-size:12px">
-              👁️ ${views}
-            </span>
-            <button onclick="deleteAnime('${title.replace(/'/g,"\\'")}')">ลบ</button>
-          </div>
+          <pre style="white-space:pre-wrap">${text}</pre>
+          <span style="background:#222;padding:4px 8px;border-radius:8px;font-size:12px">
+            👁️ ${views}
+          </span>
+          <button onclick="deleteAnime('${title.replace(/'/g,"\\'")}')">ลบ</button>
         </div>
-      </div>
-    `;
+      </div>`;
   });
 
-  document.getElementById("views").innerText = totalViews;
-  document.getElementById("aCount").innerText = cards.length;
+  document.getElementById("views").innerText=totalViews;
+  document.getElementById("aCount").innerText=cards.length-hidden.length;
   loadTrash();
 });
 
-/* ================== DELETE (ซ่อน) ================== */
-function deleteAnime(title){
-  if(!confirm("ซ่อนเรื่องนี้ออกจากหน้าเว็บ?")) return;
-  const list = JSON.parse(localStorage.getItem("hiddenAnime")||"[]");
-  if(!list.includes(title)){
-    list.push(title);
-    localStorage.setItem("hiddenAnime",JSON.stringify(list));
-  }
+/* ===== DELETE / RESTORE ===== */
+window.deleteAnime=title=>{
+  if(!confirm("ซ่อนเรื่องนี้?"))return;
+  const h=JSON.parse(localStorage.getItem(KEY_HIDDEN)||"[]");
+  if(!h.includes(title))h.push(title);
+  localStorage.setItem(KEY_HIDDEN,JSON.stringify(h));
   location.reload();
-}
+};
 
-/* ================== TRASH / RESTORE ================== */
 function loadTrash(){
-  const box = document.getElementById("trashBox");
-  const hidden = JSON.parse(localStorage.getItem("hiddenAnime")||"[]");
-  box.innerHTML = "";
+  const box=document.getElementById("trashBox");
+  const hidden=JSON.parse(localStorage.getItem(KEY_HIDDEN)||"[]");
+  box.innerHTML=hidden.length?"":"<p style='color:#777'>ไม่มีรายการ</p>";
 
-  if(hidden.length===0){
-    box.innerHTML = "<p style='color:#777'>ไม่มีรายการที่ถูกซ่อน</p>";
-    return;
-  }
-
-  hidden.forEach(title=>{
-    box.innerHTML += `
-      <div style="display:flex;justify-content:space-between;align-items:center;
-        margin-bottom:8px;background:#000;padding:8px;border-radius:8px">
-        <span>${title}</span>
-        <button class="restore" onclick="restoreAnime('${title.replace(/'/g,"\\'")}')">
-          กู้คืน
-        </button>
-      </div>
-    `;
+  hidden.forEach(t=>{
+    box.innerHTML+=`
+      <div style="display:flex;justify-content:space-between;
+      background:#000;padding:8px;border-radius:8px;margin-bottom:6px">
+        <span>${t}</span>
+        <button class="restore" onclick="restoreAnime('${t.replace(/'/g,"\\'")}')">กู้คืน</button>
+      </div>`;
   });
 }
 
-function restoreAnime(title){
-  let hidden = JSON.parse(localStorage.getItem("hiddenAnime")||"[]");
-  hidden = hidden.filter(t=>t!==title);
-  localStorage.setItem("hiddenAnime",JSON.stringify(hidden));
+window.restoreAnime=title=>{
+  let h=JSON.parse(localStorage.getItem(KEY_HIDDEN)||"[]");
+  h=h.filter(x=>x!==title);
+  localStorage.setItem(KEY_HIDDEN,JSON.stringify(h));
   location.reload();
-}
-
-/* ================== REPORT ================== */
-function toggleInbox(){
-  const box = document.getElementById("inbox");
-  box.style.display = box.style.display==="flex"?"none":"flex";
-}
+};
 </script>
 
 </body>

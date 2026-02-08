@@ -8,114 +8,43 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{
-  background:#0b0b0b;
-  color:#fff;
-  font-family:system-ui;
-  padding:16px
-}
+body{background:#0b0b0b;color:#fff;font-family:system-ui;padding:16px}
 h2{color:#00ffcc}
-
-.cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:12px
-}
-.card{
-  background:#111;
-  padding:14px;
-  border-radius:12px;
-  border:1px solid #222
-}
-.section{
-  margin-top:20px;
-  background:#111;
-  padding:16px;
-  border-radius:14px;
-  border:1px solid #222
-}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
+.card{background:#111;padding:14px;border-radius:12px;border:1px solid #222}
+.section{margin-top:20px;background:#111;padding:16px;border-radius:14px;border:1px solid #222}
 
 /* MAIL */
 #mailBox{
-  position:fixed;
-  top:16px;
-  right:16px;
-  width:48px;
-  height:48px;
-  background:#ff3b3b;
-  border-radius:50%;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  font-size:20px;
-  cursor:pointer;
-  z-index:1000;
+  position:fixed;top:16px;right:16px;
+  width:48px;height:48px;
+  background:#ff3b3b;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;cursor:pointer;z-index:1000
 }
 #mailCount{
-  position:absolute;
-  top:-6px;
-  right:-6px;
-  background:#000;
-  color:#fff;
-  font-size:11px;
-  padding:2px 6px;
-  border-radius:10px;
+  position:absolute;top:-6px;right:-6px;
+  background:#000;color:#fff;font-size:11px;
+  padding:2px 6px;border-radius:10px
 }
 #inbox{
-  position:fixed;
-  top:80px;
-  right:16px;
-  width:320px;
-  max-height:420px;
-  background:#111;
-  border-radius:14px;
-  padding:12px;
-  box-shadow:0 10px 30px rgba(0,0,0,.7);
-  display:none;
-  flex-direction:column;
-  z-index:999;
+  position:fixed;top:80px;right:16px;
+  width:320px;max-height:420px;
+  background:#111;border-radius:14px;
+  padding:12px;display:none;flex-direction:column;
+  box-shadow:0 10px 30px rgba(0,0,0,.7)
 }
 .report-item{
-  background:#000;
-  border:1px solid #222;
-  border-radius:10px;
-  padding:8px;
-  margin-bottom:8px;
-  font-size:12px;
+  background:#000;border:1px solid #222;
+  border-radius:10px;padding:8px;
+  margin-bottom:8px;font-size:12px
 }
 .report-item.new{border-color:#ff3b3b}
-
-button{
-  background:#ff3b3b;
-  border:none;
-  padding:6px 10px;
-  border-radius:8px;
-  color:#fff;
-  cursor:pointer;
-  font-size:12px
-}
-button.restore{background:#00cfa8}
-
-#alert{
-  position:fixed;
-  top:20px;
-  right:20px;
-  background:#111;
-  color:#0f0;
-  padding:12px;
-  border-radius:10px;
-  display:none;
-  z-index:9999;
-}
 </style>
 </head>
 
 <body>
 
-<!-- ALERT -->
-<div id="alert"></div>
-
-<!-- MAIL -->
 <div id="mailBox" onclick="toggleInbox()">📢<span id="mailCount">0</span></div>
 <div id="inbox">
   <h3>📬 แจ้งปัญหา</h3>
@@ -123,63 +52,71 @@ button.restore{background:#00cfa8}
 </div>
 
 <h2>📊 AnimeFume Dashboard</h2>
-
 <div class="cards">
   <div class="card">👁️ ยอดดูรวม<br><b id="views">0</b></div>
   <div class="card">📚 เรื่องทั้งหมด<br><b id="aCount">0</b></div>
 </div>
 
-<h2>📋 รายการอนิเมะ</h2>
-<div id="adminList"></div>
-
-<div class="section">
-  <h3>🗑 อนิเมะที่ถูกซ่อน (กู้คืนได้)</h3>
-  <div id="trashBox"></div>
-</div>
-
-<!-- ================= SCRIPT ================= -->
 <script type="module">
+/* ================= FIREBASE ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onChildAdded, query, limitToLast } from
-"https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+/* 🔥 ใส่ของคุณตรงนี้ */
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT.firebaseapp.com",
+  databaseURL: "https://YOUR_PROJECT.firebaseio.com",
+  projectId: "YOUR_PROJECT",
+  storageBucket: "YOUR_PROJECT.appspot.com",
+  messagingSenderId: "XXXX",
+  appId: "XXXX"
+};
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ===== VISITOR ALERT ===== */
-const alertBox = document.getElementById("alert");
+/* ================= REPORT SYSTEM (Local) ================= */
+const KEY_REPORT = "reports";
+const getReports = () =>
+  JSON.parse(localStorage.getItem(KEY_REPORT) || "[]");
+const saveReports = d =>
+  localStorage.setItem(KEY_REPORT, JSON.stringify(d));
 
-/* ===== REPORT SYSTEM ===== */
-const KEY_REPORT="reports";
-const KEY_HIDDEN="hiddenAnime";
-const KEY_VIEWS="animeViews";
+/* DEMO DATA (ลบทิ้งได้) */
+if (!getReports().length) {
+  saveReports([{
+    time: new Date().toLocaleString(),
+    page: "หน้าแรก",
+    detail: "วิดีโอเล่นไม่ได้",
+    read: false
+  }]);
+}
 
-const getReports=()=>JSON.parse(localStorage.getItem(KEY_REPORT)||"[]");
-const saveReports=d=>localStorage.setItem(KEY_REPORT,JSON.stringify(d));
-
-window.toggleInbox=()=>{
-  const box=document.getElementById("inbox");
-  box.style.display=box.style.display==="flex"?"none":"flex";
+/* ================= INBOX ================= */
+window.toggleInbox = () => {
+  const box = document.getElementById("inbox");
+  box.style.display = box.style.display === "flex" ? "none" : "flex";
   renderInbox();
 };
 
-function renderInbox(){
-  const reports=getReports();
-  const list=document.getElementById("reportList");
-  const badge=document.getElementById("mailCount");
+function renderInbox() {
+  const reports = getReports();
+  const list = document.getElementById("reportList");
+  const badge = document.getElementById("mailCount");
 
-  list.innerHTML="";
-  badge.textContent=reports.filter(r=>!r.read).length;
+  badge.textContent = reports.filter(r => !r.read).length;
+  list.innerHTML = "";
 
-  if(!reports.length){
-    list.innerHTML="<p style='color:#777'>ยังไม่มีแจ้งปัญหา</p>";
+  if (!reports.length) {
+    list.innerHTML = "<p style='color:#777'>ยังไม่มีแจ้งปัญหา</p>";
     return;
   }
 
-  reports.slice().reverse().forEach((r,i)=>{
-    const index=reports.length-1-i;
-    list.innerHTML+=`
-      <div class="report-item ${r.read?"":"new"}"
+  reports.slice().reverse().forEach((r, i) => {
+    const index = reports.length - 1 - i;
+    list.innerHTML += `
+      <div class="report-item ${r.read ? "" : "new"}"
         onclick="markRead(${index})">
         <small>🕒 ${r.time}</small><br>
         <small>📄 ${r.page}</small>
@@ -188,10 +125,10 @@ function renderInbox(){
   });
 }
 
-window.markRead=index=>{
-  const r=getReports();
-  if(!r[index])return;
-  r[index].read=true;
+window.markRead = index => {
+  const r = getReports();
+  if (!r[index]) return;
+  r[index].read = true;
   saveReports(r);
   renderInbox();
 };

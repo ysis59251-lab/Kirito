@@ -656,13 +656,23 @@ Oshi no Ko Season 3 เกิดใหม่เป็นลูกโอชิ(�
 
 <script src="firebase.js"></script>
 <script type="module">
-
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, push } from
 "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const db = getDatabase();
+/* ===== FIREBASE CONFIG ===== */
+const firebaseConfig = {
+  apiKey: "API_KEY",
+  authDomain: "PROJECT.firebaseapp.com",
+  databaseURL: "https://PROJECT.firebaseio.com",
+  projectId: "PROJECT",
+};
+/* ========================== */
 
-// ดึง IP + พิกัด
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* ===== VISITOR TRACK (IP + LOCATION) ===== */
 fetch("https://ipapi.co/json/")
 .then(r=>r.json())
 .then(ip=>{
@@ -672,37 +682,13 @@ fetch("https://ipapi.co/json/")
     city: ip.city,
     isp: ip.org,
     page: location.pathname,
+    userAgent: navigator.userAgent,
     time: Date.now()
   });
 });
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "API_KEY",
-  authDomain: "PROJECT.firebaseapp.com",
-  databaseURL: "https://PROJECT.firebaseio.com",
-  projectId: "PROJECT",
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// ดึง IP
-fetch("https://api.ipify.org?format=json")
-.then(res => res.json())
-.then(data => {
-  push(ref(db, "visitors"), {
-    time: Date.now(),
-    page: location.pathname,
-    ip: data.ip,
-    userAgent: navigator.userAgent
-  });
-});
-
-// นับวิว
-document.querySelectorAll('.anime-card').forEach(card=>{
+/* ===== COUNT VIEWS ===== */
+document.querySelectorAll(".anime-card").forEach(card=>{
   const title = card.dataset.title;
   if(!title) return;
 
@@ -711,88 +697,68 @@ document.querySelectorAll('.anime-card').forEach(card=>{
   localStorage.setItem("animeViews", JSON.stringify(views));
 });
 
-// ซ่อนอนิเมะ
+/* ===== HIDE ANIME ===== */
 const hiddenList = JSON.parse(localStorage.getItem("hiddenAnime") || "[]");
-
 document.querySelectorAll(".anime-card").forEach(card=>{
-  const title = card.dataset.title;
-  if(hiddenList.includes(title)){
+  if(hiddenList.includes(card.dataset.title)){
     card.remove();
   }
 });
 
-/* ===== TOGGLE BOTTOM ===== */
-function toggleBottom(){
-  document.getElementById("bottomNav").classList.toggle("show");
-}
-
-/* ===== YEAR ===== */
-document.getElementById("year").textContent = new Date().getFullYear();
-
-/* ===== REPORT ===== */
-document.getElementById("reportBtn").onclick = ()=>{
-  location.href = "Report a Problem.html";
+/* ===== UI SYSTEM ===== */
+window.toggleBottom = ()=>{
+  document.getElementById("bottomNav")?.classList.toggle("show");
 };
+
+document.getElementById("year") &&
+(document.getElementById("year").textContent = new Date().getFullYear());
+
+document.getElementById("reportBtn") &&
+(document.getElementById("reportBtn").onclick = ()=>{
+  location.href = "Report a Problem.html";
+});
 
 /* ===== MENU ===== */
 const menuBtn = document.getElementById("menuBtn");
 const menu = document.getElementById("menuDropdown");
+if(menuBtn && menu){
+  menuBtn.onclick = e=>{
+    e.stopPropagation();
+    menu.style.display = menu.style.display==="flex"?"none":"flex";
+  };
+  document.addEventListener("click",()=>menu.style.display="none");
+}
 
-menuBtn.onclick = (e)=>{
-  e.stopPropagation();
-  menu.style.display = menu.style.display === "flex" ? "none" : "flex";
-};
-document.addEventListener("click", ()=> menu.style.display = "none");
-
-/* ===== BOTTOM NAV ===== */
+/* ===== PAGINATION ===== */
 const pageMap = {
-  1:"pageMap1.html", 2:"pageMap2.html", 3:"pageMap3.html",
-  4:"pageMap4.html", 5:"pageMap5.html", 6:"pageMap6.html",
-  7:"pageMap7.html", 8:"pageMap8.html", 9:"pageMap9.html",
-  10:"pageMap10.html",11:"pageMap11.html",12:"pageMap12.html",
-  13:"pageMap13.html",14:"pageMap14.html",15:"pageMap15.html",
-  16:"pageMap16.html",17:"pageMap17.html",18:"pageMap18.html",
-  19:"pageMap19.html",20:"pageMap20.html"
+  1:"pageMap1.html",2:"pageMap2.html",3:"pageMap3.html",
+  4:"pageMap4.html",5:"pageMap5.html",6:"pageMap6.html",
+  7:"pageMap7.html",8:"pageMap8.html",9:"pageMap9.html",
+  10:"pageMap10.html"
 };
 
-let page = 1;
-const per = 5;
-const maxPage = Math.ceil(Object.keys(pageMap).length / per);
+let page=1, per=5;
+const maxPage=Math.ceil(Object.keys(pageMap).length/per);
 
 function render(){
-  const box = document.getElementById("numberBox");
-  box.innerHTML = "";
+  const box=document.getElementById("numberBox");
+  if(!box) return;
+  box.innerHTML="";
+  const start=(page-1)*per+1;
 
-  const start = (page - 1) * per + 1;
-
-  for(let i = start; i < start + per; i++){
-    if(!pageMap[i]) continue;
-
-    const d = document.createElement("div");
-    d.className = "num";
-    d.textContent = i;
-    d.onclick = ()=>{
-      location.href = pageMap[i];
-    };
+  for(let i=start;i<start+per;i++){
+    if(!pageMap[i])continue;
+    const d=document.createElement("div");
+    d.className="num";
+    d.textContent=i;
+    d.onclick=()=>location.href=pageMap[i];
     box.appendChild(d);
   }
 }
 
-function nextSet(){
-  if(page < maxPage){
-    page++;
-    render();
-  }
-}
+window.nextSet=()=>{ if(page<maxPage){page++;render()} };
+window.prevSet=()=>{ if(page>1){page--;render()} };
 
-function prevSet(){
-  if(page > 1){
-    page--;
-    render();
-  }
-}
-
-/* เรียกครั้งแรก */
 render();
 </script>
 

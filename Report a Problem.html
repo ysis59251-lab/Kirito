@@ -82,11 +82,9 @@ button:disabled{opacity:.6}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import {
-  getDatabase, ref, push, set, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, push, set }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* FIREBASE */
 const firebaseConfig = {
   apiKey: "API_KEY",
   authDomain: "PROJECT.firebaseapp.com",
@@ -101,45 +99,33 @@ const db = getDatabase(app);
 const btn = document.getElementById("sendBtn");
 
 btn.onclick = async () => {
-  const pageEl = document.getElementById("page");
-  const detailEl = document.getElementById("detail");
+  const page = document.getElementById("page").value.trim()
+    || document.title
+    || location.pathname;
 
-  const page =
-    pageEl.value.trim() ||
-    document.title ||
-    location.pathname;
-
-  const detail = detailEl.value.trim();
-  if (!detail) {
-    alert("กรุณาพิมพ์รายละเอียดปัญหา");
+  const detail = document.getElementById("detail").value.trim();
+  if(!detail){
+    alert("กรุณาพิมพ์รายละเอียด");
     return;
   }
 
   btn.disabled = true;
   btn.textContent = "กำลังส่ง...";
 
-  try {
-    const now = new Date();
-    const time =
-      now.toLocaleDateString("th-TH") +
-      " " +
-      now.toLocaleTimeString("th-TH");
-
-    const reportRef = push(ref(db, "reports"));
-    await set(reportRef, {
+  try{
+    await set(push(ref(db,"reports")),{
       page,
       detail,
-      time,               // ✅ แอดมินใช้ฟิลด์นี้
-      createdAt: serverTimestamp(), // เก็บไว้เผื่ออนาคต
-      read: false
+      time: new Date().toLocaleString("th-TH"),
+      read:false
     });
 
-    alert("ส่งปัญหาเรียบร้อย ขอบคุณครับ 🙏");
-    pageEl.value = "";
-    detailEl.value = "";
-  } catch (err) {
-    console.error(err);
-    alert("ส่งไม่สำเร็จ กรุณาลองใหม่");
+    alert("ส่งเรียบร้อย 🙏");
+    document.getElementById("detail").value="";
+    document.getElementById("page").value="";
+  }catch(e){
+    console.error(e);
+    alert("ส่งไม่สำเร็จ");
   }
 
   btn.disabled = false;

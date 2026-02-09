@@ -138,9 +138,6 @@ window.sendReport = async () => {
     return;
   }
 
-  btn.disabled = true;
-  btn.textContent = "กำลังส่ง...";
-
   try {
     const reportRef = push(ref(db, "reports"));
     await set(reportRef, {

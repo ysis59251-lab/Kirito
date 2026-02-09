@@ -3,252 +3,144 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>AnimeFume Admin</title>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<title>Admin Dashboard</title>
 
 <style>
+body{
+  margin:0;
+  background:#0b0b0b;
+  color:#fff;
+  font-family:system-ui
+}
+header{
+  padding:12px 16px;
+  background:#111;
+  display:flex;
+  justify-content:space-between;
+  align-items:center
+}
+.stat{display:flex;gap:16px;font-size:14px}
+.box{
+  background:#151515;
+  border-radius:12px;
+  padding:16px;
+  margin:16px
+}
+h3{margin-top:0;color:#00ffcc}
+.anime-card{
+  display:flex;
+  gap:12px;
+  margin-bottom:12px;
+  background:#1a1a1a;
+  border-radius:10px;
+  padding:8px
+}
+.anime-card img{
+  width:60px;
+  height:80px;
+  object-fit:cover;
+  border-radius:6px
+}
+button{
+  background:#00ffcc;
+  border:none;
+  padding:6px 10px;
+  border-radius:6px;
+  cursor:pointer
+}
+button.hide{background:#ff5555;color:#fff}
+button.restore{background:#55ff77}
 
 #notifyBox{
   position:fixed;
-  top:14px;
-  right:14px;
-  background:#ff3b3b;
-  padding:10px 14px;
-  border-radius:30px;
-  cursor:pointer;
-  font-size:14px;
-  z-index:9999;
-}
-
-#notifyCount{
-  background:#000;
-  padding:2px 6px;
-  border-radius:10px;
-  margin-left:6px;
-}
-
-#inbox{
-  position:fixed;
-  top:60px;
-  right:14px;
-  width:300px;
-  max-height:60vh;
-  background:#111;
-  border-radius:14px;
-  padding:12px;
-  display:none;
-  overflow:auto;
-  z-index:9999;
-}
-
-#inbox h3{
-  margin-bottom:10px;
-}
-
-.report-item{
-  background:#1b1b1b;
-  padding:8px;
-  border-radius:10px;
-  margin-bottom:8px;
-  font-size:13px;
-}
-
-#mailBox{
-  position:fixed;
-  top:16px;
-  right:16px;
-  background:#ff3b3b;
+  bottom:20px;
+  right:20px;
+  background:#00ffcc;
+  color:#000;
   width:48px;
   height:48px;
   border-radius:50%;
   display:flex;
   align-items:center;
   justify-content:center;
-  cursor:pointer;
-  font-size:20px;
-  z-index:99;
-}
-#mailBox span{
-  position:absolute;
-  top:-4px;
-  right:-4px;
-  background:#000;
-  border-radius:50%;
-  padding:2px 6px;
-  font-size:11px;
-}
-
-#inbox{
-  position:fixed;
-  top:70px;
-  right:16px;
-  width:280px;
-  max-height:360px;
-  background:#000;
-  border:1px solid #333;
-  border-radius:14px;
-  padding:10px;
-  display:none;
-  overflow:auto;
-  z-index:99;
-}
-
-#inbox h3{
-  font-size:14px;
-  margin-bottom:8px;
-}
-
-.msg{
-  border-bottom:1px solid #222;
-  padding:6px 0;
-  font-size:13px;
-}
-.msg small{color:#888}
-
-:root{
-  --bg:#0b0b0b;
-  --panel:#111;
-  --card:#151515;
-  --line:#222;
-  --neon:#00ffcc;
-  --danger:#ff3b3b;
-}
-
-body{
-  margin:0;
-  background:radial-gradient(circle at top,#111,#000);
-  color:#fff;
-  font-family:system-ui;
-  padding:16px;
-}
-
-h2,h3{color:var(--neon);margin:8px 0}
-
-.cards{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
-  gap:12px
-}
-
-.card{
-  background:linear-gradient(145deg,#111,#0c0c0c);
-  padding:14px;
-  border-radius:16px;
-  border:1px solid var(--line);
-  box-shadow:0 10px 30px rgba(0,0,0,.6);
-  text-align:center;
-}
-.card b{
   font-size:22px;
-  color:var(--neon)
-}
-
-.section{
-  margin-top:18px;
-  background:var(--panel);
-  padding:14px;
-  border-radius:18px;
-  border:1px solid var(--line)
-}
-
-.search{
-  width:100%;
-  padding:10px;
-  border-radius:12px;
-  border:1px solid var(--line);
-  background:#000;
-  color:#fff;
-  margin-bottom:12px
-}
-
-.anime-card{
-  display:flex;
-  gap:12px;
-  background:var(--card);
-  border-radius:14px;
-  padding:10px;
-  border:1px solid var(--line);
-  margin-bottom:10px
-}
-.anime-card img{
-  width:70px;
-  height:100px;
-  object-fit:cover;
-  border-radius:10px
-}
-.anime-info{
-  flex:1;
-  font-size:13px
-}
-.anime-info b{
-  color:var(--neon);
-  font-size:15px
-}
-.meta{
-  opacity:.7;
-  font-size:12px
-}
-
-button{
-  border:none;
-  padding:6px 12px;
-  border-radius:8px;
-  font-size:12px;
   cursor:pointer
 }
-.hide{background:var(--danger);color:#fff}
-.restore{background:var(--neon);color:#000}
-
-.report{
-  background:#000;
-  border:1px solid var(--line);
+#notifyCount{
+  position:absolute;
+  top:-6px;
+  right:-6px;
+  background:red;
+  color:#fff;
+  width:22px;
+  height:22px;
+  border-radius:50%;
+  font-size:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center
+}
+#inbox{
+  position:fixed;
+  right:20px;
+  bottom:80px;
+  width:300px;
+  max-height:400px;
+  overflow:auto;
+  background:#111;
   border-radius:12px;
-  padding:10px;
+  padding:12px;
+  display:none
+}
+.report-item{
+  background:#1a1a1a;
+  border-radius:8px;
+  padding:8px;
   margin-bottom:8px;
   font-size:13px
+}
+input{
+  width:100%;
+  padding:8px;
+  border-radius:8px;
+  border:none;
+  margin-bottom:12px
 }
 </style>
 </head>
 
 <body>
 
-<h2>📊 AnimeFume Admin Dashboard</h2>
+<header>
+  <b>🛠 Admin Dashboard</b>
+  <div class="stat">
+    🟢 <span id="onlineCount">0</span>
+    👁 <span id="views">0</span>
+    📚 <span id="animeCount">0</span>
+  </div>
+</header>
 
-<div class="cards">
-  <div class="card">🟢 ออนไลน์<br><b id="onlineCount">0</b></div>
-  <div class="card">👁 ยอดดูรวม<br><b id="views">0</b></div>
-  <div class="card">📚 อนิเมะ<br><b id="animeCount">0</b></div>
-</div>
-
-<div class="section">
+<div class="box">
   <h3>🔍 ค้นหาอนิเมะ</h3>
-  <input class="search" id="search" placeholder="พิมพ์ชื่ออนิเมะ...">
-</div>
-
-<div class="section">
-  <h3>📋 อนิเมะหน้าเว็บ</h3>
+  <input id="search" placeholder="พิมพ์ชื่อ...">
   <div id="animeList"></div>
 </div>
 
-<div class="section">
-  <h3>🗑 อนิเมะที่ถูกซ่อน</h3>
+<div class="box">
+  <h3>🗑 อนิเมะที่ซ่อน</h3>
   <div id="hiddenList"></div>
 </div>
 
- <!-- 🔔 NOTIFICATION -->
+<!-- 🔔 NOTIFY -->
 <div id="notifyBox" onclick="toggleInbox()">
-  🔔 <span id="notifyCount">0</span>
+  🔔
+  <div id="notifyCount">0</div>
 </div>
 
+<!-- 📬 INBOX -->
 <div id="inbox">
-  <h3>📬 ปัญหาใหม่</h3>
+  <h3>📬 แจ้งปัญหา</h3>
   <div id="reportList"></div>
-</div>
-
-<div class="section">
-  <h3>📈 กราฟยอดดู</h3>
-  <canvas id="viewChart" height="120"></canvas>
 </div>
 
 <script type="module">
@@ -259,7 +151,7 @@ import {
   get, set, remove, update
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* FIREBASE */
+/* 🔥 FIREBASE CONFIG */
 const firebaseConfig={
   apiKey:"API_KEY",
   authDomain:"PROJECT.firebaseapp.com",
@@ -277,36 +169,32 @@ const animeCount=document.getElementById("animeCount");
 const animeList=document.getElementById("animeList");
 const hiddenList=document.getElementById("hiddenList");
 const search=document.getElementById("search");
-
 const inbox=document.getElementById("inbox");
 const reportList=document.getElementById("reportList");
-const mailCount=document.getElementById("mailCount");
+const notifyCount=document.getElementById("notifyCount");
 
-/* TOGGLE INBOX */
+/* TOGGLE */
 window.toggleInbox=()=>{
   inbox.style.display=inbox.style.display==="block"?"none":"block";
 };
 
-/* =========================
-   📬 REPORT REALTIME INBOX
-========================= */
-let unread = 0;
-const cacheMsg = {};
+/* 🔔 REPORT REALTIME */
+let unread=0, seen={};
 
-onChildAdded(ref(db,"reports"), snap=>{
-  const d = snap.val();
-  if(!d || cacheMsg[snap.key]) return;
-  cacheMsg[snap.key] = true;
+onChildAdded(ref(db,"reports"),snap=>{
+  const d=snap.val();
+  if(!d||seen[snap.key])return;
+  seen[snap.key]=true;
 
   if(!d.read){
     unread++;
-    mailCount.textContent = unread;
+    notifyCount.textContent=unread;
     new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3").play();
   }
 
   const div=document.createElement("div");
-  div.className="msg";
-  div.id="msg-"+snap.key;
+  div.className="report-item";
+  div.id="r-"+snap.key;
   div.innerHTML=`
     <b>${d.page||""}</b><br>
     ${d.detail||""}<br>
@@ -316,24 +204,21 @@ onChildAdded(ref(db,"reports"), snap=>{
   reportList.prepend(div);
 });
 
-onChildChanged(ref(db,"reports"), snap=>{
-  const d=snap.val();
-  const el=document.getElementById("msg-"+snap.key);
-  if(el && d.read){
+onChildChanged(ref(db,"reports"),snap=>{
+  const el=document.getElementById("r-"+snap.key);
+  if(el){
     el.style.opacity=.5;
     el.querySelector("button")?.remove();
     unread=Math.max(0,unread-1);
-    mailCount.textContent=unread;
+    notifyCount.textContent=unread;
   }
 });
 
-window.markRead = key=>{
-  update(ref(db,"reports/"+key),{read:true});
+window.markRead=k=>{
+  update(ref(db,"reports/"+k),{read:true});
 };
 
-/* =========================
-   🟢 ONLINE USERS
-========================= */
+/* 🟢 ONLINE */
 onValue(ref(db,"onlineUsers"),s=>{
   onlineCount.textContent=s.exists()?Object.keys(s.val()).length:0;
 });
@@ -343,7 +228,7 @@ onValue(ref(db,"animeViews"),s=>{
   views.textContent=s.val()||0;
 });
 
-/* 📚 ANIME LIST */
+/* 📚 ANIME */
 let cache=[];
 onValue(ref(db,"animeList"),s=>{
   if(!s.exists())return;
@@ -358,9 +243,9 @@ function render(list){
     animeList.innerHTML+=`
       <div class="anime-card">
         <img src="${a.cover||''}">
-        <div class="anime-info">
-          <b>${a.title}</b>
-          <div class="meta">${a.ep||0} ตอน • 👁 ${a.views||0}</div>
+        <div>
+          <b>${a.title}</b><br>
+          👁 ${a.views||0}<br>
           <button class="hide" onclick="hideAnime('${id}')">ซ่อน</button>
         </div>
       </div>`;
@@ -384,7 +269,7 @@ onValue(ref(db,"hiddenAnime"),s=>{
   if(!s.exists())return;
   Object.entries(s.val()).forEach(([id,a])=>{
     hiddenList.innerHTML+=`
-      <div class="report">
+      <div class="report-item">
         <b>${a.title}</b><br>
         <button class="restore" onclick="restoreAnime('${id}')">กู้คืน</button>
       </div>`;
@@ -396,26 +281,7 @@ window.restoreAnime=async id=>{
   await set(ref(db,"animeList/"+id),s.val());
   await remove(ref(db,"hiddenAnime/"+id));
 };
-
-/* 📈 CHART */
-let chart;
-onValue(ref(db,"viewStats"),s=>{
-  if(!s.exists())return;
-  const d=s.val();
-  const labels=Object.keys(d).sort();
-  const values=labels.map(k=>d[k]);
-  if(chart)chart.destroy();
-  chart=new Chart(viewChart,{
-    type:"line",
-    data:{labels,datasets:[{
-      data:values,
-      borderColor:"#00ffcc",
-      backgroundColor:"rgba(0,255,204,.15)",
-      fill:true,tension:.35
-    }]},
-    options:{plugins:{legend:{display:false}}}
-  });
-});
 </script>
+
 </body>
 </html>

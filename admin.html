@@ -205,37 +205,6 @@ button{
 </div>
 
 <script type="module">
-
-import { onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const inbox = document.getElementById("inbox");
-const list = document.getElementById("reportList");
-const mailCount = document.getElementById("mailCount");
-
-window.toggleInbox = () => {
-  inbox.style.display = inbox.style.display === "block" ? "none" : "block";
-};
-
-onValue(ref(db, "reports"), snap => {
-  list.innerHTML = "";
-  let unread = 0;
-
-  snap.forEach(child => {
-    const d = child.val();
-    if(!d.read) unread++;
-
-    list.innerHTML += `
-      <div class="msg">
-        <b>${d.page}</b><br>
-        ${d.detail}<br>
-        <small>${d.time}</small>
-      </div>
-    `;
-  });
-
-  mailCount.textContent = unread;
-});
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getDatabase, ref, onValue, onChildAdded,
@@ -253,6 +222,42 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 
+/* DOM */
+const onlineCount=document.getElementById("onlineCount");
+const views=document.getElementById("views");
+const animeCount=document.getElementById("animeCount");
+const animeList=document.getElementById("animeList");
+const hiddenList=document.getElementById("hiddenList");
+const search=document.getElementById("search");
+
+const inbox=document.getElementById("inbox");
+const reportList=document.getElementById("reportList");
+const mailCount=document.getElementById("mailCount");
+
+/* INBOX */
+window.toggleInbox=()=>{
+  inbox.style.display=inbox.style.display==="block"?"none":"block";
+};
+
+onValue(ref(db,"reports"),snap=>{
+  reportList.innerHTML="";
+  let unread=0;
+
+  snap.forEach(c=>{
+    const d=c.val();
+    if(!d.read) unread++;
+    reportList.innerHTML+=`
+      <div class="msg">
+        <b>${d.page||""}</b><br>
+        ${d.detail||""}<br>
+        <small>${d.time||""}</small>
+      </div>
+    `;
+  });
+
+  mailCount.textContent=unread;
+});
+
 /* ONLINE */
 onValue(ref(db,"onlineUsers"),s=>{
   onlineCount.textContent=s.exists()?Object.keys(s.val()).length:0;
@@ -268,8 +273,7 @@ let cache=[];
 onValue(ref(db,"animeList"),s=>{
   animeList.innerHTML="";
   if(!s.exists())return;
-  const data=s.val();
-  cache=Object.entries(data);
+  cache=Object.entries(s.val());
   animeCount.textContent=cache.length;
   render(cache);
 });
@@ -293,9 +297,7 @@ function render(list){
 
 search.oninput=()=>{
   const q=search.value.toLowerCase();
-  render(cache.filter(([_,a])=>
-    a.title.toLowerCase().includes(q)
-  ));
+  render(cache.filter(([_,a])=>a.title.toLowerCase().includes(q)));
 };
 
 /* HIDE / RESTORE */
@@ -322,16 +324,6 @@ window.restoreAnime=async id=>{
   await set(ref(db,"animeList/"+id),s.val());
   await remove(ref(db,"hiddenAnime/"+id));
 };
-
-/* REPORT */
-onChildAdded(ref(db,"reports"),s=>{
-  const r=s.val();
-  reportList.innerHTML=`
-  <div class="report">
-    <small>${r.time||""}</small>
-    <p><b>${r.page||""}</b><br>${r.detail||""}</p>
-  </div>`+reportList.innerHTML;
-});
 
 /* CHART */
 let chart;

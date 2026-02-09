@@ -104,8 +104,27 @@ body{
   <div class="back" onclick="history.back()">← กลับหน้าเดิม</div>
 </div>
 
-<script>
-function sendReport(){
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js" type="module"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js" type="module"></script>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+/* 🔥 ใช้ config เดียวกับหน้าแอดมิน */
+const firebaseConfig = {
+  apiKey: "API_KEY",
+  authDomain: "PROJECT.firebaseapp.com",
+  databaseURL: "https://PROJECT.firebaseio.com",
+  projectId: "PROJECT",
+  appId: "APP_ID"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+window.sendReport = () => {
   const page = document.getElementById("page").value.trim();
   const detail = document.getElementById("detail").value.trim();
 
@@ -114,23 +133,19 @@ function sendReport(){
     return;
   }
 
-  const reports = JSON.parse(localStorage.getItem("reports") || "[]");
+  const reportRef = push(ref(db, "reports"));
 
-  reports.push({
+  set(reportRef, {
     page: page || "ไม่ระบุหน้า",
-    detail,
+    detail: detail,
     time: new Date().toLocaleString(),
     read: false
+  }).then(()=>{
+    alert("ส่งปัญหาเรียบร้อย ขอบคุณครับ 🙏");
+    document.getElementById("page").value = "";
+    document.getElementById("detail").value = "";
   });
-
-  localStorage.setItem("reports", JSON.stringify(reports));
-
-  alert("ส่งปัญหาเรียบร้อย ขอบคุณครับ 🙏");
-
-  // ล้างช่องกรอก
-  document.getElementById("page").value = "";
-  document.getElementById("detail").value = "";
-}
+};
 </script>
 
 </body>

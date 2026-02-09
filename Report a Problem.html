@@ -15,8 +15,6 @@ body{
   align-items:center;
   justify-content:center;
 }
-
-/* BG */
 #bg{
   position:fixed;
   inset:0;
@@ -24,8 +22,6 @@ body{
   z-index:-1;
   filter:blur(2px) brightness(.6);
 }
-
-/* CARD */
 .report-card{
   width:92%;
   max-width:420px;
@@ -35,12 +31,8 @@ body{
   padding:18px;
   box-shadow:0 10px 30px rgba(0,0,0,.7);
 }
-
-/* HEADER */
 .report-card h1{font-size:20px;margin-bottom:6px}
 .report-card p{font-size:13px;color:#ccc;margin-bottom:14px}
-
-/* INPUT */
 input,textarea{
   width:100%;
   background:#000;
@@ -52,8 +44,6 @@ input,textarea{
   font-size:14px;
 }
 textarea{min-height:110px;resize:none}
-
-/* BUTTON */
 button{
   width:100%;
   padding:12px;
@@ -64,12 +54,7 @@ button{
   font-size:15px;
   cursor:pointer;
 }
-button:disabled{
-  opacity:.6;
-  cursor:not-allowed;
-}
-
-/* BACK */
+button:disabled{opacity:.6}
 .back{
   margin-top:10px;
   text-align:center;
@@ -82,7 +67,6 @@ button:disabled{
 </head>
 
 <body>
-
 <div id="bg"></div>
 
 <div class="report-card">
@@ -98,10 +82,11 @@ button:disabled{
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push, set, serverTimestamp }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import {
+  getDatabase, ref, push, set, serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* 🔥 ใช้ databaseURL ใหม่จาก Firebase Console เท่านั้น */
+/* FIREBASE */
 const firebaseConfig = {
   apiKey: "API_KEY",
   authDomain: "PROJECT.firebaseapp.com",
@@ -134,11 +119,18 @@ btn.onclick = async () => {
   btn.textContent = "กำลังส่ง...";
 
   try {
+    const now = new Date();
+    const time =
+      now.toLocaleDateString("th-TH") +
+      " " +
+      now.toLocaleTimeString("th-TH");
+
     const reportRef = push(ref(db, "reports"));
     await set(reportRef, {
       page,
       detail,
-      createdAt: serverTimestamp(),
+      time,               // ✅ แอดมินใช้ฟิลด์นี้
+      createdAt: serverTimestamp(), // เก็บไว้เผื่ออนาคต
       read: false
     });
 
@@ -146,7 +138,7 @@ btn.onclick = async () => {
     pageEl.value = "";
     detailEl.value = "";
   } catch (err) {
-    console.error("SEND ERROR:", err);
+    console.error(err);
     alert("ส่งไม่สำเร็จ กรุณาลองใหม่");
   }
 

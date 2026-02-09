@@ -8,76 +8,154 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
-body{margin:0;background:#0b0b0b;color:#fff;font-family:system-ui;padding:16px}
-h2,h3{color:#00ffcc}
-.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px}
-.card{background:#111;padding:14px;border-radius:14px;border:1px solid #222}
-.section{margin-top:20px;background:#111;padding:16px;border-radius:16px;border:1px solid #222}
-
-.report{background:#000;border:1px solid #222;border-radius:10px;padding:10px;margin-bottom:8px;font-size:13px}
-button{background:#ff3b3b;border:none;padding:6px 12px;border-radius:8px;color:#fff;cursor:pointer}
-button.restore{background:#00cfa8}
-
-/* floating admin menu */
-#adminBtn{
-  position:fixed;bottom:20px;right:20px;
-  width:56px;height:56px;border-radius:50%;
-  background:#00ffcc;color:#000;
-  display:flex;align-items:center;justify-content:center;
-  font-size:24px;cursor:pointer;z-index:99
+:root{
+  --bg:#0b0b0b;
+  --panel:#111;
+  --card:#151515;
+  --line:#222;
+  --neon:#00ffcc;
+  --danger:#ff3b3b;
 }
-#adminPanel{
-  position:fixed;bottom:90px;right:20px;
-  width:320px;max-height:70vh;
-  background:#111;border-radius:16px;
-  padding:14px;display:none;overflow:auto;
-  border:1px solid #222;z-index:99
+
+body{
+  margin:0;
+  background:radial-gradient(circle at top,#111,#000);
+  color:#fff;
+  font-family:system-ui;
+  padding:16px;
+}
+
+h2,h3{color:var(--neon);margin:8px 0}
+
+.cards{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(160px,1fr));
+  gap:12px
+}
+
+.card{
+  background:linear-gradient(145deg,#111,#0c0c0c);
+  padding:14px;
+  border-radius:16px;
+  border:1px solid var(--line);
+  box-shadow:0 10px 30px rgba(0,0,0,.6);
+  text-align:center;
+}
+.card b{
+  font-size:22px;
+  color:var(--neon)
+}
+
+.section{
+  margin-top:18px;
+  background:var(--panel);
+  padding:14px;
+  border-radius:18px;
+  border:1px solid var(--line)
+}
+
+.search{
+  width:100%;
+  padding:10px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#000;
+  color:#fff;
+  margin-bottom:12px
+}
+
+.anime-card{
+  display:flex;
+  gap:12px;
+  background:var(--card);
+  border-radius:14px;
+  padding:10px;
+  border:1px solid var(--line);
+  margin-bottom:10px
+}
+.anime-card img{
+  width:70px;
+  height:100px;
+  object-fit:cover;
+  border-radius:10px
+}
+.anime-info{
+  flex:1;
+  font-size:13px
+}
+.anime-info b{
+  color:var(--neon);
+  font-size:15px
+}
+.meta{
+  opacity:.7;
+  font-size:12px
+}
+
+button{
+  border:none;
+  padding:6px 12px;
+  border-radius:8px;
+  font-size:12px;
+  cursor:pointer
+}
+.hide{background:var(--danger);color:#fff}
+.restore{background:var(--neon);color:#000}
+
+.report{
+  background:#000;
+  border:1px solid var(--line);
+  border-radius:12px;
+  padding:10px;
+  margin-bottom:8px;
+  font-size:13px
 }
 </style>
 </head>
 
 <body>
 
-<div id="adminBtn" onclick="toggleAdmin()">⚙️</div>
+<h2>📊 AnimeFume Admin Dashboard</h2>
 
-<div id="adminPanel">
-  <h2>📊 Admin Dashboard</h2>
+<div class="cards">
+  <div class="card">🟢 ออนไลน์<br><b id="onlineCount">0</b></div>
+  <div class="card">👁 ยอดดูรวม<br><b id="views">0</b></div>
+  <div class="card">📚 อนิเมะ<br><b id="animeCount">0</b></div>
+</div>
 
-  <div class="cards">
-    <div class="card">🟢 ออนไลน์ตอนนี้<br><b id="onlineCount">0</b></div>
-    <div class="card">👁 ยอดดูรวม<br><b id="views">0</b></div>
-    <div class="card">📚 อนิเมะทั้งหมด<br><b id="animeCount">0</b></div>
-  </div>
+<div class="section">
+  <h3>🔍 ค้นหาอนิเมะ</h3>
+  <input class="search" id="search" placeholder="พิมพ์ชื่ออนิเมะ...">
+</div>
 
-  <div class="section">
-    <h3>📋 อนิเมะหน้าเว็บ</h3>
-    <div id="animeList"></div>
-  </div>
+<div class="section">
+  <h3>📋 อนิเมะหน้าเว็บ</h3>
+  <div id="animeList"></div>
+</div>
 
-  <div class="section">
-    <h3>🗑 อนิเมะที่ถูกซ่อน</h3>
-    <div id="hiddenList"></div>
-  </div>
+<div class="section">
+  <h3>🗑 อนิเมะที่ถูกซ่อน</h3>
+  <div id="hiddenList"></div>
+</div>
 
-  <div class="section">
-    <h3>📢 แจ้งปัญหา</h3>
-    <div id="reportList"></div>
-  </div>
+<div class="section">
+  <h3>📢 แจ้งปัญหา</h3>
+  <div id="reportList"></div>
+</div>
 
-  <div class="section">
-    <h3>📈 กราฟยอดดู</h3>
-    <canvas id="viewChart" height="120"></canvas>
-  </div>
+<div class="section">
+  <h3>📈 กราฟยอดดู</h3>
+  <canvas id="viewChart" height="120"></canvas>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getDatabase, ref, onValue, onChildAdded,
-  set, remove, get, update
+  get, set, remove
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* ===== FIREBASE ===== */
+/* FIREBASE */
 const firebaseConfig={
   apiKey:"API_KEY",
   authDomain:"PROJECT.firebaseapp.com",
@@ -88,85 +166,87 @@ const firebaseConfig={
 const app=initializeApp(firebaseConfig);
 const db=getDatabase(app);
 
-/* ===== UI ===== */
-window.toggleAdmin=()=>{
-  adminPanel.style.display =
-    adminPanel.style.display==="block"?"none":"block";
-};
-
-/* ===== ONLINE USER ===== */
+/* ONLINE */
 onValue(ref(db,"onlineUsers"),s=>{
-  onlineCount.textContent = s.exists()
-    ? Object.keys(s.val()).length : 0;
+  onlineCount.textContent=s.exists()?Object.keys(s.val()).length:0;
 });
 
-/* ===== VIEWS ===== */
+/* VIEWS */
 onValue(ref(db,"animeViews"),s=>{
-  views.textContent = s.val() || 0;
+  views.textContent=s.val()||0;
 });
 
-/* ===== ANIME LIST (ระบบเดิม) ===== */
+/* ANIME LIST */
+let cache=[];
 onValue(ref(db,"animeList"),s=>{
   animeList.innerHTML="";
-  if(!s.exists()){
-    animeList.innerHTML="ไม่มีอนิเมะ";
-    animeCount.textContent=0;
-    return;
-  }
+  if(!s.exists())return;
   const data=s.val();
-  animeCount.textContent=Object.keys(data).length;
-  Object.entries(data).forEach(([id,a])=>{
+  cache=Object.entries(data);
+  animeCount.textContent=cache.length;
+  render(cache);
+});
+
+function render(list){
+  animeList.innerHTML="";
+  list.forEach(([id,a])=>{
     animeList.innerHTML+=`
-      <div class="report">
-        <b>${a.title}</b> (${a.ep||0} ตอน)<br>
-        <button onclick="hideAnime('${id}')">ซ่อน</button>
-      </div>`;
+    <div class="anime-card">
+      <img src="${a.cover||''}">
+      <div class="anime-info">
+        <b>${a.title}</b>
+        <div class="meta">
+          ${a.ep||0} ตอน • 👁 ${a.views||0}
+        </div>
+        <button class="hide" onclick="hideAnime('${id}')">ซ่อน</button>
+      </div>
+    </div>`;
   });
-});
+}
 
-/* ===== HIDDEN ===== */
-onValue(ref(db,"hiddenAnime"),s=>{
-  hiddenList.innerHTML="";
-  if(!s.exists()){
-    hiddenList.innerHTML="ถังว่าง";
-    return;
-  }
-  Object.entries(s.val()).forEach(([id,a])=>{
-    hiddenList.innerHTML+=`
-      <div class="report">
-        <b>${a.title}</b><br>
-        <button class="restore"
-          onclick="restoreAnime('${id}')">กู้คืน</button>
-      </div>`;
-  });
-});
+search.oninput=()=>{
+  const q=search.value.toLowerCase();
+  render(cache.filter(([_,a])=>
+    a.title.toLowerCase().includes(q)
+  ));
+};
 
+/* HIDE / RESTORE */
 window.hideAnime=async id=>{
-  const snap=await get(ref(db,"animeList/"+id));
-  if(!snap.exists())return;
-  await set(ref(db,"hiddenAnime/"+id),snap.val());
+  const s=await get(ref(db,"animeList/"+id));
+  await set(ref(db,"hiddenAnime/"+id),s.val());
   await remove(ref(db,"animeList/"+id));
 };
 
+onValue(ref(db,"hiddenAnime"),s=>{
+  hiddenList.innerHTML="";
+  if(!s.exists())return;
+  Object.entries(s.val()).forEach(([id,a])=>{
+    hiddenList.innerHTML+=`
+    <div class="report">
+      <b>${a.title}</b><br>
+      <button class="restore" onclick="restoreAnime('${id}')">กู้คืน</button>
+    </div>`;
+  });
+});
+
 window.restoreAnime=async id=>{
-  const snap=await get(ref(db,"hiddenAnime/"+id));
-  if(!snap.exists())return;
-  await set(ref(db,"animeList/"+id),snap.val());
+  const s=await get(ref(db,"hiddenAnime/"+id));
+  await set(ref(db,"animeList/"+id),s.val());
   await remove(ref(db,"hiddenAnime/"+id));
 };
 
-/* ===== REPORT ===== */
+/* REPORT */
 onChildAdded(ref(db,"reports"),s=>{
   const r=s.val();
   reportList.innerHTML=`
-    <div class="report">
-      <small>${r.time||""}</small><br>
-      <b>${r.page||""}</b>
-      <p>${r.detail||""}</p>
-    </div>`+reportList.innerHTML;
+  <div class="report">
+    <small>${r.time||""}</small>
+    <p><b>${r.page||""}</b><br>${r.detail||""}</p>
+  </div>`+reportList.innerHTML;
 });
 
-/* ===== CHART ===== */
+/* CHART */
 let chart;
 onValue(ref(db,"viewStats"),s=>{
   if(!s.exists())return;
@@ -186,5 +266,6 @@ onValue(ref(db,"viewStats"),s=>{
   });
 });
 </script>
+
 </body>
 </html>

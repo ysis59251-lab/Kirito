@@ -104,15 +104,11 @@ body{
   <div class="back" onclick="history.back()">← กลับหน้าเดิม</div>
 </div>
 
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js" type="module"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js" type="module"></script>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, push, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* 🔥 ใช้ config เดียวกับหน้าแอดมิน */
+/* FIREBASE CONFIG (ใช้ชุดเดียวกับแอดมิน) */
 const firebaseConfig = {
   apiKey: "API_KEY",
   authDomain: "PROJECT.firebaseapp.com",
@@ -124,27 +120,47 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-window.sendReport = () => {
-  const page = document.getElementById("page").value.trim();
-  const detail = document.getElementById("detail").value.trim();
+/* SEND REPORT */
+window.sendReport = async () => {
+  const pageEl = document.getElementById("page");
+  const detailEl = document.getElementById("detail");
+  const btn = document.querySelector("button");
 
-  if(!detail){
+  const page =
+    pageEl.value.trim() ||
+    document.title ||
+    location.pathname;
+
+  const detail = detailEl.value.trim();
+
+  if (!detail) {
     alert("กรุณาพิมพ์รายละเอียดปัญหา");
     return;
   }
 
-  const reportRef = push(ref(db, "reports"));
+  btn.disabled = true;
+  btn.textContent = "กำลังส่ง...";
 
-  set(reportRef, {
-    page: page || "ไม่ระบุหน้า",
-    detail: detail,
-    time: new Date().toLocaleString(),
-    read: false
-  }).then(()=>{
+  try {
+    const reportRef = push(ref(db, "reports"));
+    await set(reportRef, {
+      page,
+      detail,
+      time: new Date().toLocaleString(),
+      ts: Date.now(),
+      read: false
+    });
+
     alert("ส่งปัญหาเรียบร้อย ขอบคุณครับ 🙏");
-    document.getElementById("page").value = "";
-    document.getElementById("detail").value = "";
-  });
+    pageEl.value = "";
+    detailEl.value = "";
+  } catch (e) {
+    alert("เกิดข้อผิดพลาด กรุณาลองใหม่");
+    console.error(e);
+  }
+
+  btn.disabled = false;
+  btn.textContent = "ส่งปัญหา";
 };
 </script>
 

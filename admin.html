@@ -8,6 +8,59 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <style>
+
+#mailBox{
+  position:fixed;
+  top:16px;
+  right:16px;
+  background:#ff3b3b;
+  width:48px;
+  height:48px;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  font-size:20px;
+  z-index:99;
+}
+#mailBox span{
+  position:absolute;
+  top:-4px;
+  right:-4px;
+  background:#000;
+  border-radius:50%;
+  padding:2px 6px;
+  font-size:11px;
+}
+
+#inbox{
+  position:fixed;
+  top:70px;
+  right:16px;
+  width:280px;
+  max-height:360px;
+  background:#000;
+  border:1px solid #333;
+  border-radius:14px;
+  padding:10px;
+  display:none;
+  overflow:auto;
+  z-index:99;
+}
+
+#inbox h3{
+  font-size:14px;
+  margin-bottom:8px;
+}
+
+.msg{
+  border-bottom:1px solid #222;
+  padding:6px 0;
+  font-size:13px;
+}
+.msg small{color:#888}
+
 :root{
   --bg:#0b0b0b;
   --panel:#111;
@@ -138,8 +191,11 @@ button{
   <div id="hiddenList"></div>
 </div>
 
-<div class="section">
-  <h3>📬 แจ้งปัญหาทั้งหมด</h3>
+<!-- MAIL BOX -->
+<div id="mailBox" onclick="toggleInbox()">📩<span id="mailCount">0</span></div>
+
+<div id="inbox">
+  <h3>📬 ข้อความจากหน้าอื่น</h3>
   <div id="reportList"></div>
 </div>
 
@@ -149,6 +205,37 @@ button{
 </div>
 
 <script type="module">
+
+import { onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const inbox = document.getElementById("inbox");
+const list = document.getElementById("reportList");
+const mailCount = document.getElementById("mailCount");
+
+window.toggleInbox = () => {
+  inbox.style.display = inbox.style.display === "block" ? "none" : "block";
+};
+
+onValue(ref(db, "reports"), snap => {
+  list.innerHTML = "";
+  let unread = 0;
+
+  snap.forEach(child => {
+    const d = child.val();
+    if(!d.read) unread++;
+
+    list.innerHTML += `
+      <div class="msg">
+        <b>${d.page}</b><br>
+        ${d.detail}<br>
+        <small>${d.time}</small>
+      </div>
+    `;
+  });
+
+  mailCount.textContent = unread;
+});
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getDatabase, ref, onValue, onChildAdded,

@@ -155,72 +155,75 @@ select{
 
 <script type="module">
 
-onValue(ref(db,"stats/totalAnime"), snap=>{
-  document.getElementById("totalAnime").textContent =
-    snap.exists() ? snap.val() : 0;
-});
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import {
+  getDatabase,
+  ref,
+  onValue
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_DOMAIN",
-  databaseURL: "YOUR_DB_URL",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_BUCKET",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "API_KEY",
+  authDomain: "PROJECT.firebaseapp.com",
+  databaseURL: "https://PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "PROJECT",
+  storageBucket: "PROJECT.appspot.com",
+  messagingSenderId: "SENDER_ID",
+  appId: "APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const topList=document.getElementById("topList");
-const rangeSelect=document.getElementById("rangeSelect");
+/* ================= ONLINE USERS ================= */
+onValue(ref(db,"onlineUsers"), snap=>{
+  const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+  document.getElementById("onlineCount").textContent = count;
+});
 
-let animeData={};
+/* ================= TOTAL VIEWS ================= */
+onValue(ref(db,"stats/totalViews"), snap=>{
+  document.getElementById("totalViews").textContent =
+    snap.exists() ? snap.val() : 0;
+});
 
-async function loadAnime(){
-  const snap=await get(ref(db,"animeList"));
-  if(snap.exists()) animeData=snap.val();
-}
-await loadAnime();
+/* ================= TOTAL ANIME ================= */
+onValue(ref(db,"animeList"), snap=>{
+  const total = snap.exists() ? Object.keys(snap.val()).length : 0;
+  document.getElementById("totalAnime").textContent = total;
+});
 
-function getPath(){
-  if(rangeSelect.value==="7") return "stats/last7";
-  if(rangeSelect.value==="30") return "stats/last30";
-  return "animeViews";
-}
+/* ================= TOP 10 ================= */
+const topList = document.getElementById("topList");
 
-function medal(i){
-  if(i===0) return "🥇";
-  if(i===1) return "🥈";
-  if(i===2) return "🥉";
-  return "#"+(i+1);
-}
+onValue(ref(db,"animeViews"), snap=>{
+  if(!snap.exists()) return;
 
-function renderTop(data){
+  const data = snap.val();
+  const arr = Object.entries(data);
 
-  const arr=Object.entries(data||{});
-  arr.sort((a,b)=>b[1]-a[1]);
-  const top10=arr.slice(0,10);
-  const max=top10[0]?top10[0][1]:1;
+  arr.sort((a,b)=> b[1] - a[1]);
 
-  topList.innerHTML="";
+  const top10 = arr.slice(0,10);
+  const max = top10[0] ? top10[0][1] : 1;
+
+  topList.innerHTML = "";
 
   top10.forEach(([id,views],i)=>{
 
-    if(!animeData[id]) return;
+    const percent = (views/max)*100;
 
-    const percent=(views/max)*100;
+    const medal =
+      i===0 ? "🥇" :
+      i===1 ? "🥈" :
+      i===2 ? "🥉" :
+      "#"+(i+1);
 
-    topList.innerHTML+=`
+    topList.innerHTML += `
       <div class="top-item">
-        <div class="rank">${medal(i)}</div>
-        <img src="${animeData[id].cover}" class="cover">
+        <div class="rank">${medal}</div>
         <div style="flex:1">
-          <div style="font-weight:bold">${animeData[id].title}</div>
+          <div style="font-weight:bold">${id}</div>
           <div style="font-size:13px;color:#94a3b8">${views} วิว</div>
           <div class="progress">
             <div style="width:${percent}%"></div>
@@ -229,54 +232,8 @@ function renderTop(data){
       </div>
     `;
   });
-
-  document.getElementById("totalViews").textContent=
-    arr.reduce((s,a)=>s+a[1],0);
-
-  document.getElementById("totalAnime").textContent=arr.length;
-}
-
-function loadViews(){
-  onValue(ref(db,getPath()),snap=>{
-    if(snap.exists()) renderTop(snap.val());
-  });
-}
-
-rangeSelect.addEventListener("change",loadViews);
-
-loadViews();
-
-/* ONLINE */
-onValue(ref(db,"onlineUsers"),snap=>{
-  document.getElementById("onlineCount").textContent=
-    snap.exists()?Object.keys(snap.val()).length:0;
-});
-
-/* CHART */
-let chart;
-onValue(ref(db,"animeViews"),snap=>{
-  if(!snap.exists()) return;
-
-  const data=snap.val();
-  const labels=Object.keys(data);
-  const values=Object.values(data);
-
-  if(chart) chart.destroy();
-
-  chart=new Chart(document.getElementById("viewChart"),{
-    type:"bar",
-    data:{
-      labels:labels,
-      datasets:[{
-        label:"วิวทั้งหมด",
-        data:values,
-        backgroundColor:"#22d3ee"
-      }]
-    }
-  });
 });
 
 </script>
-
 </body>
 </html>

@@ -661,13 +661,15 @@ import {
   getDatabase,
   ref,
   onValue,
-  runTransaction
+  runTransaction,
+  set,
+  remove
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "API_KEY",
   authDomain: "PROJECT.firebaseapp.com",
-  databaseURL: "https://PROJECT.firebaseio.com",
+  databaseURL: "https://PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "PROJECT",
   storageBucket: "PROJECT.appspot.com",
   messagingSenderId: "SENDER_ID",
@@ -677,21 +679,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ================= VIEW COUNT (กันนับซ้ำ) ================= */
+/* ================= VIEW HOME (วันละครั้ง) ================= */
 const today = new Date().toISOString().slice(0,10);
 const viewKey = "viewed-home-"+today;
 
 if(!localStorage.getItem(viewKey)){
   localStorage.setItem(viewKey,"1");
 
-  // รวมทั้งหมด
   runTransaction(ref(db,"stats/totalViews"), v => (v||0)+1);
-
-  // รายวัน
   runTransaction(ref(db,"stats/daily/"+today), v => (v||0)+1);
 }
 
-/* ================= VIEW ต่ออนิเมะ ================= */
+/* ================= VIEW ต่อเรื่อง ================= */
 document.querySelectorAll(".anime-card").forEach(card=>{
   const href = card.getAttribute("href");
   if(!href) return;
@@ -699,30 +698,37 @@ document.querySelectorAll(".anime-card").forEach(card=>{
   const id = href.replace(".html","");
 
   card.addEventListener("click",()=>{
-    runTransaction(
-      ref(db,"animeViews/"+id),
-      v => (v||0)+1
-    );
+    runTransaction(ref(db,"animeViews/"+id), v => (v||0)+1);
   });
 });
 
-/* ================= HIDE / SHOW ANIME ================= */
+/* ================= HIDE / SHOW ================= */
 onValue(ref(db,"animeList"), snap=>{
-  if(!snap.exists()) return;
-
   document.querySelectorAll(".anime-card").forEach(card=>{
     const href = card.getAttribute("href");
     if(!href) return;
 
     const id = href.replace(".html","");
-    const enabled = snap.child(id).val();
 
-    if(enabled === false){
-      card.style.display = "none";
-    }else{
-      card.style.display = "";
+    if(snap.exists()){
+      const data = snap.child(id).val();
+      if(data && data.hidden === true){
+        card.style.display = "none";
+      }else{
+        card.style.display = "";
+      }
     }
   });
+});
+
+/* ================= ONLINE USERS ================= */
+const userId = "u_"+Date.now();
+const userRef = ref(db,"onlineUsers/"+userId);
+
+set(userRef,true);
+
+window.addEventListener("beforeunload",()=>{
+  remove(userRef);
 });
 
 /* ================= YEAR ================= */
@@ -757,16 +763,20 @@ if(menuBtn && menu){
 
 /* ================= BOTTOM NAV ================= */
 window.toggleBottom = ()=>{
-  document
-    .getElementById("bottomNav")
-    ?.classList.toggle("show");
+  document.getElementById("bottomNav")?.classList.toggle("show");
 };
 
 /* ================= PAGINATION ================= */
 const pageMap = {
-  1:"pageMap1.html", 2:"pageMap2.html", 3:"pageMap3.html",
-  4:"pageMap4.html", 5:"pageMap5.html", 6:"pageMap6.html",
-  7:"pageMap7.html", 8:"pageMap8.html", 9:"pageMap9.html",
+  1:"pageMap1.html",
+  2:"pageMap2.html",
+  3:"pageMap3.html",
+  4:"pageMap4.html",
+  5:"pageMap5.html",
+  6:"pageMap6.html",
+  7:"pageMap7.html",
+  8:"pageMap8.html",
+  9:"pageMap9.html",
   10:"pageMap10.html"
 };
 
@@ -787,9 +797,7 @@ function render(){
     const d = document.createElement("div");
     d.className = "num";
     d.textContent = i;
-    d.onclick = ()=>{
-      location.href = pageMap[i];
-    };
+    d.onclick = ()=> location.href = pageMap[i];
     box.appendChild(d);
   }
 }
@@ -807,12 +815,6 @@ window.prevSet = ()=>{
     render();
   }
 };
-
-const userRef = ref(db,"onlineUsers/"+Date.now());
-set(userRef,true);
-window.addEventListener("beforeunload",()=>{
-  remove(userRef);
-});
 
 render();
 </script>

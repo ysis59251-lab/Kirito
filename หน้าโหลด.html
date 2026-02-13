@@ -808,6 +808,12 @@ window.prevSet = ()=>{
   }
 };
 
+const userRef = ref(db,"onlineUsers/"+Date.now());
+set(userRef,true);
+window.addEventListener("beforeunload",()=>{
+  remove(userRef);
+});
+
 render();
 </script>
 

@@ -172,6 +172,28 @@ const firebaseConfig = {
   appId: "APP_ID"
 };
 
+onValue(ref(db,"episodes/onepiece"), snap=>{
+  if(!snap.exists()) return;
+
+  const data = snap.val();
+  const container = document.getElementById("episodeList");
+
+  container.innerHTML = "";
+
+  Object.keys(data).sort((a,b)=>a-b).forEach(ep=>{
+
+    const item = data[ep];
+
+    container.innerHTML += `
+      <a href="${item.link}" class="ep-btn">
+        ${item.title}
+      </a>
+    `;
+  });
+
+});
+
+
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 

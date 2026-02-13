@@ -155,6 +155,11 @@ select{
 
 <script type="module">
 
+onValue(ref(db,"stats/totalAnime"), snap=>{
+  document.getElementById("totalAnime").textContent =
+    snap.exists() ? snap.val() : 0;
+});
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 

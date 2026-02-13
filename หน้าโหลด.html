@@ -655,6 +655,14 @@ Oshi no Ko Season 3 เกิดใหม่เป็นลูกโอชิ(�
 <button class="fab" onclick="toggleBottom()">☰</button>
 
 <script type="module">
+
+const totalAnime = document.querySelectorAll(".anime-card").length;
+
+import { set, ref } from 
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+set(ref(db,"stats/totalAnime"), totalAnime);
+
 /* ================= FIREBASE ================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {

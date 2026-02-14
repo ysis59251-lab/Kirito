@@ -15,83 +15,39 @@ body{
   color:#fff;
   display:flex;
 }
-
-/* SIDEBAR */
 .sidebar{
   width:230px;
   background:#111827;
   padding:20px;
   height:100vh;
 }
-.sidebar h2{
-  color:#22d3ee;
-}
-.sidebar a{
-  display:block;
-  color:#94a3b8;
-  margin:15px 0;
-  text-decoration:none;
-}
-
-/* MAIN */
+.sidebar h2{ color:#22d3ee; }
 .main{
   flex:1;
   padding:20px;
   overflow-y:auto;
 }
-
 .cards{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
   gap:20px;
   margin-bottom:20px;
 }
-
 .card{
   background:#1e293b;
   padding:20px;
   border-radius:16px;
 }
-
 .big{
   font-size:26px;
   font-weight:bold;
 }
-
 .panel{
   background:#1e293b;
   padding:20px;
   border-radius:16px;
   margin-bottom:20px;
 }
-
-.top-item{
-  display:flex;
-  gap:12px;
-  padding:12px 0;
-  border-bottom:1px solid #334155;
-  align-items:center;
-}
-
-.rank{
-  font-size:20px;
-  width:30px;
-  text-align:center;
-}
-
-.progress{
-  height:6px;
-  background:#334155;
-  border-radius:6px;
-  overflow:hidden;
-  margin-top:6px;
-}
-
-.progress div{
-  height:100%;
-  background:#22d3ee;
-}
-
 .spam-box{
   background:#300;
   padding:15px;
@@ -104,6 +60,7 @@ button{
   border:none;
   border-radius:8px;
   cursor:pointer;
+  background:#22d3ee;
 }
 .clear-btn{
   background:#ff3b3b;
@@ -116,7 +73,6 @@ button{
 
 <div class="sidebar">
   <h2>🎛 Admin</h2>
-  <a href="#">Dashboard</a>
 </div>
 
 <div class="main">
@@ -144,8 +100,9 @@ button{
 </div>
 
 <div class="panel">
-  <h3>🏆 Top 10</h3>
-  <div id="topList"></div>
+  <h3>🎬 Live Preview หน้า Anime</h3>
+  <button onclick="reloadAnime()">รีโหลดหน้าอนิเมะ</button>
+  <div id="animeContainer" style="margin-top:15px;">กำลังโหลด...</div>
 </div>
 
 <div class="spam-box">
@@ -158,6 +115,8 @@ button{
 </div>
 
 <script type="module">
+
+/* ================= FIREBASE ================= */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
@@ -180,10 +139,11 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ONLINE USERS + AUTO CLEAN */
+/* ================= ONLINE USERS ================= */
+
 onValue(ref(db,"onlineUsers"), snap=>{
   if(!snap.exists()){
-    document.getElementById("onlineCount").textContent = 0;
+    onlineCount.textContent = 0;
     return;
   }
 
@@ -199,22 +159,24 @@ onValue(ref(db,"onlineUsers"), snap=>{
     }
   });
 
-  document.getElementById("onlineCount").textContent = count;
+  onlineCount.textContent = count;
 });
 
-/* TOTAL VIEWS */
+/* ================= TOTAL VIEWS ================= */
+
 onValue(ref(db,"stats/totalViews"), snap=>{
-  document.getElementById("totalViews").textContent =
-    snap.exists() ? snap.val() : 0;
+  totalViews.textContent = snap.exists() ? snap.val() : 0;
 });
 
-/* TOTAL ANIME */
+/* ================= TOTAL ANIME ================= */
+
 onValue(ref(db,"animeList"), snap=>{
-  document.getElementById("totalAnime").textContent =
+  totalAnime.textContent =
     snap.exists() ? Object.keys(snap.val()).length : 0;
 });
 
-/* CHART */
+/* ================= CHART ================= */
+
 const ctx = document.getElementById("viewChart");
 let chart = new Chart(ctx,{
   type:"line",
@@ -231,73 +193,88 @@ let chart = new Chart(ctx,{
 
 onValue(ref(db,"stats/daily"), snap=>{
   if(!snap.exists()) return;
-
-  const data = snap.val();
-  chart.data.labels = Object.keys(data);
-  chart.data.datasets[0].data = Object.values(data);
+  chart.data.labels = Object.keys(snap.val());
+  chart.data.datasets[0].data = Object.values(snap.val());
   chart.update();
 });
 
-/* TOP 10 */
-onValue(ref(db,"animeViews"), snap=>{
-  if(!snap.exists()) return;
+/* ================= SPAM SYSTEM ================= */
 
-  const arr = Object.entries(snap.val());
-  arr.sort((a,b)=> b[1] - a[1]);
-
-  const top10 = arr.slice(0,10);
-  const max = top10[0] ? top10[0][1] : 1;
-
-  const box = document.getElementById("topList");
-  box.innerHTML = "";
-
-  top10.forEach(([id,views],i)=>{
-    const percent = (views/max)*100;
-
-    box.innerHTML += `
-      <div class="top-item">
-        <div class="rank">#${i+1}</div>
-        <div style="flex:1">
-          <div style="font-weight:bold">${id}</div>
-          <div style="font-size:13px;color:#94a3b8">${views} วิว</div>
-          <div class="progress">
-            <div style="width:${percent}%"></div>
-          </div>
-        </div>
-      </div>
-    `;
-  });
-});
-
-/* SPAM SYSTEM */
 onValue(ref(db,"security/spamCount"), snap=>{
-  document.getElementById("spamCount").textContent =
+  spamCount.textContent =
     "พบผู้ต้องสงสัย: "+(snap.val()||0)+" คน";
 });
 
 onValue(ref(db,"security/spamUsers"), snap=>{
-  const box = document.getElementById("spamUsers");
-  box.innerHTML = "";
-
+  spamUsers.innerHTML = "";
   if(!snap.exists()) return;
 
   Object.entries(snap.val()).forEach(([id,data])=>{
     const time = new Date(data.time).toLocaleString();
-    box.innerHTML += `
+    spamUsers.innerHTML += `
       <div style="font-size:13px;margin-bottom:6px;">
-        🧨 ${id} <br>
+        🧨 ${id}<br>
         <span style="color:#94a3b8">${time}</span>
       </div>
     `;
   });
 });
 
-/* CLEAR SPAM */
-document.getElementById("clearSpam").onclick = ()=>{
+clearSpam.onclick = ()=>{
   if(confirm("ล้างข้อมูล Spam ทั้งหมด?")){
     remove(ref(db,"security"));
   }
 };
+
+/* ================= LOAD ANIME PAGE ================= */
+
+let animeLoaded = false;
+
+async function loadAnimePage(){
+
+  const container = document.getElementById("animeContainer");
+
+  container.innerHTML = "⏳ กำลังโหลด...";
+
+  try{
+    const res = await fetch("หน้าโหลด.html");
+    const html = await res.text();
+
+    container.innerHTML = html;
+
+    container.querySelectorAll("script").forEach(oldScript=>{
+      const newScript = document.createElement("script");
+
+      if(oldScript.src){
+        newScript.src = oldScript.src;
+      }else{
+        newScript.textContent = oldScript.textContent;
+      }
+
+      if(oldScript.type){
+        newScript.type = oldScript.type;
+      }
+
+      document.body.appendChild(newScript);
+      oldScript.remove();
+    });
+
+    animeLoaded = true;
+
+  }catch(err){
+    container.innerHTML = "❌ โหลดไม่สำเร็จ";
+    console.error(err);
+  }
+}
+
+function reloadAnime(){
+  animeLoaded = false;
+  loadAnimePage();
+}
+
+window.reloadAnime = reloadAnime;
+
+loadAnimePage();
 
 </script>
 </body>

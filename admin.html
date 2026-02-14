@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anime Admin Dashboard</title>
+<title>AnimeFume Admin</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -37,6 +37,7 @@ body{
 .main{
   flex:1;
   padding:20px;
+  overflow-y:auto;
 }
 
 .cards{
@@ -64,7 +65,6 @@ body{
   margin-bottom:20px;
 }
 
-/* TOP 10 */
 .top-item{
   display:flex;
   gap:12px;
@@ -79,13 +79,6 @@ body{
   text-align:center;
 }
 
-.cover{
-  width:50px;
-  height:70px;
-  object-fit:cover;
-  border-radius:8px;
-}
-
 .progress{
   height:6px;
   background:#334155;
@@ -97,11 +90,25 @@ body{
 .progress div{
   height:100%;
   background:#22d3ee;
-  width:0%;
 }
-select{
-  padding:6px;
+
+.spam-box{
+  background:#300;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:20px;
+  color:#ff4d4d;
+}
+button{
+  padding:6px 10px;
+  border:none;
   border-radius:8px;
+  cursor:pointer;
+}
+.clear-btn{
+  background:#ff3b3b;
+  color:#fff;
+  margin-top:10px;
 }
 </style>
 </head>
@@ -114,7 +121,6 @@ select{
 
 <div class="main">
 
-<!-- CARDS -->
 <div class="cards">
   <div class="card">
     <div>👀 ออนไลน์</div>
@@ -132,23 +138,21 @@ select{
   </div>
 </div>
 
-<!-- CHART -->
 <div class="panel">
   <h3>📊 วิวรวมทั้งหมด</h3>
   <canvas id="viewChart" height="100"></canvas>
 </div>
 
-<!-- TOP 10 -->
 <div class="panel">
-  <div style="display:flex;justify-content:space-between;align-items:center;">
-    <h3>🏆 Top 10</h3>
-    <select id="rangeSelect">
-      <option value="all">ทั้งหมด</option>
-      <option value="7">7 วัน</option>
-      <option value="30">30 วัน</option>
-    </select>
-  </div>
+  <h3>🏆 Top 10</h3>
   <div id="topList"></div>
+</div>
+
+<div class="spam-box">
+  <h3>⚠ ระบบกันปั้ม</h3>
+  <div id="spamCount">กำลังโหลด...</div>
+  <div id="spamUsers"></div>
+  <button class="clear-btn" id="clearSpam">ล้าง Spam</button>
 </div>
 
 </div>
@@ -159,7 +163,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import {
   getDatabase,
   ref,
-  onValue
+  onValue,
+  remove
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
@@ -172,78 +177,86 @@ const firebaseConfig = {
   appId: "APP_ID"
 };
 
-onValue(ref(db,"episodes/onepiece"), snap=>{
-  if(!snap.exists()) return;
-
-  const data = snap.val();
-  const container = document.getElementById("episodeList");
-
-  container.innerHTML = "";
-
-  Object.keys(data).sort((a,b)=>a-b).forEach(ep=>{
-
-    const item = data[ep];
-
-    container.innerHTML += `
-      <a href="${item.link}" class="ep-btn">
-        ${item.title}
-      </a>
-    `;
-  });
-
-});
-
-
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ================= ONLINE USERS ================= */
+/* ONLINE USERS + AUTO CLEAN */
 onValue(ref(db,"onlineUsers"), snap=>{
-  const count = snap.exists() ? Object.keys(snap.val()).length : 0;
+  if(!snap.exists()){
+    document.getElementById("onlineCount").textContent = 0;
+    return;
+  }
+
+  const data = snap.val();
+  const now = Date.now();
+  let count = 0;
+
+  Object.entries(data).forEach(([key,val])=>{
+    if(now - val.time > 60000){
+      remove(ref(db,"onlineUsers/"+key));
+    }else{
+      count++;
+    }
+  });
+
   document.getElementById("onlineCount").textContent = count;
 });
 
-/* ================= TOTAL VIEWS ================= */
+/* TOTAL VIEWS */
 onValue(ref(db,"stats/totalViews"), snap=>{
   document.getElementById("totalViews").textContent =
     snap.exists() ? snap.val() : 0;
 });
 
-/* ================= TOTAL ANIME ================= */
+/* TOTAL ANIME */
 onValue(ref(db,"animeList"), snap=>{
-  const total = snap.exists() ? Object.keys(snap.val()).length : 0;
-  document.getElementById("totalAnime").textContent = total;
+  document.getElementById("totalAnime").textContent =
+    snap.exists() ? Object.keys(snap.val()).length : 0;
 });
 
-/* ================= TOP 10 ================= */
-const topList = document.getElementById("topList");
+/* CHART */
+const ctx = document.getElementById("viewChart");
+let chart = new Chart(ctx,{
+  type:"line",
+  data:{
+    labels:[],
+    datasets:[{
+      label:"วิวรายวัน",
+      data:[],
+      borderColor:"#22d3ee",
+      fill:false
+    }]
+  }
+});
 
-onValue(ref(db,"animeViews"), snap=>{
+onValue(ref(db,"stats/daily"), snap=>{
   if(!snap.exists()) return;
 
   const data = snap.val();
-  const arr = Object.entries(data);
+  chart.data.labels = Object.keys(data);
+  chart.data.datasets[0].data = Object.values(data);
+  chart.update();
+});
 
+/* TOP 10 */
+onValue(ref(db,"animeViews"), snap=>{
+  if(!snap.exists()) return;
+
+  const arr = Object.entries(snap.val());
   arr.sort((a,b)=> b[1] - a[1]);
 
   const top10 = arr.slice(0,10);
   const max = top10[0] ? top10[0][1] : 1;
 
-  topList.innerHTML = "";
+  const box = document.getElementById("topList");
+  box.innerHTML = "";
 
   top10.forEach(([id,views],i)=>{
-
     const percent = (views/max)*100;
 
-    const medal =
-      i===0 ? "🥇" :
-      i===1 ? "🥈" :
-      i===2 ? "🥉" :
-      "#"+(i+1);
-
-    topList.innerHTML += `
+    box.innerHTML += `
       <div class="top-item">
-        <div class="rank">${medal}</div>
+        <div class="rank">#${i+1}</div>
         <div style="flex:1">
           <div style="font-weight:bold">${id}</div>
           <div style="font-size:13px;color:#94a3b8">${views} วิว</div>
@@ -255,6 +268,36 @@ onValue(ref(db,"animeViews"), snap=>{
     `;
   });
 });
+
+/* SPAM SYSTEM */
+onValue(ref(db,"security/spamCount"), snap=>{
+  document.getElementById("spamCount").textContent =
+    "พบผู้ต้องสงสัย: "+(snap.val()||0)+" คน";
+});
+
+onValue(ref(db,"security/spamUsers"), snap=>{
+  const box = document.getElementById("spamUsers");
+  box.innerHTML = "";
+
+  if(!snap.exists()) return;
+
+  Object.entries(snap.val()).forEach(([id,data])=>{
+    const time = new Date(data.time).toLocaleString();
+    box.innerHTML += `
+      <div style="font-size:13px;margin-bottom:6px;">
+        🧨 ${id} <br>
+        <span style="color:#94a3b8">${time}</span>
+      </div>
+    `;
+  });
+});
+
+/* CLEAR SPAM */
+document.getElementById("clearSpam").onclick = ()=>{
+  if(confirm("ล้างข้อมูล Spam ทั้งหมด?")){
+    remove(ref(db,"security"));
+  }
+};
 
 </script>
 </body>

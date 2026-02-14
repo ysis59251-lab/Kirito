@@ -48,12 +48,12 @@ body{
   border-radius:16px;
   margin-bottom:20px;
 }
-.spam-box{
-  background:#300;
-  padding:15px;
-  border-radius:12px;
-  margin-bottom:20px;
-  color:#ff4d4d;
+input{
+  width:100%;
+  padding:8px;
+  margin-bottom:10px;
+  border-radius:8px;
+  border:none;
 }
 button{
   padding:6px 10px;
@@ -62,10 +62,9 @@ button{
   cursor:pointer;
   background:#22d3ee;
 }
-.clear-btn{
+.delete-btn{
   background:#ff3b3b;
   color:#fff;
-  margin-top:10px;
 }
 </style>
 </head>
@@ -76,6 +75,8 @@ button{
 </div>
 
 <div class="main">
+
+<!-- ===== CARDS ===== -->
 
 <div class="cards">
   <div class="card">
@@ -94,37 +95,48 @@ button{
   </div>
 </div>
 
-<div class="panel">
-  <h3>📊 วิวรวมทั้งหมด</h3>
-  <canvas id="viewChart" height="100"></canvas>
-</div>
+<!-- ===== ANIME MANAGE ===== -->
 
 <div class="panel">
-  <h3>🎬 Live Preview หน้า Anime</h3>
+  <h3>🎬 จัดการอนิเมะ</h3>
+
+  <input id="animeId" placeholder="ID เช่น naruto">
+  <input id="animeTitle" placeholder="ชื่อเรื่อง">
+  <input id="animeImage" placeholder="ลิงก์รูปภาพ">
+  <input id="animeDesc" placeholder="คำอธิบาย">
+
+  <button id="saveAnime">บันทึก / เพิ่ม</button>
+
+  <hr style="margin:20px 0;border-color:#334155">
+
+  <div id="animeManageList"></div>
+</div>
+
+<!-- ===== LIVE PREVIEW ===== -->
+
+<div class="panel">
+  <h3>👀 Live Preview หน้า Anime</h3>
   <button onclick="reloadAnime()">รีโหลดหน้าอนิเมะ</button>
-  <div id="animeContainer" style="margin-top:15px;">กำลังโหลด...</div>
-</div>
-
-<div class="spam-box">
-  <h3>⚠ ระบบกันปั้ม</h3>
-  <div id="spamCount">กำลังโหลด...</div>
-  <div id="spamUsers"></div>
-  <button class="clear-btn" id="clearSpam">ล้าง Spam</button>
+  <div id="animeContainer" style="margin-top:15px;"></div>
 </div>
 
 </div>
 
 <script type="module">
 
-/* ================= FIREBASE ================= */
+/* ===== FIREBASE ===== */
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { initializeApp } from 
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
 import {
   getDatabase,
   ref,
   onValue,
+  set,
   remove
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+} from 
+"https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "API_KEY",
@@ -139,7 +151,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ================= ONLINE USERS ================= */
+/* ===== STATS ===== */
+
+onValue(ref(db,"stats/totalViews"), snap=>{
+  totalViews.textContent = snap.exists() ? snap.val() : 0;
+});
+
+onValue(ref(db,"animeList"), snap=>{
+  totalAnime.textContent =
+    snap.exists() ? Object.keys(snap.val()).length : 0;
+});
+
+/* ===== ONLINE ===== */
 
 onValue(ref(db,"onlineUsers"), snap=>{
   if(!snap.exists()){
@@ -162,117 +185,85 @@ onValue(ref(db,"onlineUsers"), snap=>{
   onlineCount.textContent = count;
 });
 
-/* ================= TOTAL VIEWS ================= */
+/* ===== ANIME CMS ===== */
 
-onValue(ref(db,"stats/totalViews"), snap=>{
-  totalViews.textContent = snap.exists() ? snap.val() : 0;
-});
-
-/* ================= TOTAL ANIME ================= */
+const manageBox = document.getElementById("animeManageList");
 
 onValue(ref(db,"animeList"), snap=>{
-  totalAnime.textContent =
-    snap.exists() ? Object.keys(snap.val()).length : 0;
-});
-
-/* ================= CHART ================= */
-
-const ctx = document.getElementById("viewChart");
-let chart = new Chart(ctx,{
-  type:"line",
-  data:{
-    labels:[],
-    datasets:[{
-      label:"วิวรายวัน",
-      data:[],
-      borderColor:"#22d3ee",
-      fill:false
-    }]
-  }
-});
-
-onValue(ref(db,"stats/daily"), snap=>{
-  if(!snap.exists()) return;
-  chart.data.labels = Object.keys(snap.val());
-  chart.data.datasets[0].data = Object.values(snap.val());
-  chart.update();
-});
-
-/* ================= SPAM SYSTEM ================= */
-
-onValue(ref(db,"security/spamCount"), snap=>{
-  spamCount.textContent =
-    "พบผู้ต้องสงสัย: "+(snap.val()||0)+" คน";
-});
-
-onValue(ref(db,"security/spamUsers"), snap=>{
-  spamUsers.innerHTML = "";
+  manageBox.innerHTML="";
   if(!snap.exists()) return;
 
   Object.entries(snap.val()).forEach(([id,data])=>{
-    const time = new Date(data.time).toLocaleString();
-    spamUsers.innerHTML += `
-      <div style="font-size:13px;margin-bottom:6px;">
-        🧨 ${id}<br>
-        <span style="color:#94a3b8">${time}</span>
+    manageBox.innerHTML+=`
+      <div style="background:#0f172a;padding:15px;border-radius:12px;margin-bottom:10px">
+        <strong>${data.title}</strong>
+        <div style="font-size:12px;color:#94a3b8">${id}</div>
+        <div style="margin-top:8px">
+          <button onclick="editAnime('${id}')">แก้ไข</button>
+          <button class="delete-btn" onclick="deleteAnime('${id}')">ลบ</button>
+        </div>
       </div>
     `;
   });
 });
 
-clearSpam.onclick = ()=>{
-  if(confirm("ล้างข้อมูล Spam ทั้งหมด?")){
-    remove(ref(db,"security"));
-  }
+saveAnime.onclick=()=>{
+
+  const id=animeId.value.trim();
+  const title=animeTitle.value.trim();
+  const image=animeImage.value.trim();
+  const desc=animeDesc.value.trim();
+
+  if(!id||!title) return alert("กรอก ID และชื่อเรื่อง");
+
+  set(ref(db,"animeList/"+id),{
+    title,
+    image,
+    description:desc,
+    createdAt:Date.now()
+  });
+
+  animeId.value="";
+  animeTitle.value="";
+  animeImage.value="";
+  animeDesc.value="";
 };
 
-/* ================= LOAD ANIME PAGE ================= */
+function deleteAnime(id){
+  if(confirm("ลบเรื่องนี้?")){
+    remove(ref(db,"animeList/"+id));
+  }
+}
+window.deleteAnime=deleteAnime;
 
-let animeLoaded = false;
+function editAnime(id){
+
+  onValue(ref(db,"animeList/"+id), snap=>{
+    if(!snap.exists()) return;
+    const data=snap.val();
+
+    animeId.value=id;
+    animeTitle.value=data.title;
+    animeImage.value=data.image;
+    animeDesc.value=data.description||"";
+  },{
+    onlyOnce:true
+  });
+}
+window.editAnime=editAnime;
+
+/* ===== LIVE PREVIEW ===== */
 
 async function loadAnimePage(){
-
-  const container = document.getElementById("animeContainer");
-
-  container.innerHTML = "⏳ กำลังโหลด...";
-
-  try{
-    const res = await fetch("หน้าโหลด.html");
-    const html = await res.text();
-
-    container.innerHTML = html;
-
-    container.querySelectorAll("script").forEach(oldScript=>{
-      const newScript = document.createElement("script");
-
-      if(oldScript.src){
-        newScript.src = oldScript.src;
-      }else{
-        newScript.textContent = oldScript.textContent;
-      }
-
-      if(oldScript.type){
-        newScript.type = oldScript.type;
-      }
-
-      document.body.appendChild(newScript);
-      oldScript.remove();
-    });
-
-    animeLoaded = true;
-
-  }catch(err){
-    container.innerHTML = "❌ โหลดไม่สำเร็จ";
-    console.error(err);
-  }
+  const container=document.getElementById("animeContainer");
+  const res=await fetch("/anime.html");
+  container.innerHTML=await res.text();
 }
 
 function reloadAnime(){
-  animeLoaded = false;
   loadAnimePage();
 }
-
-window.reloadAnime = reloadAnime;
+window.reloadAnime=reloadAnime;
 
 loadAnimePage();
 

@@ -657,6 +657,7 @@ Oshi no Ko Season 3 เกิดใหม่เป็นลูกโอชิ(�
 <script type="module">
 
 /* ================= FIREBASE INIT ================= */
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getDatabase,
@@ -680,13 +681,51 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+
+/* ================================================= */
+/* ================= ONLINE USERS ================= */
+/* ================================================= */
+
+const userId = "u_" + Date.now();
+const userRef = ref(db,"onlineUsers/" + userId);
+
+set(userRef,true);
+
+window.addEventListener("beforeunload",()=>{
+  remove(userRef);
+});
+
+
+/* ================================================= */
+/* ============= ANTI SPAM PROTECTION ============== */
+/* ================================================= */
+
+const now = Date.now();
+const visitKey = "lastVisitTime";
+const lastVisit = localStorage.getItem(visitKey);
+const spamLimit = 5000; // 5 วิ
+
+if(lastVisit && (now - lastVisit < spamLimit)){
+
+  const spamRef = ref(db,"security/spamUsers/" + userId);
+
+  set(spamRef,{
+    time: now,
+    reason: "Refresh too fast"
+  });
+
+  runTransaction(ref(db,"security/spamCount"), v => (v||0)+1);
+
+}else{
+  localStorage.setItem(visitKey, now);
+}
+
+
 /* ================================================= */
 /* ================= EPISODE UPLOAD ================= */
 /* ================================================= */
 
-const episodeElements = document.querySelectorAll(".episode");
-
-episodeElements.forEach(el=>{
+document.querySelectorAll(".episode").forEach(el=>{
   const animeId = el.dataset.id;
   const epNumber = el.dataset.ep;
   const title = el.textContent.trim();
@@ -700,19 +739,21 @@ episodeElements.forEach(el=>{
   }
 });
 
+
 /* ================================================= */
-/* ================= HOME VIEW (วันละครั้ง) ========= */
+/* ================= HOME VIEW ================= */
 /* ================================================= */
 
 const today = new Date().toISOString().slice(0,10);
-const viewKey = "viewed-home-"+today;
+const viewKey = "viewed-home-" + today;
 
 if(!localStorage.getItem(viewKey)){
   localStorage.setItem(viewKey,"1");
 
   runTransaction(ref(db,"stats/totalViews"), v => (v||0)+1);
-  runTransaction(ref(db,"stats/daily/"+today), v => (v||0)+1);
+  runTransaction(ref(db,"stats/daily/" + today), v => (v||0)+1);
 }
+
 
 /* ================================================= */
 /* ================= VIEW PER ANIME ================= */
@@ -725,9 +766,10 @@ document.querySelectorAll(".anime-card").forEach(card=>{
   const id = href.replace(".html","");
 
   card.addEventListener("click",()=>{
-    runTransaction(ref(db,"animeViews/"+id), v => (v||0)+1);
+    runTransaction(ref(db,"animeViews/" + id), v => (v||0)+1);
   });
 });
+
 
 /* ================================================= */
 /* ================= HIDE / SHOW ================= */
@@ -740,26 +782,12 @@ onValue(ref(db,"animeList"), snap=>{
 
     const id = href.replace(".html","");
 
-    if(snap.exists()){
-      const data = snap.child(id).val();
-      card.style.display =
-        data && data.hidden === true ? "none" : "";
-    }
+    const data = snap.child(id).val();
+    card.style.display =
+      data && data.hidden === true ? "none" : "";
   });
 });
 
-/* ================================================= */
-/* ================= ONLINE USERS ================= */
-/* ================================================= */
-
-const userId = "u_"+Date.now();
-const userRef = ref(db,"onlineUsers/"+userId);
-
-set(userRef,true);
-
-window.addEventListener("beforeunload",()=>{
-  remove(userRef);
-});
 
 /* ================================================= */
 /* ================= YEAR ================= */
@@ -769,6 +797,7 @@ const yearEl = document.getElementById("year");
 if(yearEl){
   yearEl.textContent = new Date().getFullYear();
 }
+
 
 /* ================================================= */
 /* ================= REPORT BUTTON ================= */
@@ -781,6 +810,7 @@ if(reportBtn){
   };
 }
 
+
 /* ================================================= */
 /* ================= MENU ================= */
 /* ================================================= */
@@ -789,6 +819,7 @@ const menuBtn = document.getElementById("menuBtn");
 const menu = document.getElementById("menuDropdown");
 
 if(menuBtn && menu){
+
   menuBtn.onclick = e=>{
     e.stopPropagation();
     menu.style.display =
@@ -800,6 +831,7 @@ if(menuBtn && menu){
   });
 }
 
+
 /* ================================================= */
 /* ================= BOTTOM NAV ================= */
 /* ================================================= */
@@ -807,6 +839,7 @@ if(menuBtn && menu){
 window.toggleBottom = ()=>{
   document.getElementById("bottomNav")?.classList.toggle("show");
 };
+
 
 /* ================================================= */
 /* ================= PAGINATION ================= */
@@ -864,6 +897,7 @@ window.prevSet = ()=>{
 render();
 
 </script>
+
 <button class="fab" onclick="toggleBottom()">☰</button>
 </body>
 </html>

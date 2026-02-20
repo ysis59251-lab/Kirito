@@ -656,6 +656,10 @@ Oshi no Ko Season 3 เกิดใหม่เป็นลูกโอชิ(�
 
 <script type="module">
 
+/* ================================================= */
+/* ================== IMPORT ======================= */
+/* ================================================= */
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getDatabase,
@@ -667,7 +671,10 @@ import {
   push
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* ================= FIREBASE CONFIG ================= */
+
+/* ================================================= */
+/* ================= FIREBASE SETUP ================ */
+/* ================================================= */
 
 const firebaseConfig = {
   apiKey: "AIzaSyC1S1BToUhVmWqyeTWbHlPdI8hY0aGKNDg",
@@ -678,56 +685,142 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+const db  = getDatabase(app);
 
 
-/* ================= ONLINE USERS ================= */
+/* ================================================= */
+/* ================= ONLINE USERS ================== */
+/* ================================================= */
 
-const userRef = push(ref(db,"onlineUsers"));
+const onlineUserRef = push(ref(db,"onlineUsers"));
 
-set(userRef,{
+set(onlineUserRef,{
   page: location.pathname,
   time: Date.now()
 });
 
-onDisconnect(userRef).remove();
+onDisconnect(onlineUserRef).remove();
 
 
-/* ================= TOTAL + DAILY VIEW ================= */
+/* ================================================= */
+/* ================= TOTAL + DAILY VIEW ============ */
+/* ================================================= */
 
-const today = new Date().toISOString().slice(0,10);
+const today   = new Date().toISOString().slice(0,10);
 const viewKey = "viewed-" + today;
 
 if(!localStorage.getItem(viewKey)){
+
   localStorage.setItem(viewKey,"1");
 
-  runTransaction(ref(db,"stats/totalViews"), v => (v||0)+1);
-  runTransaction(ref(db,"stats/daily/" + today), v => (v||0)+1);
+  runTransaction(
+    ref(db,"stats/totalViews"),
+    current => (current || 0) + 1
+  );
+
+  runTransaction(
+    ref(db,"stats/daily/" + today),
+    current => (current || 0) + 1
+  );
 }
 
 
-/* ================= ANIME CLICK VIEW ================= */
+/* ================================================= */
+/* ================= ANIME CLICK VIEW ============== */
+/* ================================================= */
 
 document.querySelectorAll(".anime-card").forEach(card=>{
+
   const href = card.getAttribute("href");
   if(!href) return;
 
   const id = href.replace(".html","");
 
   card.addEventListener("click",()=>{
-    runTransaction(ref(db,"animeViews/" + id), v => (v||0)+1);
+    runTransaction(
+      ref(db,"animeViews/" + id),
+      current => (current || 0) + 1
+    );
   });
+
 });
 
 
-/* ================= ADMIN HIDE SYSTEM ================= */
+/* ================================================= */
+/* ================= PAGINATION ==================== */
+/* ================================================= */
+
+const pageMap = {
+  1:"หน้าโหลด.html",
+  2:"pageMap2.html",
+  3:"pageMap3.html",
+  4:"pageMap4.html",
+  5:"pageMap5.html",
+  6:"pageMap6.html",
+  7:"pageMap7.html",
+  8:"pageMap8.html",
+  9:"pageMap9.html",
+  10:"pageMap10.html"
+};
+
+let currentSet = 1;
+const perSet   = 5;
+const maxSet   = Math.ceil(Object.keys(pageMap).length / perSet);
+
+function renderPagination(){
+
+  const box = document.getElementById("numberBox");
+  if(!box) return;
+
+  box.innerHTML = "";
+
+  const start = (currentSet - 1) * perSet + 1;
+
+  for(let i=start; i<start+perSet; i++){
+
+    if(!pageMap[i]) continue;
+
+    const btn = document.createElement("div");
+    btn.className = "num";
+    btn.textContent = i;
+
+    btn.onclick = ()=>{
+      location.href = pageMap[i];
+    };
+
+    box.appendChild(btn);
+  }
+}
+
+window.nextSet = ()=>{
+  if(currentSet < maxSet){
+    currentSet++;
+    renderPagination();
+  }
+};
+
+window.prevSet = ()=>{
+  if(currentSet > 1){
+    currentSet--;
+    renderPagination();
+  }
+};
+
+renderPagination();
+
+
+/* ================================================= */
+/* ================= ADMIN HIDE SYSTEM ============= */
+/* ================================================= */
 
 onValue(ref(db,"animeList"), snap=>{
+
   document.querySelectorAll(".anime-card").forEach(card=>{
+
     const href = card.getAttribute("href");
     if(!href) return;
 
-    const id = href.replace(".html","");
+    const id   = href.replace(".html","");
     const data = snap.child(id).val();
 
     if(data && data.hidden === true){
@@ -735,11 +828,15 @@ onValue(ref(db,"animeList"), snap=>{
     }else{
       card.style.display = "";
     }
+
   });
+
 });
 
 
-/* ================= BOTTOM TOGGLE (รองรับ 2 ปุ่ม) ================= */
+/* ================================================= */
+/* ================= BOTTOM NAV TOGGLE ============= */
+/* ================================================= */
 
 window.toggleBottom = ()=>{
   const nav = document.getElementById("bottomNav");
@@ -749,7 +846,9 @@ window.toggleBottom = ()=>{
 };
 
 
-/* ================= FOOTER YEAR ================= */
+/* ================================================= */
+/* ================= FOOTER YEAR =================== */
+/* ================================================= */
 
 const yearEl = document.getElementById("year");
 if(yearEl){

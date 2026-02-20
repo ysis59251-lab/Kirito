@@ -98,7 +98,18 @@ const db = getDatabase(app);
 
 const btn = document.getElementById("sendBtn");
 
+const spamLimit = 10000; // 10 วิ
+const spamKey = "lastReportTime";
+
 btn.onclick = async () => {
+
+  const now = Date.now();
+  const last = localStorage.getItem(spamKey);
+
+  if(last && now - last < spamLimit){
+    alert("กรุณารอสักครู่ก่อนส่งอีกครั้ง");
+    return;
+  }
 
   const page = document.getElementById("page").value.trim() 
       || document.title 
@@ -115,16 +126,22 @@ btn.onclick = async () => {
   btn.textContent = "กำลังส่ง...";
 
   try{
-    await set(push(ref(db,"reports/")),{
+
+    const reportData = {
       page,
       detail,
-      time: Date.now(),
-      read:false
-    });
+      time: now,
+      read:false,
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      screen: screen.width + "x" + screen.height
+    };
 
-    alert("ส่งเรียบร้อย ✅");
-    document.getElementById("detail").value="";
-    document.getElementById("page").value="";
+    await set(push(ref(db,"reports/")), reportData);
+
+    localStorage.setItem(spamKey, now);
+
+    showSuccess();
 
   }catch(e){
     alert("ส่งไม่สำเร็จ");
@@ -133,6 +150,19 @@ btn.onclick = async () => {
   btn.disabled = false;
   btn.textContent = "ส่งปัญหา";
 };
+
+function showSuccess(){
+  const card = document.querySelector(".report-card");
+  card.innerHTML = `
+    <h1 style="color:#4cff7a">ส่งเรียบร้อย ✅</h1>
+    <p>ขอบคุณที่ช่วยแจ้งปัญหา</p>
+    <button onclick="history.back()" 
+      style="margin-top:10px;background:#4cff7a;color:#000">
+      กลับหน้าเดิม
+    </button>
+  `;
+}
 </script>
+
 </body>
 </html>

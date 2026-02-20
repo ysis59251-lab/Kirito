@@ -1,6 +1,14 @@
 <h1>อนิเมะที่ฉันชอบ</h1>
-<div id="favList"></div>
-
+<head>
+  <style>
+    #bg{
+      position:fixed;
+      inset:0;
+      background:url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center/cover no-repeat;
+      z-index:-1;
+    }
+  </style>
+</head>
 <script>
 function getFavorites(){
   return JSON.parse(localStorage.getItem("favorites") || "[]");

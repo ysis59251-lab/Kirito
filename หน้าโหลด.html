@@ -677,7 +677,7 @@ import {
 /* ================================================= */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC1S1BToUhVmWqyeTWbHlPdI8hY0aGKNDg",
+  apiKey: "YOUR_KEY",
   authDomain: "darkframe300.firebaseapp.com",
   databaseURL: "https://darkframe300-default-rtdb.firebaseio.com",
   projectId: "darkframe300",
@@ -686,6 +686,13 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
+
+
+/* ================================================= */
+/* ================= DOM READY ===================== */
+/* ================================================= */
+
+document.addEventListener("DOMContentLoaded", ()=>{
 
 
 /* ================================================= */
@@ -733,6 +740,49 @@ document.querySelectorAll(".anime-card").forEach(card=>{
 
 
 /* ================================================= */
+/* ================= SEARCH SYSTEM ================= */
+/* ================================================= */
+
+const searchInput = document.querySelector(".search");
+
+if(searchInput){
+  searchInput.addEventListener("input", ()=>{
+    const value = searchInput.value.toLowerCase().trim();
+
+    document.querySelectorAll(".anime-card").forEach(card=>{
+      const title = (card.dataset.title || "").toLowerCase();
+      const text  = card.innerText.toLowerCase();
+
+      card.style.display =
+        (title.includes(value) || text.includes(value))
+        ? ""
+        : "none";
+    });
+  });
+}
+
+
+/* ================================================= */
+/* ================= ADMIN HIDE SYSTEM ============= */
+/* ================================================= */
+
+onValue(ref(db,"animeList"), snap=>{
+  document.querySelectorAll(".anime-card").forEach(card=>{
+    const href = card.getAttribute("href");
+    if(!href) return;
+
+    const id   = href.replace(".html","");
+    const data = snap.child(id).val();
+
+    card.style.display =
+      (data && data.hidden === true)
+      ? "none"
+      : "";
+  });
+});
+
+
+/* ================================================= */
 /* ================= PAGINATION ==================== */
 /* ================================================= */
 
@@ -767,7 +817,6 @@ function renderPagination(){
     btn.className = "num";
     btn.textContent = i;
     btn.onclick = ()=> location.href = pageMap[i];
-
     box.appendChild(btn);
   }
 }
@@ -787,26 +836,6 @@ window.prevSet = ()=>{
 };
 
 renderPagination();
-
-
-/* ================================================= */
-/* ================= ADMIN HIDE SYSTEM ============= */
-/* ================================================= */
-
-onValue(ref(db,"animeList"), snap=>{
-  document.querySelectorAll(".anime-card").forEach(card=>{
-    const href = card.getAttribute("href");
-    if(!href) return;
-
-    const id   = href.replace(".html","");
-    const data = snap.child(id).val();
-
-    card.style.display =
-      (data && data.hidden === true)
-      ? "none"
-      : "";
-  });
-});
 
 
 /* ================================================= */
@@ -839,32 +868,9 @@ if(menuBtn && menuDrop){
 const reportBtn = document.getElementById("reportBtn");
 
 if(reportBtn){
-  reportBtn.addEventListener("click", ()=>{
+  reportBtn.onclick = ()=>{
     window.location.href = "Report a Problem.html";
-  });
-}
-
-
-/* ================================================= */
-/* ================= SEARCH SYSTEM ================= */
-/* ================================================= */
-
-const searchInput = document.querySelector(".search");
-
-if(searchInput){
-  searchInput.addEventListener("input", ()=>{
-    const value = searchInput.value.toLowerCase();
-
-    document.querySelectorAll(".anime-card").forEach(card=>{
-      const title = card.dataset.title?.toLowerCase() || "";
-      const text  = card.innerText.toLowerCase();
-
-      card.style.display =
-        (title.includes(value) || text.includes(value))
-        ? ""
-        : "none";
-    });
-  });
+  };
 }
 
 
@@ -903,6 +909,9 @@ const yearEl = document.getElementById("year");
 if(yearEl){
   yearEl.textContent = new Date().getFullYear();
 }
+
+
+}); // END DOM READY
 
 </script>
 

@@ -169,19 +169,28 @@ fetch(API)
 .then(res => res.text())
 .then(text => {
   const json = JSON.parse(text.substring(47).slice(0,-2));
-  episodes = json.table.rows.map(r => ({
-    ep: r.c[1]?.v,
-    title: r.c[2]?.v,
-    url: r.c[3]?.v
-  }));
+
+  episodes = json.table.rows
+    .filter(r => r.c[3]?.v) // ต้องมี url
+    .map(r => ({
+      ep: r.c[1]?.v ?? "",
+      title: r.c[2]?.v ?? "",
+      url: r.c[3]?.v ?? ""
+    }));
+
   renderEpisodes();
-  if(episodes[0]) play(episodes[0].url);
-});
+
+  if (episodes.length > 0) {
+    play(episodes[0].url);
+  }
+})
+.catch(err => console.error("โหลด Sheet ไม่ได้:", err));
 
 function renderEpisodes(){
   const box = document.getElementById("episodeList");
   box.innerHTML = "";
-  episodes.forEach(e=>{
+
+  episodes.forEach((e)=>{
     const div = document.createElement("div");
     div.className = "ep";
     div.innerText = `ตอนที่ ${e.ep} • ${e.title}`;
@@ -190,36 +199,50 @@ function renderEpisodes(){
   });
 }
 
+function extractDriveID(url){
+  const match = url.match(/\/d\/([^\/]+)/);
+  return match ? match[1] : null;
+}
+
 function play(url){
+  let finalUrl = url;
+
   if(url.includes("drive.google.com")){
-    const id = url.match(/\/d\/(.+?)\//)[1];
-    url = `https://drive.google.com/file/d/${id}/preview`;
+    const id = extractDriveID(url);
+    if(id){
+      finalUrl = `https://drive.google.com/file/d/${id}/preview`;
+    }
   }
-  document.getElementById("video").src = url;
-  current = url;
+
+  document.getElementById("video").src = finalUrl;
+  current = finalUrl;
+
   highlight();
   closeModal();
 }
 
 function highlight(){
-  document.querySelectorAll(".ep").forEach((e,i)=>{
-    e.classList.toggle(
-      "active",
-      episodes[i].url &&
-      current.includes(
-        episodes[i].url.split("/d/")[1]
-      )
-    );
+  document.querySelectorAll(".ep").forEach((el, i)=>{
+    const epUrl = episodes[i].url;
+    const id = extractDriveID(epUrl);
+
+    if(id){
+      el.classList.toggle("active", current.includes(id));
+    } else {
+      el.classList.remove("active");
+    }
   });
 }
 
 function openModal(){
   document.getElementById("modal").style.display="block";
 }
+
 function closeModal(){
   document.getElementById("modal").style.display="none";
 }
-document.getElementById("modal").onclick = closeModal;
+
+document.getElementById("modal").addEventListener("click", closeModal);
 </script>
 
 </body>

@@ -159,16 +159,16 @@ input{
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { 
-  getDatabase, ref, set, onValue, remove, update, onDisconnect 
+  getDatabase, ref, set, onValue, remove, update, onDisconnect
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 /* 🔥 Firebase Config */
 const firebaseConfig = {
-  apiKey: "API_KEY",
-  authDomain: "PROJECT.firebaseapp.com",
-  databaseURL: "https://PROJECT-default-rtdb.firebaseio.com",
-  projectId: "PROJECT",
-  appId: "APP_ID"
+  apiKey: "AIzaSyC1S1BToUhVmWqyeTWbHlPdI8hY0aGKNDg",
+  authDomain: "darkframe300.firebaseapp.com",
+  databaseURL: "https://darkframe300-default-rtdb.firebaseio.com",
+  projectId: "darkframe300",
+  appId: "1:296568248360:web:7867a60675ce32e3d6bd1d"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -183,7 +183,8 @@ set(onlineRef, true);
 onDisconnect(onlineRef).remove();
 
 onValue(ref(db, "onlineUsers"), (snap)=>{
-  document.getElementById("onlineCount").innerText = snap.exists() ? Object.keys(snap.val()).length : 0;
+  document.getElementById("onlineCount").innerText =
+    snap.exists() ? Object.keys(snap.val()).length : 0;
 });
 
 /* ================= LOAD & SEARCH ANIME ================= */
@@ -192,7 +193,11 @@ let allAnime = [];
 
 onValue(ref(db, "anime"), (snap)=>{
   allAnime = [];
-  if(!snap.exists()) return;
+
+  if(!snap.exists()){
+    document.getElementById("animeList").innerHTML = "ไม่มีข้อมูล";
+    return;
+  }
 
   snap.forEach(child=>{
     allAnime.push({
@@ -214,8 +219,10 @@ function renderAnime(list){
       <div class="anime-item">
         ${data.title} (${data.status || "active"})
         <div>
-          <button style="background:#ff9800" onclick="disableAnime('${data.id}')">ปิด</button>
-          <button style="background:#ff3c3c" onclick="deleteAnime('${data.id}')">ลบ</button>
+          <button style="background:#ff9800"
+            onclick="disableAnime('${data.id}')">ปิด</button>
+          <button style="background:#ff3c3c"
+            onclick="deleteAnime('${data.id}')">ลบ</button>
         </div>
       </div>
     `;
@@ -224,8 +231,8 @@ function renderAnime(list){
 
 window.searchAnime = function(){
   const keyword = document.getElementById("searchInput").value.toLowerCase();
-  const filtered = allAnime.filter(anime =>
-    anime.title?.toLowerCase().includes(keyword)
+  const filtered = allAnime.filter(a =>
+    a.title?.toLowerCase().includes(keyword)
   );
   renderAnime(filtered);
 };
@@ -243,7 +250,10 @@ window.deleteAnime = function(id){
 /* ================= RANKING ================= */
 
 function renderRanking(arr){
-  const sorted = [...arr].sort((a,b)=> (b.views||0)-(a.views||0));
+  const sorted = [...arr].sort((a,b)=>
+    (b.views||0)-(a.views||0)
+  );
+
   const container = document.getElementById("ranking");
   container.innerHTML="";
 
@@ -256,7 +266,7 @@ function renderRanking(arr){
   });
 }
 
-/* ================= REPORT PANEL ================= */
+/* ================= REPORT SYSTEM ================= */
 
 window.toggleReportPanel = function(){
   document.getElementById("reportPanel").classList.toggle("active");
@@ -264,69 +274,83 @@ window.toggleReportPanel = function(){
 
 let lastReportCount = 0;
 
-onValue(ref(db,"reports"),(snap)=>{
+onValue(ref(db,"reports"),(snapshot)=>{
 
   const container = document.getElementById("reportList");
-  container.innerHTML="";
+  const badge = document.getElementById("reportUnread");
 
-  let unread = 0;
-  let currentCount = 0;
+  container.innerHTML = "";
 
-  if(snap.exists()){
-    const dataObj = snap.val();
-    currentCount = Object.keys(dataObj).length;
-
-    snap.forEach(child=>{
-      const data = child.val();
-      const id = child.key;
-
-      if(!data.read) unread++;
-
-      container.innerHTML += `
-        <div class="message-item">
-          <div>
-            <b>${data.page}</b> ${data.read ? "✅" : "🆕"}
-          </div>
-          <div class="message-actions">
-            <button class="btn-view" onclick="viewReport('${id}')">เปิด</button>
-            <button class="btn-delete" onclick="deleteReport('${id}')">ลบ</button>
-          </div>
-        </div>
-      `;
-    });
+  if(!snapshot.exists()){
+    container.innerHTML = "ไม่มีรายงาน";
+    badge.innerText = 0;
+    return;
   }
 
-  document.getElementById("reportUnread").innerText = unread;
+  let unread = 0;
+  let count = 0;
 
-  if(currentCount > lastReportCount){
+  const reports = [];
+
+  snapshot.forEach(child=>{
+    reports.push({
+      id: child.key,
+      ...child.val()
+    });
+  });
+
+  // เรียงใหม่ล่าสุดก่อน
+  reports.reverse();
+
+  reports.forEach(data=>{
+
+    count++;
+    if(!data.read) unread++;
+
+    const div = document.createElement("div");
+    div.className = "message-item";
+
+    div.innerHTML = `
+      <div>
+        <b>${data.page || "ไม่ทราบหน้า"}</b>
+        ${data.read ? "✅" : "🆕"}<br>
+        <small>${new Date(data.time).toLocaleString()}</small>
+      </div>
+      <div class="message-actions">
+        <button class="btn-view">เปิด</button>
+        <button class="btn-delete">ลบ</button>
+      </div>
+    `;
+
+    div.querySelector(".btn-view").onclick = () => {
+      alert(
+        "หน้า: "+data.page+
+        "\n\nรายละเอียด:\n"+data.detail+
+        "\n\nเวลา: "+new Date(data.time).toLocaleString()
+      );
+
+      update(ref(db,"reports/"+data.id),{read:true});
+    };
+
+    div.querySelector(".btn-delete").onclick = () => {
+      if(confirm("ลบรายงานนี้?")){
+        remove(ref(db,"reports/"+data.id));
+      }
+    };
+
+    container.appendChild(div);
+  });
+
+  badge.innerText = unread;
+
+  if(count > lastReportCount){
     document.getElementById("notifySound").play().catch(()=>{});
   }
 
-  lastReportCount = currentCount;
+  lastReportCount = count;
 });
 
-window.viewReport = function(id){
-
-  onValue(ref(db,"reports/"+id),(snap)=>{
-    const data = snap.val();
-    if(!data) return;
-
-    alert(
-      "หน้า: "+data.page+
-      "\n\nรายละเอียด:\n"+data.detail+
-      "\n\nเวลา: "+new Date(data.time).toLocaleString()
-    );
-  },{onlyOnce:true});
-
-  update(ref(db,"reports/"+id),{read:true});
-};
-
-window.deleteReport = function(id){
-  if(confirm("ลบรายงานนี้?")){
-    remove(ref(db,"reports/"+id));
-  }
-};
-
 </script>
+
 </body>
 </html>

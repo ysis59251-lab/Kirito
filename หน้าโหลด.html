@@ -656,6 +656,46 @@ Oshi no Ko Season 3 เกิดใหม่เป็นลูกโอชิ(�
 
 <script type="module">
 
+/* ================= FAVORITE SYSTEM ================= */
+
+function getFavorites(){
+  return JSON.parse(localStorage.getItem("favorites") || "[]");
+}
+
+function saveFavorites(arr){
+  localStorage.setItem("favorites", JSON.stringify(arr));
+}
+
+function toggleFavorite(id, btn){
+  let favs = getFavorites();
+
+  if(favs.includes(id)){
+    favs = favs.filter(f => f !== id);
+    btn.classList.remove("active");
+  }else{
+    favs.push(id);
+    btn.classList.add("active");
+  }
+
+  saveFavorites(favs);
+}
+
+document.querySelectorAll(".anime-card").forEach(card=>{
+  const id = card.dataset.id;
+  const btn = card.querySelector(".fav-btn");
+  if(!btn || !id) return;
+
+  // โหลดสถานะตอนเปิดหน้า
+  if(getFavorites().includes(id)){
+    btn.classList.add("active");
+  }
+
+  btn.addEventListener("click", (e)=>{
+    e.stopPropagation(); // กันคลิกไปหน้าอื่น
+    toggleFavorite(id, btn);
+  });
+});
+
 /* ================================================= */
 /* ===================== IMPORT ==================== */
 /* ================================================= */

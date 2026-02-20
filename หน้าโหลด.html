@@ -836,6 +836,121 @@ onValue(ref(db,"animeList"), snap=>{
 
 
 /* ================================================= */
+/* ================= MENU TOGGLE =================== */
+/* ================================================= */
+
+const menuBtn  = document.getElementById("menuBtn");
+const menuDrop = document.getElementById("menuDropdown");
+
+if(menuBtn && menuDrop){
+
+  menuBtn.onclick = ()=>{
+    menuDrop.style.display =
+      menuDrop.style.display === "flex"
+      ? "none"
+      : "flex";
+  };
+
+  document.addEventListener("click", e=>{
+
+    if(!menuDrop.contains(e.target) &&
+       e.target !== menuBtn){
+
+      menuDrop.style.display = "none";
+    }
+
+  });
+
+}
+
+
+/* ================================================= */
+/* ================= REPORT SYSTEM ================= */
+/* ================================================= */
+
+const reportBtn = document.getElementById("reportBtn");
+
+if(reportBtn){
+
+  if(!document.getElementById("reportBox")){
+    const box = document.createElement("div");
+    box.id = "reportBox";
+    box.innerHTML = `
+      <h3>แจ้งปัญหา</h3>
+      <textarea placeholder="พิมพ์ปัญหา..."></textarea>
+      <button>ส่งรายงาน</button>
+    `;
+    document.body.appendChild(box);
+  }
+
+  const reportBox = document.getElementById("reportBox");
+
+  reportBtn.onclick = ()=>{
+    reportBox.classList.toggle("show");
+  };
+
+  reportBox.querySelector("button").onclick = ()=>{
+    alert("ส่งรายงานแล้ว");
+    reportBox.classList.remove("show");
+  };
+}
+
+
+/* ================================================= */
+/* ================= SEARCH SYSTEM ================= */
+/* ================================================= */
+
+const searchInput = document.querySelector(".search");
+
+if(searchInput){
+
+  searchInput.addEventListener("input", ()=>{
+
+    const value = searchInput.value.toLowerCase();
+
+    document.querySelectorAll(".anime-card").forEach(card=>{
+
+      const title = card.dataset.title?.toLowerCase() || "";
+      const text  = card.innerText.toLowerCase();
+
+      card.style.display =
+        (title.includes(value) || text.includes(value))
+        ? ""
+        : "none";
+
+    });
+
+  });
+
+}
+
+
+/* ================================================= */
+/* ================= HOT SLIDER ==================== */
+/* ================================================= */
+
+const hotSlider = document.getElementById("hotSlider");
+
+if(hotSlider){
+
+  document
+    .querySelectorAll(".badge.hot, .badge.recommend, .badge.new")
+    .forEach(badge=>{
+
+      const card = badge.closest(".anime-card");
+      if(!card) return;
+
+      const clone = card.cloneNode(true);
+      clone.classList.add("hot-card");
+
+      hotSlider.appendChild(clone);
+
+    });
+
+}
+
+
+/* ================================================= */
 /* ================= UI SYSTEM ===================== */
 /* ================================================= */
 

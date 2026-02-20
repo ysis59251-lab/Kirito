@@ -99,11 +99,13 @@ const db = getDatabase(app);
 const btn = document.getElementById("sendBtn");
 
 btn.onclick = async () => {
-  const page = document.getElementById("page").value.trim()
-    || document.title
-    || location.pathname;
+
+  const page = document.getElementById("page").value.trim() 
+      || document.title 
+      || location.pathname;
 
   const detail = document.getElementById("detail").value.trim();
+
   if(!detail){
     alert("กรุณาพิมพ์รายละเอียด");
     return;
@@ -116,15 +118,15 @@ btn.onclick = async () => {
     await set(push(ref(db,"reports")),{
       page,
       detail,
-      time: new Date().toLocaleString("th-TH"),
+      time: Date.now(),
       read:false
     });
 
-    alert("ส่งเรียบร้อย 🙏");
+    alert("ส่งเรียบร้อย ✅");
     document.getElementById("detail").value="";
     document.getElementById("page").value="";
+
   }catch(e){
-    console.error(e);
     alert("ส่งไม่สำเร็จ");
   }
 
@@ -132,6 +134,5 @@ btn.onclick = async () => {
   btn.textContent = "ส่งปัญหา";
 };
 </script>
-
 </body>
 </html>

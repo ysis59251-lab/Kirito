@@ -96,9 +96,12 @@ if(favs.length === 0){
 
   favs.forEach(anime=>{
 
-    const card = document.createElement("div");
+    const card = document.createElement("a");
     card.className = "anime-card";
+    card.href = anime.link;
+
     card.innerHTML = `
+      <img src="${anime.img}" alt="${anime.title}">
       <h3>${anime.title}</h3>
     `;
 

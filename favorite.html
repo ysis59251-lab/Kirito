@@ -1,0 +1,20 @@
+<h1>อนิเมะที่ฉันชอบ</h1>
+<div id="favList"></div>
+
+<script>
+function getFavorites(){
+  return JSON.parse(localStorage.getItem("favorites") || "[]");
+}
+
+const favContainer = document.getElementById("favList");
+const favs = getFavorites();
+
+document.querySelectorAll(".anime-card").forEach(card=>{
+  const id = card.dataset.id;
+
+  if(favs.includes(id)){
+    const clone = card.cloneNode(true);
+    favContainer.appendChild(clone);
+  }
+});
+</script>

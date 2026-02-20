@@ -7,6 +7,31 @@
 
 <style>
 
+#favList{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:20px;
+  padding:20px;
+}
+
+.anime-card{
+  background:rgba(255,255,255,0.08);
+  border-radius:12px;
+  padding:10px;
+  text-align:center;
+  transition:.3s;
+}
+
+.anime-card img{
+  width:100%;
+  border-radius:8px;
+  margin-bottom:10px;
+}
+
+.anime-card:hover{
+  transform:translateY(-5px);
+}
+
 /* ===== BG ===== */
 body{
   margin:0;

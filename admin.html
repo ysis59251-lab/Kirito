@@ -1,250 +1,331 @@
-<!DOCTYPE html>  <html lang="th">  
-<head>  
-<meta charset="UTF-8">  
-<meta name="viewport" content="width=device-width, initial-scale=1.0">  
-<title>AnimeFume Admin</title>  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>  <style>  
-body{  
-  margin:0;  
-  font-family:Segoe UI, sans-serif;  
-  background:#0f172a;  
-  color:#fff;  
-  display:flex;  
-}  
-.sidebar{  
-  width:230px;  
-  background:#111827;  
-  padding:20px;  
-  height:100vh;  
-}  
-.sidebar h2{ color:#22d3ee; }  
-.main{  
-  flex:1;  
-  padding:20px;  
-  overflow-y:auto;  
-}  
-.cards{  
-  display:grid;  
-  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));  
-  gap:20px;  
-  margin-bottom:20px;  
-}  
-.card{  
-  background:#1e293b;  
-  padding:20px;  
-  border-radius:16px;  
-}  
-.big{  
-  font-size:26px;  
-  font-weight:bold;  
-}  
-.panel{  
-  background:#1e293b;  
-  padding:20px;  
-  border-radius:16px;  
-  margin-bottom:20px;  
-}  
-.spam-box{  
-  background:#300;  
-  padding:15px;  
-  border-radius:12px;  
-  margin-bottom:20px;  
-  color:#ff4d4d;  
-}  
-button{  
-  padding:6px 10px;  
-  border:none;  
-  border-radius:8px;  
-  cursor:pointer;  
-  background:#22d3ee;  
-}  
-.clear-btn{  
-  background:#ff3b3b;  
-  color:#fff;  
-  margin-top:10px;  
-}  
-</style>  </head>  
-<body>  <div class="sidebar">  
-  <h2>🎛 Admin</h2>  
-</div>  <div class="main">  <div class="cards">  
-  <div class="card">  
-    <div>👀 ออนไลน์</div>  
-    <div class="big" id="onlineCount">0</div>  
-  </div>    <div class="card">  
-    <div>📈 วิวทั้งหมด</div>  
-    <div class="big" id="totalViews">0</div>  
-  </div>    <div class="card">  
-    <div>🎬 จำนวนเรื่อง</div>  
-    <div class="big" id="totalAnime">0</div>  
-  </div>  
-</div>  <div class="panel">  
-  <h3>📊 วิวรวมทั้งหมด</h3>  
-  <canvas id="viewChart" height="100"></canvas>  
-</div>  <div class="spam-box">  
-  <h3>⚠ ระบบกันปั้ม</h3>  
-  <div id="spamCount">กำลังโหลด...</div>  
-  <div id="spamUsers"></div>  
-  <button class="clear-btn" id="clearSpam">ล้าง Spam</button>  
-</div>  </div>  <script type="module">  
-  
-/* ================= FIREBASE ================= */  
-  
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";  
-import {  
-  getDatabase,  
-  ref,  
-  onValue,  
-  remove  
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";  
-  
-const firebaseConfig = {  
-  apiKey: "API_KEY",  
-  authDomain: "PROJECT.firebaseapp.com",  
-  databaseURL: "https://PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",  
-  projectId: "PROJECT",  
-  storageBucket: "PROJECT.appspot.com",  
-  messagingSenderId: "SENDER_ID",  
-  appId: "APP_ID"  
-};  
-  
-const app = initializeApp(firebaseConfig);  
-const db = getDatabase(app);  
-  
-/* ================= ONLINE USERS ================= */  
-  
-onValue(ref(db,"onlineUsers"), snap=>{  
-  if(!snap.exists()){  
-    onlineCount.textContent = 0;  
-    return;  
-  }  
-  
-  const data = snap.val();  
-  const now = Date.now();  
-  let count = 0;  
-  
-  Object.entries(data).forEach(([key,val])=>{  
-    if(now - val.time > 60000){  
-      remove(ref(db,"onlineUsers/"+key));  
-    }else{  
-      count++;  
-    }  
-  });  
-  
-  onlineCount.textContent = count;  
-});  
-  
-/* ================= TOTAL VIEWS ================= */  
-  
-onValue(ref(db,"stats/totalViews"), snap=>{  
-  totalViews.textContent = snap.exists() ? snap.val() : 0;  
-});  
-  
-/* ================= TOTAL ANIME ================= */  
-  
-onValue(ref(db,"animeList"), snap=>{  
-  totalAnime.textContent =  
-    snap.exists() ? Object.keys(snap.val()).length : 0;  
-});  
-  
-/* ================= CHART ================= */  
-  
-const ctx = document.getElementById("viewChart");  
-let chart = new Chart(ctx,{  
-  type:"line",  
-  data:{  
-    labels:[],  
-    datasets:[{  
-      label:"วิวรายวัน",  
-      data:[],  
-      borderColor:"#22d3ee",  
-      fill:false  
-    }]  
-  }  
-});  
-  
-onValue(ref(db,"stats/daily"), snap=>{  
-  if(!snap.exists()) return;  
-  chart.data.labels = Object.keys(snap.val());  
-  chart.data.datasets[0].data = Object.values(snap.val());  
-  chart.update();  
-});  
-  
-/* ================= SPAM SYSTEM ================= */  
-  
-onValue(ref(db,"security/spamCount"), snap=>{  
-  spamCount.textContent =  
-    "พบผู้ต้องสงสัย: "+(snap.val()||0)+" คน";  
-});  
-  
-onValue(ref(db,"security/spamUsers"), snap=>{  
-  spamUsers.innerHTML = "";  
-  if(!snap.exists()) return;  
-  
-  Object.entries(snap.val()).forEach(([id,data])=>{  
-    const time = new Date(data.time).toLocaleString();  
-    spamUsers.innerHTML += `  
-      <div style="font-size:13px;margin-bottom:6px;">  
-        🧨 ${id}<br>  
-        <span style="color:#94a3b8">${time}</span>  
-      </div>  
-    `;  
-  });  
-});  
-  
-clearSpam.onclick = ()=>{  
-  if(confirm("ล้างข้อมูล Spam ทั้งหมด?")){  
-    remove(ref(db,"security"));  
-  }  
-};  
-  
-/* ================= LOAD ANIME PAGE ================= */  
-  
-let animeLoaded = false;  
-  
-async function loadAnimePage(){  
-  
-  const container = document.getElementById("animeContainer");  
-  
-  container.innerHTML = "⏳ กำลังโหลด...";  
-  
-  try{  
-    const res = await fetch("/anime.html");  
-    const html = await res.text();  
-  
-    container.innerHTML = html;  
-  
-    container.querySelectorAll("script").forEach(oldScript=>{  
-      const newScript = document.createElement("script");  
-  
-      if(oldScript.src){  
-        newScript.src = oldScript.src;  
-      }else{  
-        newScript.textContent = oldScript.textContent;  
-      }  
-  
-      if(oldScript.type){  
-        newScript.type = oldScript.type;  
-      }  
-  
-      document.body.appendChild(newScript);  
-      oldScript.remove();  
-    });  
-  
-    animeLoaded = true;  
-  
-  }catch(err){  
-    container.innerHTML = "❌ โหลดไม่สำเร็จ";  
-    console.error(err);  
-  }  
-}  
-  
-function reloadAnime(){  
-  animeLoaded = false;  
-  loadAnimePage();  
-}  
-  
-window.reloadAnime = reloadAnime;  
-  
-loadAnimePage();  
-  
-</script>  </body>  
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anime Admin Dashboard</title>
+
+<style>
+body{
+  margin:0;
+  background:#0f0f0f;
+  color:#fff;
+  font-family:system-ui;
+}
+header{
+  padding:15px;
+  background:#111;
+  font-size:20px;
+  font-weight:bold;
+}
+.container{
+  padding:20px;
+}
+.card{
+  background:#1b1b1b;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:20px;
+}
+button{
+  padding:6px 10px;
+  border:none;
+  cursor:pointer;
+  border-radius:5px;
+  margin-left:5px;
+  color:#fff;
+}
+input{
+  padding:8px;
+  width:100%;
+  max-width:400px;
+  border-radius:6px;
+  border:none;
+}
+.anime-item{
+  display:flex;
+  justify-content:space-between;
+  background:#222;
+  padding:8px;
+  margin-bottom:5px;
+  border-radius:6px;
+}
+
+/* ===== Top Right Inbox Button ===== */
+.topbar{
+  position:fixed;
+  top:15px;
+  right:20px;
+  z-index:999;
+}
+.inbox-btn{
+  background:#222;
+  padding:10px 15px;
+  border-radius:30px;
+  cursor:pointer;
+  position:relative;
+}
+.inbox-badge{
+  position:absolute;
+  top:-5px;
+  right:-5px;
+  background:red;
+  color:#fff;
+  border-radius:50%;
+  padding:3px 7px;
+  font-size:12px;
+}
+
+/* ===== Slide Panel ===== */
+.inbox-panel{
+  position:fixed;
+  top:0;
+  right:-350px;
+  width:350px;
+  height:100%;
+  background:#111;
+  padding:20px;
+  overflow-y:auto;
+  transition:0.3s;
+  z-index:998;
+}
+.inbox-panel.active{
+  right:0;
+}
+.message-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  background:#222;
+  padding:8px;
+  margin-bottom:6px;
+  border-radius:6px;
+}
+.message-actions{
+  display:flex;
+  gap:5px;
+}
+.btn-view{ background:#2196f3; }
+.btn-delete{ background:#ff3c3c; }
+.btn-ban{ background:#9c27b0; }
+</style>
+</head>
+<body>
+
+<header>🔥 Anime Admin Dashboard</header>
+
+<!-- 🔝 ปุ่มแจ้งปัญหาขวาบน -->
+<div class="topbar">
+  <div class="inbox-btn" onclick="toggleReportPanel()">
+    🚨
+    <span id="reportUnread" class="inbox-badge">0</span>
+  </div>
+</div>
+
+<!-- Slide Panel แจ้งปัญหา -->
+<div id="reportPanel" class="inbox-panel">
+  <h3>🚨 แจ้งปัญหาจากผู้ชม</h3>
+  <div id="reportList"></div>
+</div>
+
+<div class="container">
+
+<div class="card">
+  👥 คนออนไลน์: <span id="onlineCount">0</span>
+</div>
+
+<div class="card">
+  <h3>🔎 ค้นหาอนิเมะ</h3>
+  <input type="text" id="searchInput" placeholder="พิมพ์ชื่อเรื่อง..." oninput="searchAnime()">
+</div>
+
+<div class="card">
+  <h3>🎬 รายการอนิเมะ</h3>
+  <div id="animeList"></div>
+</div>
+
+<div class="card">
+  <h3>🏆 อันดับยอดฮิต</h3>
+  <div id="ranking"></div>
+</div>
+
+</div>
+
+<audio id="notifySound">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
+</audio>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+  getDatabase, ref, set, onValue, remove, update, onDisconnect 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+/* 🔥 Firebase Config */
+const firebaseConfig = {
+  apiKey: "API_KEY",
+  authDomain: "PROJECT.firebaseapp.com",
+  databaseURL: "https://PROJECT-default-rtdb.firebaseio.com",
+  projectId: "PROJECT",
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* ================= ONLINE USERS ================= */
+
+const userId = "admin_" + Math.random().toString(36).substr(2,9);
+const onlineRef = ref(db, "onlineUsers/" + userId);
+
+set(onlineRef, true);
+onDisconnect(onlineRef).remove();
+
+onValue(ref(db, "onlineUsers"), (snap)=>{
+  document.getElementById("onlineCount").innerText = snap.exists() ? Object.keys(snap.val()).length : 0;
+});
+
+/* ================= LOAD & SEARCH ANIME ================= */
+
+let allAnime = [];
+
+onValue(ref(db, "anime"), (snap)=>{
+  allAnime = [];
+  if(!snap.exists()) return;
+
+  snap.forEach(child=>{
+    allAnime.push({
+      id: child.key,
+      ...child.val()
+    });
+  });
+
+  renderAnime(allAnime);
+  renderRanking(allAnime);
+});
+
+function renderAnime(list){
+  const container = document.getElementById("animeList");
+  container.innerHTML = "";
+
+  list.forEach(data=>{
+    container.innerHTML += `
+      <div class="anime-item">
+        ${data.title} (${data.status || "active"})
+        <div>
+          <button style="background:#ff9800" onclick="disableAnime('${data.id}')">ปิด</button>
+          <button style="background:#ff3c3c" onclick="deleteAnime('${data.id}')">ลบ</button>
+        </div>
+      </div>
+    `;
+  });
+}
+
+window.searchAnime = function(){
+  const keyword = document.getElementById("searchInput").value.toLowerCase();
+  const filtered = allAnime.filter(anime =>
+    anime.title?.toLowerCase().includes(keyword)
+  );
+  renderAnime(filtered);
+};
+
+window.disableAnime = function(id){
+  update(ref(db, "anime/"+id), {status:"disabled"});
+};
+
+window.deleteAnime = function(id){
+  if(confirm("ลบเรื่องนี้?")){
+    remove(ref(db, "anime/"+id));
+  }
+};
+
+/* ================= RANKING ================= */
+
+function renderRanking(arr){
+  const sorted = [...arr].sort((a,b)=> (b.views||0)-(a.views||0));
+  const container = document.getElementById("ranking");
+  container.innerHTML="";
+
+  sorted.slice(0,5).forEach((anime,i)=>{
+    container.innerHTML += `
+      <div class="anime-item">
+        #${i+1} ${anime.title} (${anime.views||0} views)
+      </div>
+    `;
+  });
+}
+
+/* ================= REPORT PANEL ================= */
+
+window.toggleReportPanel = function(){
+  document.getElementById("reportPanel").classList.toggle("active");
+};
+
+let lastReportCount = 0;
+
+onValue(ref(db,"reports"),(snap)=>{
+
+  const container = document.getElementById("reportList");
+  container.innerHTML="";
+
+  let unread = 0;
+  let currentCount = 0;
+
+  if(snap.exists()){
+    const dataObj = snap.val();
+    currentCount = Object.keys(dataObj).length;
+
+    snap.forEach(child=>{
+      const data = child.val();
+      const id = child.key;
+
+      if(!data.read) unread++;
+
+      container.innerHTML += `
+        <div class="message-item">
+          <div>
+            <b>${data.page}</b> ${data.read ? "✅" : "🆕"}
+          </div>
+          <div class="message-actions">
+            <button class="btn-view" onclick="viewReport('${id}')">เปิด</button>
+            <button class="btn-delete" onclick="deleteReport('${id}')">ลบ</button>
+          </div>
+        </div>
+      `;
+    });
+  }
+
+  document.getElementById("reportUnread").innerText = unread;
+
+  if(currentCount > lastReportCount){
+    document.getElementById("notifySound").play().catch(()=>{});
+  }
+
+  lastReportCount = currentCount;
+});
+
+window.viewReport = function(id){
+
+  onValue(ref(db,"reports/"+id),(snap)=>{
+    const data = snap.val();
+    if(!data) return;
+
+    alert(
+      "หน้า: "+data.page+
+      "\n\nรายละเอียด:\n"+data.detail+
+      "\n\nเวลา: "+new Date(data.time).toLocaleString()
+    );
+  },{onlyOnce:true});
+
+  update(ref(db,"reports/"+id),{read:true});
+};
+
+window.deleteReport = function(id){
+  if(confirm("ลบรายงานนี้?")){
+    remove(ref(db,"reports/"+id));
+  }
+};
+
+</script>
+</body>
 </html>

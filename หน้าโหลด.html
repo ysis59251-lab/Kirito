@@ -662,19 +662,22 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import {
   getDatabase,
   ref,
-  set,
   onValue,
-  remove,
   runTransaction,
-  onDisconnect
+  set,
+  remove,
+  onDisconnect,
+  push
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC1S1BToUhVmWqyeTWbHlPdI8hY0aGKNDg",
-  authDomain: "darkframe300.firebaseapp.com",
-  databaseURL: "https://darkframe300-default-rtdb.firebaseio.com",
-  projectId: "darkframe300",
-  appId: "1:296568248360:web:7867a60675ce32e3d6bd1d"
+  apiKey: "API_KEY",
+  authDomain: "PROJECT.firebaseapp.com",
+  databaseURL: "https://PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "PROJECT",
+  storageBucket: "PROJECT.appspot.com",
+  messagingSenderId: "SENDER_ID",
+  appId: "APP_ID"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -685,16 +688,15 @@ const db = getDatabase(app);
 /* ================= ONLINE USERS ================= */
 /* ================================================= */
 
-const userId = "u_" + Date.now();
-const userRef = ref(db,"onlineUsers/" + userId);
+// ใช้ push() ป้องกัน ID ชนกัน
+const userRef = push(ref(db,"onlineUsers"));
 
-// เข้าเว็บ
 set(userRef,{
-  page: "โหลด.html",
+  page: location.pathname,
   time: Date.now()
 });
 
-// ปิดเว็บ
+// ปิดเว็บ / เน็ตหลุด → ลบอัตโนมัติ
 onDisconnect(userRef).remove();
 
 
@@ -709,10 +711,11 @@ const spamLimit = 5000;
 
 if(lastVisit && (now - lastVisit < spamLimit)){
 
-  const spamRef = ref(db,"security/spamUsers/" + userId);
+  const spamRef = push(ref(db,"security/spamUsers"));
 
   set(spamRef,{
     time: now,
+    page: location.pathname,
     reason: "Refresh too fast"
   });
 
@@ -739,8 +742,30 @@ if(!localStorage.getItem(viewKey)){
 
 
 /* ================================================= */
-/* ================= VIEW PER ANIME ================= */
+/* ================= DOM READY ================= */
 /* ================================================= */
+
+document.addEventListener("DOMContentLoaded",()=>{
+
+
+/* ================= EPISODE UPLOAD ================= */
+
+document.querySelectorAll(".episode").forEach(el=>{
+  const animeId = el.dataset.id;
+  const epNumber = el.dataset.ep;
+  const title = el.textContent.trim();
+  const link = el.getAttribute("data-link") || "";
+
+  if(animeId && epNumber){
+    set(ref(db,`episodes/${animeId}/${epNumber}`),{
+      title,
+      link
+    });
+  }
+});
+
+
+/* ================= VIEW PER ANIME ================= */
 
 document.querySelectorAll(".anime-card").forEach(card=>{
   const href = card.getAttribute("href");
@@ -754,9 +779,7 @@ document.querySelectorAll(".anime-card").forEach(card=>{
 });
 
 
-/* ================================================= */
 /* ================= HIDE / SHOW ================= */
-/* ================================================= */
 
 onValue(ref(db,"animeList"), snap=>{
   document.querySelectorAll(".anime-card").forEach(card=>{
@@ -772,9 +795,7 @@ onValue(ref(db,"animeList"), snap=>{
 });
 
 
-/* ================================================= */
 /* ================= YEAR ================= */
-/* ================================================= */
 
 const yearEl = document.getElementById("year");
 if(yearEl){
@@ -782,9 +803,17 @@ if(yearEl){
 }
 
 
-/* ================================================= */
+/* ================= REPORT BUTTON ================= */
+
+const reportBtn = document.getElementById("reportBtn");
+if(reportBtn){
+  reportBtn.onclick = ()=>{
+    location.href = "Report a Problem.html";
+  };
+}
+
+
 /* ================= MENU ================= */
-/* ================================================= */
 
 const menuBtn = document.getElementById("menuBtn");
 const menu = document.getElementById("menuDropdown");
@@ -803,9 +832,7 @@ if(menuBtn && menu){
 }
 
 
-/* ================================================= */
 /* ================= PAGINATION ================= */
-/* ================================================= */
 
 const pageMap = {
   1:"pageMap1.html",
@@ -857,6 +884,9 @@ window.prevSet = ()=>{
 };
 
 render();
+
+
+}); // DOMContentLoaded
 
 </script>
 <button class="fab" onclick="toggleBottom()">☰</button>

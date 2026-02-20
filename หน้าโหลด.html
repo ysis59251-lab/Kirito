@@ -657,7 +657,7 @@ Oshi no Ko Season 3 เกิดใหม่เป็นลูกโอชิ(�
 <script type="module">
 
 /* ================================================= */
-/* ================== IMPORT ======================= */
+/* ===================== IMPORT ==================== */
 /* ================================================= */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -673,7 +673,7 @@ import {
 
 
 /* ================================================= */
-/* ================= FIREBASE SETUP ================ */
+/* ================= FIREBASE INIT ================= */
 /* ================================================= */
 
 const firebaseConfig = {
@@ -692,18 +692,18 @@ const db  = getDatabase(app);
 /* ================= ONLINE USERS ================== */
 /* ================================================= */
 
-const onlineUserRef = push(ref(db,"onlineUsers"));
+const onlineRef = push(ref(db,"onlineUsers"));
 
-set(onlineUserRef,{
+set(onlineRef,{
   page: location.pathname,
   time: Date.now()
 });
 
-onDisconnect(onlineUserRef).remove();
+onDisconnect(onlineRef).remove();
 
 
 /* ================================================= */
-/* ================= TOTAL + DAILY VIEW ============ */
+/* ============== TOTAL + DAILY VIEW =============== */
 /* ================================================= */
 
 const today   = new Date().toISOString().slice(0,10);
@@ -715,18 +715,18 @@ if(!localStorage.getItem(viewKey)){
 
   runTransaction(
     ref(db,"stats/totalViews"),
-    current => (current || 0) + 1
+    v => (v || 0) + 1
   );
 
   runTransaction(
     ref(db,"stats/daily/" + today),
-    current => (current || 0) + 1
+    v => (v || 0) + 1
   );
 }
 
 
 /* ================================================= */
-/* ================= ANIME CLICK VIEW ============== */
+/* ================ ANIME CLICK VIEW =============== */
 /* ================================================= */
 
 document.querySelectorAll(".anime-card").forEach(card=>{
@@ -737,10 +737,12 @@ document.querySelectorAll(".anime-card").forEach(card=>{
   const id = href.replace(".html","");
 
   card.addEventListener("click",()=>{
+
     runTransaction(
       ref(db,"animeViews/" + id),
-      current => (current || 0) + 1
+      v => (v || 0) + 1
     );
+
   });
 
 });
@@ -763,9 +765,9 @@ const pageMap = {
   10:"pageMap10.html"
 };
 
-let currentSet = 1;
-const perSet   = 5;
-const maxSet   = Math.ceil(Object.keys(pageMap).length / perSet);
+let page = 1;
+const per = 5;
+const maxPage = Math.ceil(Object.keys(pageMap).length / per);
 
 function renderPagination(){
 
@@ -774,9 +776,9 @@ function renderPagination(){
 
   box.innerHTML = "";
 
-  const start = (currentSet - 1) * perSet + 1;
+  const start = (page - 1) * per + 1;
 
-  for(let i=start; i<start+perSet; i++){
+  for(let i=start;i<start+per;i++){
 
     if(!pageMap[i]) continue;
 
@@ -793,15 +795,15 @@ function renderPagination(){
 }
 
 window.nextSet = ()=>{
-  if(currentSet < maxSet){
-    currentSet++;
+  if(page < maxPage){
+    page++;
     renderPagination();
   }
 };
 
 window.prevSet = ()=>{
-  if(currentSet > 1){
-    currentSet--;
+  if(page > 1){
+    page--;
     renderPagination();
   }
 };
@@ -823,11 +825,10 @@ onValue(ref(db,"animeList"), snap=>{
     const id   = href.replace(".html","");
     const data = snap.child(id).val();
 
-    if(data && data.hidden === true){
-      card.style.display = "none";
-    }else{
-      card.style.display = "";
-    }
+    card.style.display =
+      (data && data.hidden === true)
+      ? "none"
+      : "";
 
   });
 
@@ -835,7 +836,7 @@ onValue(ref(db,"animeList"), snap=>{
 
 
 /* ================================================= */
-/* ================= BOTTOM NAV TOGGLE ============= */
+/* ================= UI SYSTEM ===================== */
 /* ================================================= */
 
 window.toggleBottom = ()=>{
@@ -844,11 +845,6 @@ window.toggleBottom = ()=>{
     nav.classList.toggle("show");
   }
 };
-
-
-/* ================================================= */
-/* ================= FOOTER YEAR =================== */
-/* ================================================= */
 
 const yearEl = document.getElementById("year");
 if(yearEl){

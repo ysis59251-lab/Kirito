@@ -37,22 +37,36 @@ html{
 }
 
 body{
-  margin: 0;
-  padding: 0;
-  width: 100%;
-  max-width: 100%;
-  min-height: 100vh;
-
-  color: #fff;
-  font-family: sans-serif;
-
-  background: 
-    url("https://www.akerufeed.com/wp-content/uploads/2021/07/Wallpaper-Japanese-Cartoon-Street-22.jpg")
-    center / cover no-repeat fixed;
-
-  overflow-x: hidden; /* กันล้นด้านข้าง */
+  margin:0;
+  padding:0;
+  min-height:100vh;
+  font-family:sans-serif;
+  color:#fff;
+  overflow-x:hidden;
+  position:relative;
 }
 
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:url("https://www.akerufeed.com/wp-content/uploads/2021/07/Wallpaper-Japanese-Cartoon-Street-22.jpg")
+             center/cover no-repeat;
+  filter:blur(2px); 
+  transform:scale(1.04);
+  z-index:-2;
+}
+
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:linear-gradient(
+    rgba(0,0,0,0.45),
+    rgba(0,0,0,0.65)
+  );
+  z-index:-1;
+}
 
 /* ====== CONTAINER ====== */
 .container{

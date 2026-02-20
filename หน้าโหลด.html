@@ -662,20 +662,19 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import {
   getDatabase,
   ref,
-  onValue,
-  runTransaction,
   set,
-  remove
+  onValue,
+  remove,
+  runTransaction,
+  onDisconnect
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "API_KEY",
-  authDomain: "PROJECT.firebaseapp.com",
-  databaseURL: "https://PROJECT-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "PROJECT",
-  storageBucket: "PROJECT.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "APP_ID"
+  apiKey: "AIzaSyC1S1BToUhVmWqyeTWbHlPdI8hY0aGKNDg",
+  authDomain: "darkframe300.firebaseapp.com",
+  databaseURL: "https://darkframe300-default-rtdb.firebaseio.com",
+  projectId: "darkframe300",
+  appId: "1:296568248360:web:7867a60675ce32e3d6bd1d"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -689,11 +688,14 @@ const db = getDatabase(app);
 const userId = "u_" + Date.now();
 const userRef = ref(db,"onlineUsers/" + userId);
 
-set(userRef,true);
-
-window.addEventListener("beforeunload",()=>{
-  remove(userRef);
+// เข้าเว็บ
+set(userRef,{
+  page: "โหลด.html",
+  time: Date.now()
 });
+
+// ปิดเว็บ
+onDisconnect(userRef).remove();
 
 
 /* ================================================= */
@@ -703,7 +705,7 @@ window.addEventListener("beforeunload",()=>{
 const now = Date.now();
 const visitKey = "lastVisitTime";
 const lastVisit = localStorage.getItem(visitKey);
-const spamLimit = 5000; // 5 วิ
+const spamLimit = 5000;
 
 if(lastVisit && (now - lastVisit < spamLimit)){
 
@@ -719,25 +721,6 @@ if(lastVisit && (now - lastVisit < spamLimit)){
 }else{
   localStorage.setItem(visitKey, now);
 }
-
-
-/* ================================================= */
-/* ================= EPISODE UPLOAD ================= */
-/* ================================================= */
-
-document.querySelectorAll(".episode").forEach(el=>{
-  const animeId = el.dataset.id;
-  const epNumber = el.dataset.ep;
-  const title = el.textContent.trim();
-  const link = el.getAttribute("data-link") || "";
-
-  if(animeId && epNumber){
-    set(ref(db,`episodes/${animeId}/${epNumber}`),{
-      title,
-      link
-    });
-  }
-});
 
 
 /* ================================================= */
@@ -781,8 +764,8 @@ onValue(ref(db,"animeList"), snap=>{
     if(!href) return;
 
     const id = href.replace(".html","");
-
     const data = snap.child(id).val();
+
     card.style.display =
       data && data.hidden === true ? "none" : "";
   });
@@ -796,18 +779,6 @@ onValue(ref(db,"animeList"), snap=>{
 const yearEl = document.getElementById("year");
 if(yearEl){
   yearEl.textContent = new Date().getFullYear();
-}
-
-
-/* ================================================= */
-/* ================= REPORT BUTTON ================= */
-/* ================================================= */
-
-const reportBtn = document.getElementById("reportBtn");
-if(reportBtn){
-  reportBtn.onclick = ()=>{
-    location.href = "Report a Problem.html";
-  };
 }
 
 
@@ -830,15 +801,6 @@ if(menuBtn && menu){
     menu.style.display = "none";
   });
 }
-
-
-/* ================================================= */
-/* ================= BOTTOM NAV ================= */
-/* ================================================= */
-
-window.toggleBottom = ()=>{
-  document.getElementById("bottomNav")?.classList.toggle("show");
-};
 
 
 /* ================================================= */
@@ -897,7 +859,6 @@ window.prevSet = ()=>{
 render();
 
 </script>
-
 <button class="fab" onclick="toggleBottom()">☰</button>
 </body>
 </html>

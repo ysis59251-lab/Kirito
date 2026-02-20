@@ -115,7 +115,7 @@ btn.onclick = async () => {
   btn.textContent = "กำลังส่ง...";
 
   try{
-    await set(push(ref(db,"reports")),{
+    await set(push(ref(db,"reports/")),{
       page,
       detail,
       time: Date.now(),

@@ -713,15 +713,8 @@ if(!localStorage.getItem(viewKey)){
 
   localStorage.setItem(viewKey,"1");
 
-  runTransaction(
-    ref(db,"stats/totalViews"),
-    v => (v || 0) + 1
-  );
-
-  runTransaction(
-    ref(db,"stats/daily/" + today),
-    v => (v || 0) + 1
-  );
+  runTransaction(ref(db,"stats/totalViews"), v => (v || 0) + 1);
+  runTransaction(ref(db,"stats/daily/" + today), v => (v || 0) + 1);
 }
 
 
@@ -737,12 +730,7 @@ document.querySelectorAll(".anime-card").forEach(card=>{
   const id = href.replace(".html","");
 
   card.addEventListener("click",()=>{
-
-    runTransaction(
-      ref(db,"animeViews/" + id),
-      v => (v || 0) + 1
-    );
-
+    runTransaction(ref(db,"animeViews/" + id), v => (v || 0) + 1);
   });
 
 });
@@ -775,20 +763,15 @@ function renderPagination(){
   if(!box) return;
 
   box.innerHTML = "";
-
   const start = (page - 1) * per + 1;
 
   for(let i=start;i<start+per;i++){
-
     if(!pageMap[i]) continue;
 
     const btn = document.createElement("div");
     btn.className = "num";
     btn.textContent = i;
-
-    btn.onclick = ()=>{
-      location.href = pageMap[i];
-    };
+    btn.onclick = ()=> location.href = pageMap[i];
 
     box.appendChild(btn);
   }
@@ -829,7 +812,6 @@ onValue(ref(db,"animeList"), snap=>{
       (data && data.hidden === true)
       ? "none"
       : "";
-
   });
 
 });
@@ -852,47 +834,11 @@ if(menuBtn && menuDrop){
   };
 
   document.addEventListener("click", e=>{
-
-    if(!menuDrop.contains(e.target) &&
-       e.target !== menuBtn){
-
+    if(!menuDrop.contains(e.target) && e.target !== menuBtn){
       menuDrop.style.display = "none";
     }
-
   });
 
-}
-
-
-/* ================================================= */
-/* ================= REPORT SYSTEM ================= */
-/* ================================================= */
-
-const reportBtn = document.getElementById("reportBtn");
-
-if(reportBtn){
-
-  if(!document.getElementById("reportBox")){
-    const box = document.createElement("div");
-    box.id = "reportBox";
-    box.innerHTML = `
-      <h3>แจ้งปัญหา</h3>
-      <textarea placeholder="พิมพ์ปัญหา..."></textarea>
-      <button>ส่งรายงาน</button>
-    `;
-    document.body.appendChild(box);
-  }
-
-  const reportBox = document.getElementById("reportBox");
-
-  reportBtn.onclick = ()=>{
-    reportBox.classList.toggle("show");
-  };
-
-  reportBox.querySelector("button").onclick = ()=>{
-    alert("ส่งรายงานแล้ว");
-    reportBox.classList.remove("show");
-  };
 }
 
 

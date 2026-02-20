@@ -1,14 +1,86 @@
-<h1>อนิเมะที่ฉันชอบ</h1>
+<!DOCTYPE html>
+<html lang="th">
 <head>
-  <style>
-    #bg{
-      position:fixed;
-      inset:0;
-      background:url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center/cover no-repeat;
-      z-index:-1;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>อนิเมะที่ฉันชอบ</title>
+
+<style>
+
+/* ===== BG ===== */
+body{
+  margin:0;
+  font-family:system-ui;
+  color:white;
+}
+
+#bg{
+  position:fixed;
+  inset:0;
+  background:
+    linear-gradient(rgba(0,0,0,.7), rgba(0,0,0,.7)),
+    url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center/cover no-repeat;
+  z-index:-1;
+}
+
+/* ===== Header ===== */
+.header{
+  text-align:center;
+  padding:30px 20px;
+  font-size:28px;
+  font-weight:bold;
+  letter-spacing:1px;
+}
+
+/* ===== Grid ===== */
+#favList{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+  gap:20px;
+  padding:20px;
+  max-width:1200px;
+  margin:auto;
+}
+
+/* ===== Card ===== */
+.anime-card{
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
+  border-radius:16px;
+  padding:10px;
+  text-align:center;
+  transition:.3s ease;
+  cursor:pointer;
+}
+
+.anime-card:hover{
+  transform:translateY(-5px);
+  background:rgba(255,255,255,0.1);
+}
+
+.anime-card img{
+  width:100%;
+  border-radius:12px;
+  margin-bottom:10px;
+}
+
+.empty{
+  text-align:center;
+  opacity:.7;
+  margin-top:40px;
+}
+
+</style>
 </head>
+
+<body>
+
+<div id="bg"></div>
+
+<div class="header">⭐ อนิเมะที่ฉันชอบ</div>
+
+<div id="favList"></div>
+
 <script>
 function getFavorites(){
   return JSON.parse(localStorage.getItem("favorites") || "[]");
@@ -17,12 +89,22 @@ function getFavorites(){
 const favContainer = document.getElementById("favList");
 const favs = getFavorites();
 
-document.querySelectorAll(".anime-card").forEach(card=>{
-  const id = card.dataset.id;
+if(favs.length === 0){
+  favContainer.innerHTML = "<div class='empty'>ยังไม่มีอนิเมะที่บันทึกไว้</div>";
+}else{
+  favs.forEach(id=>{
+    // ดึงข้อมูลจากหน้าเดิม
+    const original = window.opener?.document.querySelector(
+      '.anime-card[data-id="'+id+'"]'
+    );
 
-  if(favs.includes(id)){
-    const clone = card.cloneNode(true);
-    favContainer.appendChild(clone);
-  }
-});
+    if(original){
+      const clone = original.cloneNode(true);
+      favContainer.appendChild(clone);
+    }
+  });
+}
 </script>
+
+</body>
+</html>

@@ -4,41 +4,77 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AnimeFume</title>
-<meta name="google-adsense-account" content="ca-pub-24771017351063">
+
 <style>
 body{
   margin:0;
-  background:#0b0b0b;
-  color:#fff;
-  font-family:sans-serif;
-}
-
-#loading{
-  position:fixed;
-  inset:0;
+  height:100vh;
   display:flex;
-  flex-direction:column;
   justify-content:center;
   align-items:center;
+  background: radial-gradient(circle at center,#111 0%,#000 70%);
+  font-family:sans-serif;
+  overflow:hidden;
+  color:#fff;
 }
 
+/* แสงพื้นหลังขยับเบา ๆ */
+body::before{
+  content:"";
+  position:absolute;
+  width:400px;
+  height:400px;
+  background:radial-gradient(circle,rgba(0,255,200,0.3),transparent);
+  filter:blur(80px);
+  animation:floatGlow 4s ease-in-out infinite alternate;
+}
+
+@keyframes floatGlow{
+  from{ transform:translateY(-20px); }
+  to{ transform:translateY(20px); }
+}
+
+/* กล่องโหลด */
+#loading{
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  z-index:2;
+}
+
+/* วงโหลดไฮเทค */
 .loader{
-  width:50px;
-  height:50px;
-  border:5px solid #333;
-  border-top:5px solid #00ffcc;
+  width:70px;
+  height:70px;
   border-radius:50%;
+  border:4px solid rgba(255,255,255,0.1);
+  border-top:4px solid #00ffcc;
+  border-right:4px solid #ff00aa;
   animation:spin 1s linear infinite;
+  box-shadow:0 0 25px rgba(0,255,200,0.5);
 }
 
 @keyframes spin{
   to{ transform:rotate(360deg); }
 }
 
+/* ชื่อเว็บ */
+.title{
+  margin-top:25px;
+  font-size:26px;
+  font-weight:bold;
+  background:linear-gradient(90deg,#00ffcc,#ff00aa);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  letter-spacing:2px;
+}
+
+/* ข้อความโหลด */
 .text{
-  margin-top:15px;
+  margin-top:10px;
   font-size:14px;
-  opacity:0.85;
+  opacity:0.7;
 }
 </style>
 </head>
@@ -47,13 +83,14 @@ body{
 
 <div id="loading">
   <div class="loader"></div>
-  <div class="text">กำลังโหลดหน้าเว็บไซต์...</div>
+  <div class="title">AnimeFume</div>
+  <div class="text">กำลังโหลดเว็บไซต์...</div>
 </div>
 
 <script>
 setTimeout(()=>{
-  window.location.href = "หน้าโหลด.html"; // 🔴 ใส่ลิงก์เว็บปลายทาง
-}, 3000); // หน่วง 1.5 วิ
+  window.location.href = "หน้าโหลด.html";
+}, 2500);
 </script>
 
 </body>

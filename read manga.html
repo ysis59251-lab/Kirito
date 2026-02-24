@@ -1,0 +1,196 @@
+<!DOCTYPE html><html lang="th">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manga Reader</title>  <!-- Google Font -->  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">  <style>
+    :root{
+      --bg:#0f1115;
+      --bg-soft:#151821;
+      --card:#1b2030;
+      --text:#e7e9ee;
+      --muted:#9aa1b3;
+      --accent:#ff6a3d;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:'Inter',sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    a{text-decoration:none;color:inherit}
+
+    /* ===== NAVBAR ===== */
+    header{
+      position:sticky;
+      top:0;
+      z-index:100;
+      background:rgba(15,17,21,.75);
+      backdrop-filter: blur(10px);
+      border-bottom:1px solid #1f2333;
+    }
+    .nav{
+      max-width:1200px;
+      margin:auto;
+      padding:14px 20px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+    }
+    .logo{
+      font-weight:800;
+      font-size:20px;
+      letter-spacing:.5px;
+    }
+    .logo span{color:var(--accent)}
+    .menu{
+      display:flex;
+      gap:22px;
+      font-size:14px;
+      color:var(--muted);
+    }
+    .menu a:hover{color:#fff}
+
+    /* ===== HERO ===== */
+    .hero{
+      max-width:1200px;
+      margin:30px auto 10px;
+      padding:0 20px;
+    }
+    .hero-box{
+      height:360px;
+      border-radius:20px;
+      background:
+        linear-gradient(90deg, rgba(15,17,21,.9) 0%, rgba(15,17,21,.3) 60%),
+        url('https://images.unsplash.com/photo-1607604760190-ec9a7b1b5a0d?q=80&w=1600&auto=format&fit=crop');
+      background-size:cover;
+      background-position:center;
+      padding:40px;
+      display:flex;
+      flex-direction:column;
+      justify-content:flex-end;
+    }
+    .hero h1{
+      font-size:42px;
+      margin:0 0 10px;
+    }
+    .hero p{
+      max-width:520px;
+      color:var(--muted);
+      margin:0 0 20px;
+    }
+    .btn{
+      display:inline-block;
+      padding:12px 22px;
+      border-radius:10px;
+      background:var(--accent);
+      font-weight:600;
+    }
+
+    /* ===== SECTION ===== */
+    section{
+      max-width:1200px;
+      margin:50px auto;
+      padding:0 20px;
+    }
+    .section-title{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      margin-bottom:20px;
+    }
+    .section-title h2{
+      margin:0;
+      font-size:22px;
+    }
+    .section-title span{
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    /* ===== GRID ===== */
+    .grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(160px,1fr));
+      gap:18px;
+    }
+    .card{
+      background:var(--card);
+      border-radius:16px;
+      overflow:hidden;
+      transition:.25s;
+      cursor:pointer;
+    }
+    .card:hover{transform:translateY(-6px)}
+    .thumb{
+      height:220px;
+      background-size:cover;
+      background-position:center;
+    }
+    .info{
+      padding:12px;
+    }
+    .info h3{
+      font-size:14px;
+      margin:0 0 6px;
+      line-height:1.3;
+    }
+    .info .meta{
+      font-size:12px;
+      color:var(--muted);
+      display:flex;
+      justify-content:space-between;
+    }
+
+    /* ===== FOOTER ===== */
+    footer{
+      margin-top:80px;
+      padding:40px 20px;
+      background:var(--bg-soft);
+      text-align:center;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    @media(max-width:768px){
+      .hero-box{height:300px;padding:26px}
+      .hero h1{font-size:30px}
+    }
+  </style></head>
+<body><header>
+  <div class="nav">
+    <div class="logo">MANGA<span>X</span></div>
+    <nav class="menu">
+      <a href="#">หน้าแรก</a>
+      <a href="#">ยอดนิยม</a>
+      <a href="#">อัปเดต</a>
+      <a href="#">หมวดหมู่</a>
+    </nav>
+  </div>
+</header><!-- HERO --><div class="hero">
+  <div class="hero-box">
+    <h1>Solo Max-Level Newbie</h1>
+    <p>อ่านได้อ่านไอ้สัดกูพยามที่สุดเเล้ว</p>
+    <a class="btn" href="#">อ่านตอนล่าสุด</a>
+  </div>
+</div><!-- POPULAR --><section>
+  <div class="section-title">
+    <h2>🔥 มังงะยอดนิยม</h2>
+    <span>ดูทั้งหมด</span>
+  </div>  <div class="grid" id="mangaGrid"></div>
+</section><script>
+  const mangas = [
+  {
+    title: "The Extra's Academy Survival Guide",
+    genre: "แฟนตาซี",
+    rating: 4.8,
+    cover: "https://www.up-manga.com/wp-content/uploads/2024/03/The-Extras-Academy-Survival-Guide-%E0%B8%AA%E0%B8%B8%E0%B8%94%E0%B8%A2%E0%B8%AD%E0%B8%94%E0%B8%84%E0%B8%B9%E0%B9%88%E0%B8%A1%E0%B8%B7%E0%B8%AD%E0%B9%80%E0%B8%AD%E0%B8%B2%E0%B8%8A%E0%B8%B5%E0%B8%A7%E0%B8%B4%E0%B8%95%E0%B8%A3%E0%B8%AD%E0%B8%94%E0%B9%83%E0%B8%99%E0%B8%AD%E0%B8%84%E0%B8%B2%E0%B9%80%E0%B8%94%E0%B8%A1%E0%B8%B5.jpg",
+    ep: 1
+  },
+  {
+    title: "Omniscient Reader",
+    genre: "แฟนตาซี",
+    rating: 4.9,
+    cover: "https://www.up-manga.com/wp-content/uploads/2025/11/Dukedoms-Legendary-Prodigy-%E0%B8%A2%E0%B8%AD%E0%B8%94%E0%B8%AD%E0%B8%B1%E0%B8%88%E0%B8%89%E0%B8%A3%E0%B8%B4%E0%B8%A2%E0%B8%B

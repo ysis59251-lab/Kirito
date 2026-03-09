@@ -1012,10 +1012,10 @@ data-id="244">
 <script type="module">
 
 /* ================================================= */
-/* ================== FIREBASE IMPORT ============== */
+/* ================= FIREBASE IMPORT =============== */
 /* ================================================= */
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
   getDatabase,
@@ -1024,9 +1024,8 @@ import {
   runTransaction,
   set,
   onDisconnect,
-  push,
-  remove
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  push
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
 /* ================================================= */
@@ -1034,12 +1033,14 @@ import {
 /* ================================================= */
 
 const firebaseConfig = {
-  apiKey: "AIzaSyxxxxxxxxxxxx",
-  authDomain: "darkframe300.firebaseapp.com",
-  databaseURL: "https://darkframe300-default-rtdb.firebaseio.com",
-  projectId: "darkframe300",
-  storageBucket: "darkframe300.appspot.com",
-  appId: "1:296568248360:web:7867a60675ce32e3d6bd1d"
+  apiKey: "AIzaSyCUxv...",
+  authDomain: "reader-4a13f.firebaseapp.com",
+  databaseURL: "https://reader-4a13f-default-rtdb.firebaseio.com",
+  projectId: "reader-4a13f",
+  storageBucket: "reader-4a13f.firebasestorage.app",
+  messagingSenderId: "220776049054",
+  appId: "1:220776049054:web:53524fb1e90ba83a12ce8f",
+  measurementId: "G-MJ7JZKNMSR"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -1128,7 +1129,6 @@ function initViewCounter(){
     localStorage.setItem(viewKey,"1");
 
     runTransaction(ref(db,"stats/totalViews"), v => (v||0)+1);
-
     runTransaction(ref(db,"stats/daily/"+today), v => (v||0)+1);
 
   }
@@ -1170,7 +1170,6 @@ function initSearch(){
     document.querySelectorAll(".anime-card").forEach(card=>{
 
       const title = (card.dataset.title || "").toLowerCase();
-
       const text  = card.innerText.toLowerCase();
 
       const match =
@@ -1201,7 +1200,6 @@ function initAdminHide(){
     document.querySelectorAll(".anime-card").forEach(card=>{
 
       const id = card.dataset.id;
-
       if(!id) return;
 
       const data = snap.child(id).val();
@@ -1229,19 +1227,15 @@ function initAdminHide(){
 function sortByYear(){
 
   const container = document.getElementById("animeList");
-
   if(!container) return;
 
   const cards = Array.from(container.querySelectorAll(".anime-card"));
 
   cards.sort((a,b)=>{
-
     return (b.dataset.year||0) - (a.dataset.year||0);
-
   });
 
   container.innerHTML="";
-
   cards.forEach(c=> container.appendChild(c));
 
 }
@@ -1269,7 +1263,6 @@ function initPagination(){
     localStorage.setItem("animePage",page);
 
     const start = (page-1)*perPage;
-
     const end   = start + perPage;
 
     cards.forEach((card,i)=>{
@@ -1311,7 +1304,6 @@ function initPagination(){
   function render(){
 
     const box = document.getElementById("numberBox");
-
     if(!box) return;
 
     box.innerHTML="";
@@ -1321,17 +1313,12 @@ function initPagination(){
       const btn = document.createElement("div");
 
       btn.className="num";
-
       btn.textContent=i;
 
       if(i===currentPage){
-
         btn.classList.add("active");
-
       }else{
-
         btn.onclick=()=> showPage(i);
-
       }
 
       box.appendChild(btn);
@@ -1356,7 +1343,6 @@ function initPagination(){
 function initHotSlider(){
 
   const hotSlider = document.getElementById("hotSlider");
-
   if(!hotSlider) return;
 
   const viewsRef = ref(db,"animeViews");
@@ -1364,7 +1350,6 @@ function initHotSlider(){
   onValue(viewsRef,(snap)=>{
 
     const data = snap.val();
-
     if(!data) return;
 
     const cards = Array.from(document.querySelectorAll(".anime-card"));
@@ -1392,7 +1377,6 @@ function initHotSlider(){
       const badge = document.createElement("div");
 
       badge.className="hot-badge";
-
       badge.innerText = item.views+" views";
 
       clone.appendChild(badge);
@@ -1413,26 +1397,19 @@ function initHotSlider(){
 document.addEventListener("DOMContentLoaded",()=>{
 
   initFavoriteSystem();
-
   initOnlineUsers();
-
   initViewCounter();
-
   initSearch();
-
   initAdminHide();
-
   sortByYear();
-
   initHotSlider();
 
   setTimeout(()=>{
-
     initPagination();
-
   },100);
 
 });
+
 </script>
 
 <button class="fab" onclick="toggleBottom()">☰</button>

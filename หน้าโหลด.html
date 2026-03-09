@@ -1165,12 +1165,12 @@ function initPagination(){
   const cards = Array.from(document.querySelectorAll(".anime-card"));
 
   const perPage = 40;
-  const perSet = 5;
+  const perSet  = 5;
 
   const totalPages = Math.ceil(cards.length / perPage);
-  const maxSet = Math.ceil(totalPages / perSet);
+  const maxSet     = Math.ceil(totalPages / perSet);
 
-  let savedPage = parseInt(localStorage.getItem("animePage"));
+  let savedPage   = parseInt(localStorage.getItem("animePage"));
   let currentPage = savedPage && savedPage <= totalPages ? savedPage : 1;
 
   let pageSet = Math.ceil(currentPage / perSet);
@@ -1178,17 +1178,32 @@ function initPagination(){
   function showPage(page){
 
     currentPage = page;
-
     localStorage.setItem("animePage", page);
 
     const start = (page-1)*perPage;
-    const end = start + perPage;
+    const end   = start + perPage;
 
     cards.forEach((card,i)=>{
-      card.style.display = (i >= start && i < end) ? "" : "none";
+      if(i >= start && i < end){
+        card.dataset.page = "1";
+      }else{
+        card.dataset.page = "0";
+      }
     });
 
+    applyDisplay();
     render();
+  }
+
+  function applyDisplay(){
+
+    cards.forEach(card=>{
+      card.style.display =
+        card.dataset.page === "1"
+        ? ""
+        : "none";
+    });
+
   }
 
   function render(){
@@ -1218,7 +1233,9 @@ function initPagination(){
       }
 
       box.appendChild(btn);
+
     }
+
   }
 
   window.nextSet = ()=>{
@@ -1235,8 +1252,8 @@ function initPagination(){
     }
   };
 
-  // แสดงหน้าที่จำไว้ทันที
   showPage(currentPage);
+
 }
 
 

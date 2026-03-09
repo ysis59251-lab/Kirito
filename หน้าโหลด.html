@@ -1018,13 +1018,13 @@ data-id="244">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 
 import {
-  getDatabase,
-  ref,
-  onValue,
-  runTransaction,
-  set,
-  onDisconnect,
-  push
+getDatabase,
+ref,
+onValue,
+runTransaction,
+set,
+onDisconnect,
+push
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
@@ -1129,6 +1129,7 @@ function initViewCounter(){
     localStorage.setItem(viewKey,"1");
 
     runTransaction(ref(db,"stats/totalViews"), v => (v||0)+1);
+
     runTransaction(ref(db,"stats/daily/"+today), v => (v||0)+1);
 
   }
@@ -1343,6 +1344,7 @@ function initPagination(){
 function initHotSlider(){
 
   const hotSlider = document.getElementById("hotSlider");
+
   if(!hotSlider) return;
 
   const viewsRef = ref(db,"animeViews");

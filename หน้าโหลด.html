@@ -1329,19 +1329,53 @@ function initPagination(){
 /* ================================================= */
 
 function initHotSlider(){
+
   const hotSlider = document.getElementById("hotSlider");
   if(!hotSlider) return;
 
-  document
-    .querySelectorAll(".badge.hot, .badge.recommend, .badge.new")
-    .forEach(badge=>{
-      const card = badge.closest(".anime-card");
-      if(!card) return;
+  const viewsRef = ref(db,"animeViews");
 
-      const clone = card.cloneNode(true);
-      clone.classList.add("hot-card");
-      hotSlider.appendChild(clone);
+  onValue(viewsRef,(snap)=>{
+
+    const data = snap.val();
+    if(!data) return;
+
+    const cards = Array.from(document.querySelectorAll(".anime-card"));
+
+    const arr = cards.map(card=>{
+
+      const id = card.dataset.id;
+
+      return {
+        id:id,
+        views:data[id] || 0,
+        card:card
+      };
+
     });
+
+    arr.sort((a,b)=> b.views - a.views);
+
+    hotSlider.innerHTML="";
+
+    arr.slice(0,10).forEach(item=>{
+
+      const clone = item.card.cloneNode(true);
+
+      clone.classList.add("hot-card");
+
+      const badge = document.createElement("div");
+      badge.className="hot-badge";
+      badge.innerText="🔥 "+item.views+" views";
+
+      clone.appendChild(badge);
+
+      hotSlider.appendChild(clone);
+
+    });
+
+  });
+
 }
 
 

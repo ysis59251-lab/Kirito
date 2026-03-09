@@ -1163,16 +1163,23 @@ function initPagination(){
 
   const cards = Array.from(document.querySelectorAll(".anime-card"));
 
-  const perPage = 40;      // 40 การ์ดต่อหน้า
-  const perSet  = 5;       // แสดงเลข 5 ปุ่มเหมือนเดิม
+  const perPage = 40;
+  const perSet = 5;
 
-  let currentPage = 1;
-  let pageSet = 1;
+  // โหลดหน้าที่จำไว้
+  let currentPage = parseInt(localStorage.getItem("animePage")) || 1;
+
+  let pageSet = Math.ceil(currentPage / perSet);
 
   const totalPages = Math.ceil(cards.length / perPage);
   const maxSet = Math.ceil(totalPages / perSet);
 
   function showPage(page){
+
+    currentPage = page;
+
+    // บันทึกหน้า
+    localStorage.setItem("animePage", page);
 
     const start = (page-1)*perPage;
     const end = start + perPage;
@@ -1186,6 +1193,8 @@ function initPagination(){
       }
 
     });
+
+    pageSet = Math.ceil(currentPage / perSet);
 
     render();
   }
@@ -1212,7 +1221,6 @@ function initPagination(){
         btn.style.pointerEvents="none";
       }else{
         btn.onclick=()=>{
-          currentPage=i;
           showPage(i);
         };
       }
@@ -1235,7 +1243,7 @@ function initPagination(){
     }
   };
 
-  showPage(1);
+  showPage(currentPage);
 }
 
 

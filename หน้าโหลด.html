@@ -1107,11 +1107,16 @@ function initSearch(){
       const title = (card.dataset.title || "").toLowerCase();
       const text  = card.innerText.toLowerCase();
 
-      card.style.display =
-        (title.includes(value) || text.includes(value))
-        ? ""
-        : "none";
+      const match =
+        title.includes(value) ||
+        text.includes(value);
+
+      card.dataset.search = match ? "1" : "0";
     });
+
+    if(window.refreshPagination){
+      window.refreshPagination();
+    }
   });
 }
 
@@ -1129,11 +1134,15 @@ function initAdminHide(){
       const id   = href.replace(".html","");
       const data = snap.child(id).val();
 
-      card.style.display =
+      card.dataset.hidden =
         (data && data.hidden === true)
-        ? "none"
-        : "";
+        ? "1"
+        : "0";
     });
+
+    if(window.refreshPagination){
+      window.refreshPagination();
+    }
   });
 }
 
@@ -1159,7 +1168,6 @@ function sortByYear(){
 /* ================= PAGINATION ==================== */
 /* ================================================= */
 
-
 function initPagination(){
 
   const cards = Array.from(document.querySelectorAll(".anime-card"));
@@ -1174,6 +1182,11 @@ function initPagination(){
   let currentPage = savedPage && savedPage <= totalPages ? savedPage : 1;
 
   let pageSet = Math.ceil(currentPage / perSet);
+
+  cards.forEach(card=>{
+    if(!card.dataset.search) card.dataset.search="1";
+    if(!card.dataset.hidden) card.dataset.hidden="0";
+  });
 
   function showPage(page){
 
@@ -1198,10 +1211,22 @@ function initPagination(){
   function applyDisplay(){
 
     cards.forEach(card=>{
+
+      if(card.dataset.hidden === "1"){
+        card.style.display="none";
+        return;
+      }
+
+      if(card.dataset.search === "0"){
+        card.style.display="none";
+        return;
+      }
+
       card.style.display =
         card.dataset.page === "1"
         ? ""
         : "none";
+
     });
 
   }
@@ -1250,6 +1275,10 @@ function initPagination(){
       pageSet--;
       render();
     }
+  };
+
+  window.refreshPagination = ()=>{
+    showPage(currentPage);
   };
 
   showPage(currentPage);
@@ -1341,7 +1370,6 @@ document.addEventListener("DOMContentLoaded", ()=>{
   initMenu();
   initUI();
 
-  // ให้ pagination ทำงานสุดท้าย
   setTimeout(()=>{
     initPagination();
   },100);

@@ -7,6 +7,10 @@
 
 <style>
 
+.anime-card{
+  display:none;
+}
+
 .num.active{
   background:#ffcc00;
   color:#000;
@@ -1158,6 +1162,26 @@ function sortByYear(){
 /* ================================================= */
 /* ================= PAGINATION ==================== */
 /* ================================================= */
+
+function showPage(page){
+
+  currentPage = page;
+
+  localStorage.setItem("animePage", page);
+
+  const start = (page-1)*perPage;
+  const end = start + perPage;
+
+  cards.forEach((card,i)=>{
+    if(i >= start && i < end){
+      card.style.display = "block";
+    }else{
+      card.style.display = "none";
+    }
+  });
+
+  render();
+}
 
 function initPagination(){
 

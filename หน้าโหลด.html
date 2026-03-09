@@ -1024,10 +1024,8 @@ onValue,
 runTransaction,
 set,
 onDisconnect,
-push,
-remove
+push
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
 
 /* ================================================= */
 /* ================= FIREBASE INIT ================= */
@@ -1040,57 +1038,54 @@ const firebaseConfig = {
   projectId: "reader-4a13f",
   storageBucket: "reader-4a13f.firebasestorage.app",
   messagingSenderId: "220776049054",
-  appId: "1:220776049054:web:53524fb1e90ba83a12ce8f",
-  measurementId: "G-MJ7JZKNMSR"
+  appId: "1:220776049054:web:53524fb1e90ba83a12ce8f"
 };
 
 const app = initializeApp(firebaseConfig);
-const db  = getDatabase(app);
+const db = getDatabase(app);
 
 
 /* ================================================= */
 /* ================= FAVORITE ====================== */
 /* ================================================= */
 
-function getFavorites(){
-  return JSON.parse(localStorage.getItem("favorites") || "[]");
+function getFav(){
+  return JSON.parse(localStorage.getItem("favorites")||"[]");
 }
 
-function saveFavorites(arr){
+function saveFav(arr){
   localStorage.setItem("favorites",JSON.stringify(arr));
 }
 
-function toggleFavorite(id,btn){
+function initFavorite(){
 
-  let favs = getFavorites();
-
-  if(favs.includes(id)){
-    favs = favs.filter(f=>f!==id);
-    btn.classList.remove("active");
-  }else{
-    favs.push(id);
-    btn.classList.add("active");
-  }
-
-  saveFavorites(favs);
-}
-
-function initFavoriteSystem(){
+  const favs = getFav();
 
   document.querySelectorAll(".anime-card").forEach(card=>{
 
-    const id  = card.dataset.id;
+    const id = card.dataset.id;
     const btn = card.querySelector(".fav-btn");
 
-    if(!id || !btn) return;
+    if(!btn || !id) return;
 
-    if(getFavorites().includes(id)){
+    if(favs.includes(id)){
       btn.classList.add("active");
     }
 
-    btn.onclick = (e)=>{
+    btn.onclick=(e)=>{
       e.stopPropagation();
-      toggleFavorite(id,btn);
+
+      let list = getFav();
+
+      if(list.includes(id)){
+        list=list.filter(v=>v!==id);
+        btn.classList.remove("active");
+      }else{
+        list.push(id);
+        btn.classList.add("active");
+      }
+
+      saveFav(list);
     };
 
   });
@@ -1102,7 +1097,7 @@ function initFavoriteSystem(){
 /* ================= ONLINE USERS ================== */
 /* ================================================= */
 
-function initOnlineUsers(){
+function initOnline(){
 
   const userRef = push(ref(db,"onlineUsers"));
 
@@ -1120,16 +1115,16 @@ function initOnlineUsers(){
 /* ================= VIEW COUNTER ================== */
 /* ================================================= */
 
-function initViewCounter(){
+function initViews(){
 
-  const today   = new Date().toISOString().slice(0,10);
-  const viewKey = "viewed-"+today;
+  const today = new Date().toISOString().slice(0,10);
+  const key = "view-"+today;
 
-  if(!localStorage.getItem(viewKey)){
+  if(!localStorage.getItem(key)){
 
-    localStorage.setItem(viewKey,"1");
+    localStorage.setItem(key,"1");
 
-    runTransaction(ref(db,"stats/totalViews"),v=>(v||0)+1);
+    runTransaction(ref(db,"stats/total"),v=>(v||0)+1);
     runTransaction(ref(db,"stats/daily/"+today),v=>(v||0)+1);
 
   }
@@ -1137,13 +1132,12 @@ function initViewCounter(){
   document.querySelectorAll(".anime-card").forEach(card=>{
 
     const id = card.dataset.id;
-    if(!id) return;
 
     card.addEventListener("click",()=>{
 
       runTransaction(
         ref(db,"animeViews/"+id),
-        v => (v||0)+1
+        v=>(v||0)+1
       );
 
     });
@@ -1159,29 +1153,25 @@ function initViewCounter(){
 
 function initSearch(){
 
-  const input = document.querySelector(".search");
+  const input=document.querySelector(".search");
+
   if(!input) return;
 
   input.addEventListener("input",()=>{
 
-    const value = input.value.toLowerCase();
+    const value=input.value.toLowerCase();
 
     document.querySelectorAll(".anime-card").forEach(card=>{
 
-      const title = (card.dataset.title || "").toLowerCase();
-      const text  = card.innerText.toLowerCase();
+      const title=(card.dataset.title||"").toLowerCase();
 
-      const match =
-        title.includes(value) ||
-        text.includes(value);
+      const match=title.includes(value);
 
-      card.dataset.search = match ? "1":"0";
+      card.dataset.search=match?"1":"0";
 
     });
 
-    if(window.refreshPagination){
-      window.refreshPagination();
-    }
+    refreshPagination();
 
   });
 
@@ -1192,26 +1182,24 @@ function initSearch(){
 /* ================= ADMIN HIDE ==================== */
 /* ================================================= */
 
-function initAdminHide(){
+function initAdmin(){
 
   onValue(ref(db,"animeList"),snap=>{
 
     document.querySelectorAll(".anime-card").forEach(card=>{
 
-      const id = card.dataset.id;
-      if(!id) return;
+      const id=card.dataset.id;
 
-      const data = snap.child(id).val();
+      const data=snap.child(id).val();
 
       card.dataset.hidden =
-        (data && data.hidden === true)
-        ? "1":"0";
+        (data && data.hidden)
+        ? "1"
+        : "0";
 
     });
 
-    if(window.refreshPagination){
-      window.refreshPagination();
-    }
+    refreshPagination();
 
   });
 
@@ -1222,19 +1210,19 @@ function initAdminHide(){
 /* ================= SORT YEAR ===================== */
 /* ================================================= */
 
-function sortByYear(){
+function sortYear(){
 
-  const container = document.getElementById("animeList");
-  if(!container) return;
+  const box=document.getElementById("animeList");
+  if(!box) return;
 
-  const cards = Array.from(container.querySelectorAll(".anime-card"));
+  const cards=[...box.querySelectorAll(".anime-card")];
 
   cards.sort((a,b)=>{
-    return (b.dataset.year||0) - (a.dataset.year||0);
+    return (b.dataset.year||0)-(a.dataset.year||0);
   });
 
-  container.innerHTML="";
-  cards.forEach(c=>container.appendChild(c));
+  box.innerHTML="";
+  cards.forEach(c=>box.appendChild(c));
 
 }
 
@@ -1243,140 +1231,147 @@ function sortByYear(){
 /* ================= PAGINATION ==================== */
 /* ================================================= */
 
+let cards=[];
+let perPage=40;
+let currentPage=1;
+
 function initPagination(){
 
-  const cards = Array.from(document.querySelectorAll(".anime-card"));
+  cards=[...document.querySelectorAll(".anime-card")];
 
-  const perPage = 40;
+  currentPage=parseInt(localStorage.getItem("animePage"))||1;
 
-  let currentPage =
-  parseInt(localStorage.getItem("animePage")) || 1;
-
-  function showPage(page){
-
-    currentPage = page;
-
-    localStorage.setItem("animePage",page);
-
-    const start = (page-1)*perPage;
-    const end   = start+perPage;
-
-    cards.forEach((card,i)=>{
-
-      if(i>=start && i<end){
-        card.dataset.page="1";
-      }else{
-        card.dataset.page="0";
-      }
-
-    });
-
-    applyDisplay();
-    render();
-
-  }
-
-  function applyDisplay(){
-
-    cards.forEach(card=>{
-
-      if(card.dataset.hidden==="1"){
-        card.style.display="none";
-        return;
-      }
-
-      if(card.dataset.search==="0"){
-        card.style.display="none";
-        return;
-      }
-
-      card.style.display =
-      card.dataset.page==="1" ? "" : "none";
-
-    });
-
-  }
-
-  function render(){
-
-    const totalPages = Math.ceil(cards.length/perPage);
-
-    const box = document.getElementById("numberBox");
-    if(!box) return;
-
-    box.innerHTML="";
-
-    for(let i=1;i<=totalPages;i++){
-
-      const btn = document.createElement("div");
-
-      btn.className="num";
-      btn.textContent=i;
-
-      if(i===currentPage){
-        btn.classList.add("active");
-      }else{
-        btn.onclick=()=>showPage(i);
-      }
-
-      box.appendChild(btn);
-
-    }
-
-  }
-
-  window.refreshPagination = ()=>{
-    showPage(currentPage);
-  };
-
-  showPage(currentPage);
+  renderPage();
 
 }
+
+function renderPage(){
+
+  const start=(currentPage-1)*perPage;
+  const end=start+perPage;
+
+  cards.forEach((card,i)=>{
+
+    if(i>=start && i<end){
+      card.dataset.page="1";
+    }else{
+      card.dataset.page="0";
+    }
+
+  });
+
+  applyDisplay();
+  renderNumbers();
+
+}
+
+function applyDisplay(){
+
+  cards.forEach(card=>{
+
+    if(card.dataset.hidden==="1"){
+      card.style.display="none";
+      return;
+    }
+
+    if(card.dataset.search==="0"){
+      card.style.display="none";
+      return;
+    }
+
+    card.style.display =
+      card.dataset.page==="1"
+      ? ""
+      : "none";
+
+  });
+
+}
+
+function renderNumbers(){
+
+  const total=Math.ceil(cards.length/perPage);
+
+  const box=document.getElementById("numberBox");
+
+  if(!box) return;
+
+  box.innerHTML="";
+
+  for(let i=1;i<=total;i++){
+
+    const btn=document.createElement("div");
+
+    btn.className="num";
+    btn.textContent=i;
+
+    if(i===currentPage){
+      btn.classList.add("active");
+    }
+
+    btn.onclick=()=>{
+
+      currentPage=i;
+
+      localStorage.setItem("animePage",i);
+
+      renderPage();
+
+    };
+
+    box.appendChild(btn);
+
+  }
+
+}
+
+window.refreshPagination=()=>{
+  renderPage();
+};
 
 
 /* ================================================= */
 /* ================= HOT SLIDER ==================== */
 /* ================================================= */
 
-function initHotSlider(){
+function initHot(){
 
-  const hotSlider = document.getElementById("hotSlider");
-  if(!hotSlider) return;
+  const slider=document.getElementById("hotSlider");
+
+  if(!slider) return;
 
   onValue(ref(db,"animeViews"),snap=>{
 
-    const data = snap.val();
+    const data=snap.val();
     if(!data) return;
 
-    const cards = Array.from(document.querySelectorAll(".anime-card"));
+    const arr=[...document.querySelectorAll(".anime-card")].map(card=>{
 
-    const arr = cards.map(card=>{
-
-      const id = card.dataset.id;
+      const id=card.dataset.id;
 
       return{
-        card:card,
-        id:id,
+        card,
         views:data[id]||0
-      }
+      };
 
     });
 
     arr.sort((a,b)=>b.views-a.views);
 
-    hotSlider.innerHTML="";
+    slider.innerHTML="";
 
     arr.slice(0,5).forEach(item=>{
 
-      const clone = item.card.cloneNode(true);
+      const clone=item.card.cloneNode(true);
 
-      const badge = document.createElement("div");
+      const badge=document.createElement("div");
+
       badge.className="hot-badge";
       badge.innerText=item.views+" views";
 
       clone.appendChild(badge);
 
-      hotSlider.appendChild(clone);
+      slider.appendChild(clone);
 
     });
 
@@ -1389,36 +1384,26 @@ function initHotSlider(){
 /* ================= MENU ========================== */
 /* ================================================= */
 
-const menuBtn = document.getElementById("menuBtn");
-const menu    = document.getElementById("menuDropdown");
+const menuBtn=document.getElementById("menuBtn");
+const menu=document.getElementById("menuDropdown");
 
 if(menuBtn){
 menuBtn.onclick=()=>{
 menu.style.display =
-menu.style.display==="flex"?"none":"flex";
+menu.style.display==="flex"
+?"none":"flex";
 };
 }
 
 
 /* ================================================= */
-/* ================= FOOTER YEAR =================== */
+/* ================= FOOTER ======================== */
 /* ================================================= */
 
-const year = document.getElementById("year");
-
+const year=document.getElementById("year");
 if(year){
 year.textContent=new Date().getFullYear();
 }
-
-
-/* ================================================= */
-/* ================= DEFAULT DATA ================== */
-/* ================================================= */
-
-document.querySelectorAll(".anime-card").forEach(card=>{
-card.dataset.search="1";
-card.dataset.hidden="0";
-});
 
 
 /* ================================================= */
@@ -1427,13 +1412,18 @@ card.dataset.hidden="0";
 
 document.addEventListener("DOMContentLoaded",()=>{
 
-initFavoriteSystem();
-initOnlineUsers();
-initViewCounter();
+document.querySelectorAll(".anime-card").forEach(card=>{
+card.dataset.search="1";
+card.dataset.hidden="0";
+});
+
+initFavorite();
+initOnline();
+initViews();
 initSearch();
-initAdminHide();
-sortByYear();
-initHotSlider();
+initAdmin();
+sortYear();
+initHot();
 
 setTimeout(()=>{
 initPagination();

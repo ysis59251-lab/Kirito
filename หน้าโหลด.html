@@ -1320,13 +1320,16 @@ document.addEventListener("DOMContentLoaded", ()=>{
   initSearch();
   initAdminHide();
   sortByYear();
-  initPagination();
   initHotSlider();
   initMenu();
   initUI();
 
-});
+  // ให้ pagination ทำงานสุดท้าย
+  setTimeout(()=>{
+    initPagination();
+  },100);
 
+});
 </script>
 
 <button class="fab" onclick="toggleBottom()">☰</button>

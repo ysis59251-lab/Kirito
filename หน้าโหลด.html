@@ -1146,6 +1146,8 @@ function initPagination(){
   const per = 5;
   const maxPage = Math.ceil(Object.keys(pageMap).length / per);
 
+  const currentPage = location.pathname.split("/").pop();
+
   function render(){
     const box = document.getElementById("numberBox");
     if(!box) return;
@@ -1159,7 +1161,14 @@ function initPagination(){
       const btn = document.createElement("div");
       btn.className = "num";
       btn.textContent = i;
-      btn.onclick = ()=> location.href = pageMap[i];
+
+      if(pageMap[i] === currentPage){
+        btn.classList.add("active");
+        btn.style.pointerEvents = "none"; // ล็อกไม่ให้กด
+      }else{
+        btn.onclick = ()=> location.href = pageMap[i];
+      }
+
       box.appendChild(btn);
     }
   }

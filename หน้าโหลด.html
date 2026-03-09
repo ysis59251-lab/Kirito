@@ -1126,74 +1126,60 @@ function sortByYear(){
 
 function initPagination(){
 
-  const pageMap = {
+  const cards = Array.from(document.querySelectorAll(".anime-card"));
 
-    1:"หน้าโหลด.html",
-    2:"pageMap1.html",
-    3:"pageMap2.html",
-    4:"pageMap3.html",
-    5:"pageMap4.html",
-    6:"pageMap5.html",
-    7:"pageMap6.html",
-    8:"pageMap7.html",
-    9:"pageMap8.html",
-    10:"pageMap9.html",
-    11:"pageMap10.html",
-    12:"pageMap11.html",
-    13:"pageMap12.html",
-    14:"pageMap13.html",
-    15:"pageMap14.html",
-    16:"pageMap15.html",
-    17:"pageMap16.html",
-    18:"pageMap17.html",
-    19:"pageMap18.html",
-    20:"pageMap19.html",
-    21:"pageMap20.html",
-  };
+  const perPage = 40;      // 40 การ์ดต่อหน้า
+  const perSet  = 5;       // แสดงเลข 5 ปุ่มเหมือนเดิม
 
-  const per = 5;
-  const total = Object.keys(pageMap).length;
-  const maxPage = Math.ceil(total / per);
+  let currentPage = 1;
+  let pageSet = 1;
 
-  const currentPage =
-    location.pathname.split("/").pop() || "pageMap1.html";
+  const totalPages = Math.ceil(cards.length / perPage);
+  const maxSet = Math.ceil(totalPages / perSet);
 
-  // หา index ของหน้าปัจจุบัน
-  let currentIndex = Object.keys(pageMap).find(
-    key => pageMap[key] === currentPage
-  );
+  function showPage(page){
 
-  currentIndex = parseInt(currentIndex) || 1;
+    const start = (page-1)*perPage;
+    const end = start + perPage;
 
-  // คำนวณว่าต้องอยู่ชุดไหน
-  let page = Math.ceil(currentIndex / per);
+    cards.forEach((card,i)=>{
+
+      if(i >= start && i < end){
+        card.style.display = "";
+      }else{
+        card.style.display = "none";
+      }
+
+    });
+
+    render();
+  }
 
   function render(){
 
     const box = document.getElementById("numberBox");
     if(!box) return;
 
-    box.innerHTML = "";
+    box.innerHTML="";
 
-    const start = (page - 1) * per + 1;
+    const start = (pageSet-1)*perSet+1;
 
-    for(let i=start;i<start+per;i++){
+    for(let i=start;i<start+perSet;i++){
 
-      if(!pageMap[i]) continue;
+      if(i>totalPages) break;
 
       const btn = document.createElement("div");
-      btn.className = "num";
-      btn.textContent = i;
+      btn.className="num";
+      btn.textContent=i;
 
-      if(pageMap[i] === currentPage){
-
+      if(i===currentPage){
         btn.classList.add("active");
-        btn.style.pointerEvents = "none";
-
+        btn.style.pointerEvents="none";
       }else{
-
-        btn.onclick = ()=> location.href = pageMap[i];
-
+        btn.onclick=()=>{
+          currentPage=i;
+          showPage(i);
+        };
       }
 
       box.appendChild(btn);
@@ -1201,20 +1187,20 @@ function initPagination(){
   }
 
   window.nextSet = ()=>{
-    if(page < maxPage){
-      page++;
+    if(pageSet < maxSet){
+      pageSet++;
       render();
     }
   };
 
   window.prevSet = ()=>{
-    if(page > 1){
-      page--;
+    if(pageSet > 1){
+      pageSet--;
       render();
     }
   };
 
-  render();
+  showPage(1);
 }
 
 

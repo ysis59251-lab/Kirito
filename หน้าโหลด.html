@@ -1392,6 +1392,59 @@ function initHotSlider(){
 }
 
 
+
+/* ===== MENU ===== */
+const menuBtn = document.getElementById("menuBtn");
+const menu = document.getElementById("menuDropdown");
+
+menuBtn.onclick = ()=>{
+  menu.style.display = menu.style.display === "flex" ? "none":"flex";
+};
+
+/* ===== FOOTER YEAR ===== */
+document.getElementById("year").textContent =
+new Date().getFullYear();
+
+/* ===== BOTTOM NAV TOGGLE ===== */
+function toggleBottom(){
+
+  const box = document.getElementById("bottomNav");
+
+  box.classList.toggle("show");
+
+}
+
+/* ===== PAGINATION BUTTONS ===== */
+
+function prevSet(){
+
+  const current =
+  parseInt(localStorage.getItem("animePage")) || 1;
+
+  if(current>1){
+    localStorage.setItem("animePage",current-1);
+    location.reload();
+  }
+
+}
+
+function nextSet(){
+
+  const current =
+  parseInt(localStorage.getItem("animePage")) || 1;
+
+  localStorage.setItem("animePage",current+1);
+
+  location.reload();
+
+}
+
+/* ===== SEARCH DEFAULT ===== */
+document.querySelectorAll(".anime-card").forEach(card=>{
+  card.dataset.search="1";
+  card.dataset.hidden="0";
+});
+
 /* ================================================= */
 /* ================= INIT ========================== */
 /* ================================================= */

@@ -1024,7 +1024,8 @@ onValue,
 runTransaction,
 set,
 onDisconnect,
-push
+push,
+remove
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 
@@ -1048,7 +1049,7 @@ const db  = getDatabase(app);
 
 
 /* ================================================= */
-/* ================= FAVORITE SYSTEM =============== */
+/* ================= FAVORITE ====================== */
 /* ================================================= */
 
 function getFavorites(){
@@ -1056,7 +1057,7 @@ function getFavorites(){
 }
 
 function saveFavorites(arr){
-  localStorage.setItem("favorites", JSON.stringify(arr));
+  localStorage.setItem("favorites",JSON.stringify(arr));
 }
 
 function toggleFavorite(id,btn){
@@ -1064,7 +1065,7 @@ function toggleFavorite(id,btn){
   let favs = getFavorites();
 
   if(favs.includes(id)){
-    favs = favs.filter(f => f !== id);
+    favs = favs.filter(f=>f!==id);
     btn.classList.remove("active");
   }else{
     favs.push(id);
@@ -1081,7 +1082,7 @@ function initFavoriteSystem(){
     const id  = card.dataset.id;
     const btn = card.querySelector(".fav-btn");
 
-    if(!btn || !id) return;
+    if(!id || !btn) return;
 
     if(getFavorites().includes(id)){
       btn.classList.add("active");
@@ -1128,16 +1129,14 @@ function initViewCounter(){
 
     localStorage.setItem(viewKey,"1");
 
-    runTransaction(ref(db,"stats/totalViews"), v => (v||0)+1);
-
-    runTransaction(ref(db,"stats/daily/"+today), v => (v||0)+1);
+    runTransaction(ref(db,"stats/totalViews"),v=>(v||0)+1);
+    runTransaction(ref(db,"stats/daily/"+today),v=>(v||0)+1);
 
   }
 
   document.querySelectorAll(".anime-card").forEach(card=>{
 
     const id = card.dataset.id;
-
     if(!id) return;
 
     card.addEventListener("click",()=>{
@@ -1160,13 +1159,12 @@ function initViewCounter(){
 
 function initSearch(){
 
-  const searchInput = document.querySelector(".search");
+  const input = document.querySelector(".search");
+  if(!input) return;
 
-  if(!searchInput) return;
+  input.addEventListener("input",()=>{
 
-  searchInput.addEventListener("input",()=>{
-
-    const value = searchInput.value.toLowerCase();
+    const value = input.value.toLowerCase();
 
     document.querySelectorAll(".anime-card").forEach(card=>{
 
@@ -1196,7 +1194,7 @@ function initSearch(){
 
 function initAdminHide(){
 
-  onValue(ref(db,"animeList"), snap=>{
+  onValue(ref(db,"animeList"),snap=>{
 
     document.querySelectorAll(".anime-card").forEach(card=>{
 
@@ -1207,8 +1205,7 @@ function initAdminHide(){
 
       card.dataset.hidden =
         (data && data.hidden === true)
-        ? "1"
-        : "0";
+        ? "1":"0";
 
     });
 
@@ -1222,7 +1219,7 @@ function initAdminHide(){
 
 
 /* ================================================= */
-/* ================= SORT BY YEAR ================== */
+/* ================= SORT YEAR ===================== */
 /* ================================================= */
 
 function sortByYear(){
@@ -1237,7 +1234,7 @@ function sortByYear(){
   });
 
   container.innerHTML="";
-  cards.forEach(c=> container.appendChild(c));
+  cards.forEach(c=>container.appendChild(c));
 
 }
 
@@ -1252,10 +1249,8 @@ function initPagination(){
 
   const perPage = 40;
 
-  const totalPages = Math.ceil(cards.length/perPage);
-
   let currentPage =
-    parseInt(localStorage.getItem("animePage")) || 1;
+  parseInt(localStorage.getItem("animePage")) || 1;
 
   function showPage(page){
 
@@ -1264,7 +1259,7 @@ function initPagination(){
     localStorage.setItem("animePage",page);
 
     const start = (page-1)*perPage;
-    const end   = start + perPage;
+    const end   = start+perPage;
 
     cards.forEach((card,i)=>{
 
@@ -1296,13 +1291,15 @@ function initPagination(){
       }
 
       card.style.display =
-        card.dataset.page==="1" ? "" : "none";
+      card.dataset.page==="1" ? "" : "none";
 
     });
 
   }
 
   function render(){
+
+    const totalPages = Math.ceil(cards.length/perPage);
 
     const box = document.getElementById("numberBox");
     if(!box) return;
@@ -1319,7 +1316,7 @@ function initPagination(){
       if(i===currentPage){
         btn.classList.add("active");
       }else{
-        btn.onclick=()=> showPage(i);
+        btn.onclick=()=>showPage(i);
       }
 
       box.appendChild(btn);
@@ -1344,12 +1341,9 @@ function initPagination(){
 function initHotSlider(){
 
   const hotSlider = document.getElementById("hotSlider");
-
   if(!hotSlider) return;
 
-  const viewsRef = ref(db,"animeViews");
-
-  onValue(viewsRef,(snap)=>{
+  onValue(ref(db,"animeViews"),snap=>{
 
     const data = snap.val();
     if(!data) return;
@@ -1360,15 +1354,15 @@ function initHotSlider(){
 
       const id = card.dataset.id;
 
-      return {
+      return{
+        card:card,
         id:id,
-        views:data[id] || 0,
-        card:card
-      };
+        views:data[id]||0
+      }
 
     });
 
-    arr.sort((a,b)=> b.views-a.views);
+    arr.sort((a,b)=>b.views-a.views);
 
     hotSlider.innerHTML="";
 
@@ -1377,9 +1371,8 @@ function initHotSlider(){
       const clone = item.card.cloneNode(true);
 
       const badge = document.createElement("div");
-
       badge.className="hot-badge";
-      badge.innerText = item.views+" views";
+      badge.innerText=item.views+" views";
 
       clone.appendChild(badge);
 
@@ -1392,58 +1385,41 @@ function initHotSlider(){
 }
 
 
+/* ================================================= */
+/* ================= MENU ========================== */
+/* ================================================= */
 
-/* ===== MENU ===== */
 const menuBtn = document.getElementById("menuBtn");
-const menu = document.getElementById("menuDropdown");
+const menu    = document.getElementById("menuDropdown");
 
-menuBtn.onclick = ()=>{
-  menu.style.display = menu.style.display === "flex" ? "none":"flex";
+if(menuBtn){
+menuBtn.onclick=()=>{
+menu.style.display =
+menu.style.display==="flex"?"none":"flex";
 };
-
-/* ===== FOOTER YEAR ===== */
-document.getElementById("year").textContent =
-new Date().getFullYear();
-
-/* ===== BOTTOM NAV TOGGLE ===== */
-function toggleBottom(){
-
-  const box = document.getElementById("bottomNav");
-
-  box.classList.toggle("show");
-
 }
 
-/* ===== PAGINATION BUTTONS ===== */
 
-function prevSet(){
+/* ================================================= */
+/* ================= FOOTER YEAR =================== */
+/* ================================================= */
 
-  const current =
-  parseInt(localStorage.getItem("animePage")) || 1;
+const year = document.getElementById("year");
 
-  if(current>1){
-    localStorage.setItem("animePage",current-1);
-    location.reload();
-  }
-
+if(year){
+year.textContent=new Date().getFullYear();
 }
 
-function nextSet(){
 
-  const current =
-  parseInt(localStorage.getItem("animePage")) || 1;
+/* ================================================= */
+/* ================= DEFAULT DATA ================== */
+/* ================================================= */
 
-  localStorage.setItem("animePage",current+1);
-
-  location.reload();
-
-}
-
-/* ===== SEARCH DEFAULT ===== */
 document.querySelectorAll(".anime-card").forEach(card=>{
-  card.dataset.search="1";
-  card.dataset.hidden="0";
+card.dataset.search="1";
+card.dataset.hidden="0";
 });
+
 
 /* ================================================= */
 /* ================= INIT ========================== */
@@ -1451,17 +1427,17 @@ document.querySelectorAll(".anime-card").forEach(card=>{
 
 document.addEventListener("DOMContentLoaded",()=>{
 
-  initFavoriteSystem();
-  initOnlineUsers();
-  initViewCounter();
-  initSearch();
-  initAdminHide();
-  sortByYear();
-  initHotSlider();
+initFavoriteSystem();
+initOnlineUsers();
+initViewCounter();
+initSearch();
+initAdminHide();
+sortByYear();
+initHotSlider();
 
-  setTimeout(()=>{
-    initPagination();
-  },100);
+setTimeout(()=>{
+initPagination();
+},100);
 
 });
 

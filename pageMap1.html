@@ -7,6 +7,13 @@
 
 <style>
 
+.num.active{
+  background:#ffcc00;
+  color:#000;
+  font-weight:bold;
+  cursor:default;
+}
+
 .manga-card{
   position: relative;
   display: inline-block;
@@ -572,8 +579,8 @@ body{background:#000;color:#fff;min-height:100vh}
 <a href="ByteWorld101.html"class="anime-card"data-title="Kusuriya no Hitorigoto"
 data-year="2023">
   <div class="img-box">
-    <img src="https://anifume.com/images/54/Shinmai-Ossan-Boukensha.jpg">
-    <div class="overlay-text"> Shinmai Ossan Boukensha ตาลุงนักผจญภัยมือใหม่ ฝึกโหดจนไร้เทียมทานกับปาร์ตี้ในตำนานขั้นเทพ<br>1–12  จบเเล้ว
+    <img src="https://kusuriyanohitorigoto.jp/season1/gallery/img/keyvisual/02.jpg">
+    <div class="overlay-text"> Kusuriya no Hitorigoto สืบคดีปริศนา หมอยาตำรับโคมแดง<br>1–24 พากย์ไทย จบเเล้ว
     </div>
     <div class="badge recommend">⭐ แนะนำ</div>
   </div>
@@ -1120,7 +1127,7 @@ function sortByYear(){
 function initPagination(){
 
   const pageMap = {
-    1:"หน้าโหลด.html",
+    1:"pageMap1.html",
     2:"pageMap2.html",
     3:"pageMap3.html",
     4:"pageMap4.html",
@@ -1142,34 +1149,67 @@ function initPagination(){
     20:"pageMap20.html",
   };
 
-  let page = 1;
   const per = 5;
-  const maxPage = Math.ceil(Object.keys(pageMap).length / per);
+  const total = Object.keys(pageMap).length;
+  const maxPage = Math.ceil(total / per);
+
+  const currentPage =
+    location.pathname.split("/").pop() || "pageMap1.html";
+
+  // หา index ของหน้าปัจจุบัน
+  let currentIndex = Object.keys(pageMap).find(
+    key => pageMap[key] === currentPage
+  );
+
+  currentIndex = parseInt(currentIndex) || 1;
+
+  // คำนวณว่าต้องอยู่ชุดไหน
+  let page = Math.ceil(currentIndex / per);
 
   function render(){
+
     const box = document.getElementById("numberBox");
     if(!box) return;
 
     box.innerHTML = "";
+
     const start = (page - 1) * per + 1;
 
     for(let i=start;i<start+per;i++){
+
       if(!pageMap[i]) continue;
 
       const btn = document.createElement("div");
       btn.className = "num";
       btn.textContent = i;
-      btn.onclick = ()=> location.href = pageMap[i];
+
+      if(pageMap[i] === currentPage){
+
+        btn.classList.add("active");
+        btn.style.pointerEvents = "none";
+
+      }else{
+
+        btn.onclick = ()=> location.href = pageMap[i];
+
+      }
+
       box.appendChild(btn);
     }
   }
 
   window.nextSet = ()=>{
-    if(page < maxPage){ page++; render(); }
+    if(page < maxPage){
+      page++;
+      render();
+    }
   };
 
   window.prevSet = ()=>{
-    if(page > 1){ page--; render(); }
+    if(page > 1){
+      page--;
+      render();
+    }
   };
 
   render();

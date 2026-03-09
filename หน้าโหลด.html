@@ -1016,6 +1016,7 @@ data-id="244">
 /* ================================================= */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+
 import {
   getDatabase,
   ref,
@@ -1023,7 +1024,8 @@ import {
   runTransaction,
   set,
   onDisconnect,
-  push
+  push,
+  remove
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 
@@ -1032,10 +1034,11 @@ import {
 /* ================================================= */
 
 const firebaseConfig = {
-  apiKey: "YOUR_KEY",
+  apiKey: "AIzaSyxxxxxxxxxxxx",
   authDomain: "darkframe300.firebaseapp.com",
   databaseURL: "https://darkframe300-default-rtdb.firebaseio.com",
   projectId: "darkframe300",
+  storageBucket: "darkframe300.appspot.com",
   appId: "1:296568248360:web:7867a60675ce32e3d6bd1d"
 };
 
@@ -1055,7 +1058,8 @@ function saveFavorites(arr){
   localStorage.setItem("favorites", JSON.stringify(arr));
 }
 
-function toggleFavorite(id, btn){
+function toggleFavorite(id,btn){
+
   let favs = getFavorites();
 
   if(favs.includes(id)){
@@ -1070,93 +1074,119 @@ function toggleFavorite(id, btn){
 }
 
 function initFavoriteSystem(){
+
   document.querySelectorAll(".anime-card").forEach(card=>{
+
     const id  = card.dataset.id;
     const btn = card.querySelector(".fav-btn");
+
     if(!btn || !id) return;
 
     if(getFavorites().includes(id)){
       btn.classList.add("active");
     }
 
-    btn.addEventListener("click",(e)=>{
+    btn.onclick = (e)=>{
       e.stopPropagation();
-      toggleFavorite(id, btn);
-    });
+      toggleFavorite(id,btn);
+    };
+
   });
+
 }
 
 
 /* ================================================= */
-/* ================= ONLINE SYSTEM ================= */
+/* ================= ONLINE USERS ================== */
 /* ================================================= */
 
 function initOnlineUsers(){
-  const onlineRef = push(ref(db,"onlineUsers"));
 
-  set(onlineRef,{
-    page: location.pathname,
-    time: Date.now()
+  const userRef = push(ref(db,"onlineUsers"));
+
+  set(userRef,{
+    page:location.pathname,
+    time:Date.now()
   });
 
-  onDisconnect(onlineRef).remove();
+  onDisconnect(userRef).remove();
+
 }
 
 
 /* ================================================= */
-/* ================= VIEW SYSTEM =================== */
+/* ================= VIEW COUNTER ================== */
 /* ================================================= */
 
 function initViewCounter(){
+
   const today   = new Date().toISOString().slice(0,10);
-  const viewKey = "viewed-" + today;
+  const viewKey = "viewed-"+today;
 
   if(!localStorage.getItem(viewKey)){
+
     localStorage.setItem(viewKey,"1");
 
-    runTransaction(ref(db,"stats/totalViews"), v => (v || 0) + 1);
-    runTransaction(ref(db,"stats/daily/" + today), v => (v || 0) + 1);
+    runTransaction(ref(db,"stats/totalViews"), v => (v||0)+1);
+
+    runTransaction(ref(db,"stats/daily/"+today), v => (v||0)+1);
+
   }
 
   document.querySelectorAll(".anime-card").forEach(card=>{
-    const href = card.getAttribute("href");
-    if(!href) return;
 
-    const id = href.replace(".html","");
+    const id = card.dataset.id;
+
+    if(!id) return;
 
     card.addEventListener("click",()=>{
-      runTransaction(ref(db,"animeViews/" + id), v => (v || 0) + 1);
+
+      runTransaction(
+        ref(db,"animeViews/"+id),
+        v => (v||0)+1
+      );
+
     });
+
   });
+
 }
 
 
 /* ================================================= */
-/* ================= SEARCH SYSTEM ================= */
+/* ================= SEARCH ======================== */
 /* ================================================= */
 
 function initSearch(){
+
   const searchInput = document.querySelector(".search");
+
   if(!searchInput) return;
 
-  searchInput.addEventListener("input", ()=>{
-    const value = searchInput.value.toLowerCase().trim();
+  searchInput.addEventListener("input",()=>{
+
+    const value = searchInput.value.toLowerCase();
 
     document.querySelectorAll(".anime-card").forEach(card=>{
+
       const title = (card.dataset.title || "").toLowerCase();
+
       const text  = card.innerText.toLowerCase();
 
       const match =
         title.includes(value) ||
         text.includes(value);
 
-      card.dataset.search = match ? "1" : "0";
+      card.dataset.search = match ? "1":"0";
+
     });
 
     if(window.refreshPagination){
       window.refreshPagination();
     }
+
   });
+
 }
 
 
@@ -1165,24 +1195,30 @@ function initSearch(){
 /* ================================================= */
 
 function initAdminHide(){
-  onValue(ref(db,"animeList"), snap=>{
-    document.querySelectorAll(".anime-card").forEach(card=>{
-      const href = card.getAttribute("href");
-      if(!href) return;
 
-      const id   = href.replace(".html","");
+  onValue(ref(db,"animeList"), snap=>{
+
+    document.querySelectorAll(".anime-card").forEach(card=>{
+
+      const id = card.dataset.id;
+
+      if(!id) return;
+
       const data = snap.child(id).val();
 
       card.dataset.hidden =
         (data && data.hidden === true)
         ? "1"
         : "0";
+
     });
 
     if(window.refreshPagination){
       window.refreshPagination();
     }
+
   });
+
 }
 
 
@@ -1191,15 +1227,23 @@ function initAdminHide(){
 /* ================================================= */
 
 function sortByYear(){
+
   const container = document.getElementById("animeList");
+
   if(!container) return;
 
   const cards = Array.from(container.querySelectorAll(".anime-card"));
 
-  cards.sort((a,b)=> b.dataset.year - a.dataset.year);
+  cards.sort((a,b)=>{
 
-  container.innerHTML = "";
-  cards.forEach(card => container.appendChild(card));
+    return (b.dataset.year||0) - (a.dataset.year||0);
+
+  });
+
+  container.innerHTML="";
+
+  cards.forEach(c=> container.appendChild(c));
+
 }
 
 
@@ -1212,59 +1256,53 @@ function initPagination(){
   const cards = Array.from(document.querySelectorAll(".anime-card"));
 
   const perPage = 40;
-  const perSet  = 5;
 
-  const totalPages = Math.ceil(cards.length / perPage);
-  const maxSet     = Math.ceil(totalPages / perSet);
+  const totalPages = Math.ceil(cards.length/perPage);
 
-  let savedPage   = parseInt(localStorage.getItem("animePage"));
-  let currentPage = savedPage && savedPage <= totalPages ? savedPage : 1;
-
-  let pageSet = Math.ceil(currentPage / perSet);
-
-  cards.forEach(card=>{
-    if(!card.dataset.search) card.dataset.search="1";
-    if(!card.dataset.hidden) card.dataset.hidden="0";
-  });
+  let currentPage =
+    parseInt(localStorage.getItem("animePage")) || 1;
 
   function showPage(page){
 
     currentPage = page;
-    localStorage.setItem("animePage", page);
+
+    localStorage.setItem("animePage",page);
 
     const start = (page-1)*perPage;
+
     const end   = start + perPage;
 
     cards.forEach((card,i)=>{
-      if(i >= start && i < end){
-        card.dataset.page = "1";
+
+      if(i>=start && i<end){
+        card.dataset.page="1";
       }else{
-        card.dataset.page = "0";
+        card.dataset.page="0";
       }
+
     });
 
     applyDisplay();
     render();
+
   }
 
   function applyDisplay(){
 
     cards.forEach(card=>{
 
-      if(card.dataset.hidden === "1"){
+      if(card.dataset.hidden==="1"){
         card.style.display="none";
         return;
       }
 
-      if(card.dataset.search === "0"){
+      if(card.dataset.search==="0"){
         card.style.display="none";
         return;
       }
 
       card.style.display =
-        card.dataset.page === "1"
-        ? ""
-        : "none";
+        card.dataset.page==="1" ? "" : "none";
 
     });
 
@@ -1273,27 +1311,27 @@ function initPagination(){
   function render(){
 
     const box = document.getElementById("numberBox");
+
     if(!box) return;
 
     box.innerHTML="";
 
-    const start = (pageSet-1)*perSet+1;
-
-    for(let i=start;i<start+perSet;i++){
-
-      if(i>totalPages) break;
+    for(let i=1;i<=totalPages;i++){
 
       const btn = document.createElement("div");
+
       btn.className="num";
+
       btn.textContent=i;
 
       if(i===currentPage){
+
         btn.classList.add("active");
-        btn.style.pointerEvents="none";
+
       }else{
-        btn.onclick=()=>{
-          showPage(i);
-        };
+
+        btn.onclick=()=> showPage(i);
+
       }
 
       box.appendChild(btn);
@@ -1301,20 +1339,6 @@ function initPagination(){
     }
 
   }
-
-  window.nextSet = ()=>{
-    if(pageSet < maxSet){
-      pageSet++;
-      render();
-    }
-  };
-
-  window.prevSet = ()=>{
-    if(pageSet > 1){
-      pageSet--;
-      render();
-    }
-  };
 
   window.refreshPagination = ()=>{
     showPage(currentPage);
@@ -1332,6 +1356,7 @@ function initPagination(){
 function initHotSlider(){
 
   const hotSlider = document.getElementById("hotSlider");
+
   if(!hotSlider) return;
 
   const viewsRef = ref(db,"animeViews");
@@ -1339,6 +1364,7 @@ function initHotSlider(){
   onValue(viewsRef,(snap)=>{
 
     const data = snap.val();
+
     if(!data) return;
 
     const cards = Array.from(document.querySelectorAll(".anime-card"));
@@ -1355,7 +1381,7 @@ function initHotSlider(){
 
     });
 
-    arr.sort((a,b)=> b.views - a.views);
+    arr.sort((a,b)=> b.views-a.views);
 
     hotSlider.innerHTML="";
 
@@ -1363,11 +1389,11 @@ function initHotSlider(){
 
       const clone = item.card.cloneNode(true);
 
-      clone.classList.add("hot-card");
-
       const badge = document.createElement("div");
+
       badge.className="hot-badge";
-      badge.innerText=" "+item.views+" views";
+
+      badge.innerText = item.views+" views";
 
       clone.appendChild(badge);
 
@@ -1381,70 +1407,29 @@ function initHotSlider(){
 
 
 /* ================================================= */
-/* ================= MENU SYSTEM =================== */
+/* ================= INIT ========================== */
 /* ================================================= */
 
-function initMenu(){
-  const menuBtn  = document.getElementById("menuBtn");
-  const menuDrop = document.getElementById("menuDropdown");
-
-  if(!menuBtn || !menuDrop) return;
-
-  menuBtn.onclick = ()=>{
-    menuDrop.style.display =
-      menuDrop.style.display === "flex" ? "none" : "flex";
-  };
-
-  document.addEventListener("click", e=>{
-    if(!menuDrop.contains(e.target) && e.target !== menuBtn){
-      menuDrop.style.display = "none";
-    }
-  });
-}
-
-
-/* ================================================= */
-/* ================= OTHER UI ====================== */
-/* ================================================= */
-
-function initUI(){
-  const reportBtn = document.getElementById("reportBtn");
-  if(reportBtn){
-    reportBtn.onclick = ()=>{
-      window.location.href = "Report a Problem.html";
-    };
-  }
-
-  const yearEl = document.getElementById("year");
-  if(yearEl){
-    yearEl.textContent = new Date().getFullYear();
-  }
-
-  window.toggleBottom = ()=>{
-    const nav = document.getElementById("bottomNav");
-    if(nav) nav.classList.toggle("show");
-  };
-}
-
-
-/* ================================================= */
-/* ================= INIT ALL ====================== */
-/* ================================================= */
-
-document.addEventListener("DOMContentLoaded", ()=>{
+document.addEventListener("DOMContentLoaded",()=>{
 
   initFavoriteSystem();
+
   initOnlineUsers();
+
   initViewCounter();
+
   initSearch();
+
   initAdminHide();
+
   sortByYear();
+
   initHotSlider();
-  initMenu();
-  initUI();
 
   setTimeout(()=>{
+
     initPagination();
+
   },100);
 
 });

@@ -1,0 +1,540 @@
+<style>
+
+.num.active{
+  background:#ffcc00;
+  color:#000;
+  font-weight:bold;
+  cursor:default;
+}
+
+.manga-card{
+  position: relative;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.manga-card img{
+  width: 300px;
+  display: block;
+}
+
+.text-center{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(0,0,0,0.7);
+  pointer-events: none; /* กดที่รูปได้เลย */
+}
+
+/* ===== HOT SECTION LIGHT DARK ===== */
+.hot-section{
+  padding: 60px 30px;
+  background: linear-gradient(180deg,#1e1e1e,#2a2a2a);
+}
+
+/* หัวข้อ */
+.hot-section h2{
+  font-size: 28px;
+  margin-bottom: 30px;
+  font-weight: 700;
+  background: linear-gradient(90deg,#ff4d4d,#ffb347);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* slider */
+.hot-slider{
+  display: flex;
+  gap: 25px;
+  overflow-x: auto;
+  padding-bottom: 20px;
+}
+
+/* ===== CARD ===== */
+.hot-card{
+  min-width: 200px;
+  border-radius: 20px;
+  overflow: hidden;
+  position: relative;
+  background: #ffffff;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+  transition: 0.4s ease;
+  cursor: pointer;
+}
+
+/* เอฟเฟกต์เรืองแสงตอน hover */
+.hot-card:hover{
+  transform: translateY(-10px);
+  box-shadow: 0 12px 35px rgba(255,77,77,0.4);
+}
+
+/* รูป */
+.hot-card img{
+  width:100%;
+  height:280px;
+  object-fit:cover;
+  transition:0.4s;
+}
+
+.hot-card:hover img{
+  transform: scale(1.08);
+}
+
+/* ชื่อ */
+.hot-card .title{
+  padding: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  color:#222;
+}
+
+/* ป้าย HOT */
+.hot-badge{
+  position:absolute;
+  top:15px;
+  left:15px;
+  padding:6px 14px;
+  border-radius:50px;
+  font-size:12px;
+  font-weight:bold;
+  background: linear-gradient(90deg,#ff4d4d,#ffb347);
+  color:#fff;
+}
+
+.anime-wrapper{
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 80px 0;
+  overflow: visible;
+}
+
+/* แสงเฉียงด้านหลัง */
+.anime-wrapper::before{
+  content:"";
+  position:absolute;
+  width:500px;
+  height:500px;
+  background: conic-gradient(
+    from 180deg,
+    #ff6a6a,
+    #ffb347,
+    #ffd86b,
+    #ff6a6a
+  );
+  border-radius:50%;
+  filter: blur(100px);
+  opacity:0.6;
+  animation: rotateGlow 12s linear infinite;
+  z-index:0;
+}
+
+/* เส้นเรืองแสงบาง ๆ */
+.anime-wrapper::after{
+  content:"";
+  position:absolute;
+  width:360px;
+  height:360px;
+  border-radius:50%;
+  border: 2px solid rgba(255,255,255,0.4);
+  box-shadow: 
+    0 0 20px rgba(255,120,120,0.6),
+    inset 0 0 20px rgba(255,180,0,0.6);
+  z-index:1;
+}
+
+/* รูป */
+.anime-img{
+  width: 360px;
+  max-width: 90%;
+  position: relative;
+  z-index: 2;
+  filter: 
+    drop-shadow(0 20px 40px rgba(0,0,0,0.4))
+    drop-shadow(0 0 30px rgba(255,150,100,0.5));
+}
+
+/* หมุนแสง */
+@keyframes rotateGlow{
+  from{ transform: rotate(0deg) scale(1); }
+  to{ transform: rotate(360deg) scale(1.1); }
+}
+
+/* ===== BOTTOM SLIDE + NUMBER BAR ===== */
+.bottom-area{
+  position: fixed;
+  left: 50%;
+  bottom: -200px;              /* ซ่อนไว้ใต้จอ */
+  transform: translateX(-50%);
+
+  width:260px;
+  z-index:20;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+
+  transition: bottom .35s ease;
+}
+
+/* โชว์ → ลอยขึ้นมากลางล่าง */
+.bottom-area.show{
+  bottom: 20px;
+}
+
+/* ===== กรอบเลข ===== */
+#numberBox{
+  display:flex;
+  gap:8px;
+  padding:10px 12px;
+
+  background:rgba(0,0,0,.75);
+  backdrop-filter:blur(8px);
+  border-radius:16px;
+
+  box-shadow:0 6px 18px rgba(0,0,0,.6);
+  border:1px solid rgba(255,255,255,.08);
+}
+
+/* ===== เลข ===== */
+.num{
+  width:40px;
+  height:40px;
+  background:#1c1c1c;
+  color:#fff;
+
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s ease;
+}
+
+.num:hover{
+  background:#ff3b3b;
+  transform:scale(1.05);
+}
+
+/* ===== ปุ่ม ◀ ▶ ===== */
+.bottom-nav{
+  width:260px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.bottom-nav button{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  border:none;
+  background:#111;
+  color:#fff;
+  font-size:18px;
+}
+
+/* ===== ปุ่มเรียก ===== */
+.toggle-bottom{
+  position:fixed;
+  bottom:20px;
+  right:15px;
+
+  width:46px;
+  height:46px;
+  border-radius:50%;
+
+  background:#ff3b3b;
+  color:#fff;
+  border:none;
+  font-size:20px;
+
+  z-index:30;
+  cursor:pointer;
+}
+
+.fab{
+  position:fixed;
+  bottom:20px;
+  right:15px;
+  width:46px;
+  height:46px;
+  border-radius:50%;
+  background:#ff3b3b;
+  color:#fff;
+  border:none;
+  font-size:20px;
+  z-index:30;
+  cursor:pointer;
+}
+
+.footer{
+  width:100%;
+  background:#000;        /* ดำสนิท */
+  padding:25px 12px;
+  text-align:center;
+}
+
+.footer p{
+  font-family: Arial, Helvetica, sans-serif;
+  font-size:13px;
+  color:#b5b5b5;
+  font-weight:400;
+  line-height:1.7;
+  margin:0;
+}
+
+.footer a{
+  color:#4da3ff;
+  text-decoration:none;
+}
+
+.footer a:hover{
+  text-decoration:underline;
+}
+
+/* ===== REPORT BUTTON ===== */
+#reportBtn{
+  position:fixed;
+  top:15px;
+  right:15px;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:#ff3b3b;
+  color:#fff;
+  font-size:20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  z-index:1001;
+}
+
+/* ===== REPORT BOX ===== */
+#reportBox{
+  position:fixed;
+  top:70px;
+  right:-320px;              /* ซ่อน */
+  width:280px;
+  background:#111;
+  border-radius:16px;
+  padding:14px;
+  z-index:1000;
+
+  transition:.35s ease;
+  box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+
+#reportBox.show{
+  right:15px;                /* โผล่ */
+}
+
+#reportBox h3{
+  font-size:16px;
+  margin-bottom:8px;
+}
+
+#reportBox textarea{
+  width:100%;
+  height:90px;
+  background:#000;
+  border:1px solid #333;
+  border-radius:10px;
+  color:#fff;
+  padding:8px;
+  resize:none;
+}
+
+#reportBox button{
+  margin-top:10px;
+  width:100%;
+  padding:8px;
+  border:none;
+  border-radius:10px;
+  background:#ff3b3b;
+  color:#fff;
+  font-size:14px;
+  cursor:pointer;
+}
+
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
+body{background:#000;color:#fff;min-height:100vh}
+
+/* ===== BG ===== */
+#bg{
+  position:fixed;inset:0;
+  background:url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center/cover;
+  z-index:-1;
+}
+
+/* ===== HEADER ===== */
+.header{
+  position:sticky;top:0;
+  background:rgba(0,0,0,.6);
+  backdrop-filter:blur(10px);
+  padding:15px;text-align:center;
+  z-index:10;
+}
+.search{
+  width:90%;max-width:400px;
+  padding:10px 14px;
+  border-radius:20px;border:none;
+}
+
+/* ===== MENU ===== */
+#menuBtn{
+  position:fixed;top:15px;left:15px;
+  font-size:28px;cursor:pointer;z-index:1000
+}
+#menuDropdown{
+  position:fixed;top:60px;left:15px;
+  background:#111;border-radius:10px;
+  display:none;flex-direction:column;
+  z-index:1000;
+}
+#menuDropdown a{
+  padding:10px 14px;color:#fff;text-decoration:none
+}
+#menuDropdown a:hover{background:#222}
+
+/* ===== HOT ===== */
+.hot-section{
+  padding:20px;
+}
+
+/* หัวข้อ */
+.hot-section h2{
+  font-size:20px;
+  margin-bottom:15px;
+  font-weight:800;
+  background: linear-gradient(90deg,#ff4d4d,#ffb347);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+/* slider */
+.hot-slider{
+  display:flex;
+  gap:18px;
+  overflow-x:auto;
+  padding-bottom:15px;
+  scroll-behavior:smooth;
+}
+.hot-slider::-webkit-scrollbar{display:none}
+
+/* ===== CARD BASE ===== */
+.hot-card{
+  min-width:170px;
+  border-radius:20px;
+  overflow:hidden;
+  position:relative;
+  background:#fff;
+  text-decoration:none;
+  box-shadow:
+    0 10px 25px rgba(0,0,0,.25),
+    0 0 0 1px rgba(255,255,255,.4) inset;
+  transition:transform .35s ease, box-shadow .35s ease;
+}
+
+/* ลอยแบบเนียน ๆ */
+.hot-card:hover{
+  transform:translateY(-10px);
+  box-shadow:
+    0 20px 45px rgba(255,77,77,.35),
+    0 0 0 1px rgba(255,255,255,.6) inset;
+}
+
+/* ===== รูป ===== */
+.hot-card img{
+  width:%;
+  height:260px;
+  object-fit:cover;
+  display:block;
+  transition:transform .5s ease;
+}
+
+/* ซูมแบบนุ่ม */
+.hot-card:hover img{
+  transform:scale(1.08);
+}
+
+/* ===== Overlay ด้านล่าง ===== */
+.hot-card::after{
+  content:"";
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  height:50%;
+  background:linear-gradient(to top,rgba(0,0,0,.75),transparent);
+}
+
+/* ===== ชื่อ ===== */
+.hot-card .title{
+  position:absolute;
+  bottom:12px;
+  left:14px;
+  right:14px;
+  font-size:15px;
+  font-weight:700;
+  color:#fff;
+  z-index:2;
+}
+
+/* ===== HOT badge ===== */
+.hot-badge{
+  position:absolute;
+  top:12px;
+  left:12px;
+  padding:6px 14px;
+  border-radius:50px;
+  font-size:12px;
+  font-weight:700;
+  background:linear-gradient(90deg,#ff4d4d,#ffb347);
+  color:#fff;
+  box-shadow:0 6px 18px rgba(255,77,77,.45);
+  z-index:2;
+}
+
+/* ===== LIST ===== */
+.anime-list{
+  padding:20px;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:16px;
+}
+
+/* ===== CARD ===== */
+.anime-card{
+  background:rgba(255,255,255,.08);
+  border-radius:16px;
+  overflow:hidden;
+  text-decoration:none;color:#fff;
+  position:relative;
+}
+.img-box img{width:100%;height:320px;object-fit:cover; display:block}
+.overlay-text{
+  position:absolute;bottom:0;left:0;width:100%;
+  padding:10px;font-size:13px;
+  background:linear-gradient(to top,rgba(0,0,0,.8),transparent)
+}
+
+/* ===== BADGE ===== */
+.badge{
+  position:absolute;top:8px;left:8px;
+  padding:4px 8px;border-radius:8px;
+  font-size:12px;font-weight:bold
+}
+.hot{background:#ff3b3b}
+.new{background:#00c853}
+.recommend{background:#ffd600;color:#000}
+
+</style>

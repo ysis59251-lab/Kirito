@@ -992,27 +992,26 @@ appId: "1:220776049054:web:53524fb1e90ba83a12ce8f"
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ================= ONLINE ================= */
+/* ================= ONLINE USERS ================= */
 
 function initOnline(){
 
 const userRef = push(ref(db,"onlineUsers"));
 
 set(userRef,{
-page:location.pathname,
-time:Date.now()
+page: location.pathname,
+time: Date.now()
 });
 
 onDisconnect(userRef).remove();
 
 }
 
-/* ================= VIEW ================= */
+/* ================= VIEW COUNTER ================= */
 
 function initViews(){
 
 const today = new Date().toISOString().slice(0,10);
-
 const key = "view-"+today;
 
 if(!localStorage.getItem(key)){
@@ -1020,7 +1019,6 @@ if(!localStorage.getItem(key)){
 localStorage.setItem(key,"1");
 
 runTransaction(ref(db,"stats/total"),v=>(v||0)+1);
-
 runTransaction(ref(db,"stats/daily/"+today),v=>(v||0)+1);
 
 }
@@ -1048,6 +1046,8 @@ function initSearch(){
 
 const input=document.querySelector(".search");
 
+if(!input) return;
+
 input.addEventListener("input",()=>{
 
 const value=input.value.toLowerCase();
@@ -1056,11 +1056,7 @@ document.querySelectorAll(".anime-card").forEach(card=>{
 
 const title=(card.dataset.title||"").toLowerCase();
 
-if(title.includes(value)){
-card.dataset.search="1";
-}else{
-card.dataset.search="0";
-}
+card.dataset.search = title.includes(value) ? "1":"0";
 
 });
 
@@ -1084,8 +1080,7 @@ const data=snap.child(id).val();
 
 card.dataset.hidden =
 (data && data.hidden)
-? "1"
-: "0";
+? "1":"0";
 
 });
 
@@ -1100,6 +1095,7 @@ refreshPagination();
 function sortYear(){
 
 const box=document.getElementById("animeList");
+if(!box) return;
 
 const cards=[...box.querySelectorAll(".anime-card")];
 
@@ -1140,20 +1136,17 @@ card.dataset.search!=="0";
 
 });
 
-const total=Math.ceil(visible.length/perPage);
+const total=Math.ceil(visible.length/perPage) || 1;
 
 if(currentPage>total) currentPage=1;
 
 const start=(currentPage-1)*perPage;
-
 const end=start+perPage;
 
 cards.forEach(card=>card.style.display="none");
 
 visible.slice(start,end).forEach(card=>{
-
 card.style.display="";
-
 });
 
 renderNumbers(total);
@@ -1163,6 +1156,8 @@ renderNumbers(total);
 function renderNumbers(total){
 
 const box=document.getElementById("numberBox");
+
+if(!box) return;
 
 box.innerHTML="";
 
@@ -1198,11 +1193,13 @@ window.refreshPagination=()=>{
 renderPage();
 };
 
-/* ================= HOT ================= */
+/* ================= HOT ANIME ================= */
 
 function initHot(){
 
 const slider=document.getElementById("hotSlider");
+
+if(!slider) return;
 
 onValue(ref(db,"animeViews"),snap=>{
 
@@ -1250,21 +1247,23 @@ slider.appendChild(clone);
 /* ================= MENU ================= */
 
 const menuBtn=document.getElementById("menuBtn");
-
 const menu=document.getElementById("menuDropdown");
 
+if(menuBtn){
 menuBtn.onclick=()=>{
-
 menu.style.display =
 menu.style.display==="flex"
 ?"none":"flex";
-
 };
+}
 
 /* ================= FOOTER ================= */
 
-document.getElementById("year").textContent =
-new Date().getFullYear();
+const year=document.getElementById("year");
+
+if(year){
+year.textContent = new Date().getFullYear();
+}
 
 /* ================= BOTTOM NAV ================= */
 
@@ -1272,7 +1271,7 @@ function toggleBottom(){
 
 const box=document.getElementById("bottomNav");
 
-box.classList.toggle("show");
+if(box) box.classList.toggle("show");
 
 }
 
@@ -1307,7 +1306,6 @@ document.addEventListener("DOMContentLoaded",()=>{
 document.querySelectorAll(".anime-card").forEach(card=>{
 
 card.dataset.search="1";
-
 card.dataset.hidden="0";
 
 });
@@ -1320,9 +1318,7 @@ sortYear();
 initHot();
 
 setTimeout(()=>{
-
 initPagination();
-
 },200);
 
 });

@@ -1,1 +1,168 @@
-.
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report a Problem</title>
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
+body{
+  min-height:100vh;
+  background:#000;
+  color:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+#bg{
+  position:fixed;
+  inset:0;
+  background:url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center/cover;
+  z-index:-1;
+  filter:blur(2px) brightness(.6);
+}
+.report-card{
+  width:92%;
+  max-width:420px;
+  background:rgba(0,0,0,.75);
+  backdrop-filter:blur(10px);
+  border-radius:20px;
+  padding:18px;
+  box-shadow:0 10px 30px rgba(0,0,0,.7);
+}
+.report-card h1{font-size:20px;margin-bottom:6px}
+.report-card p{font-size:13px;color:#ccc;margin-bottom:14px}
+input,textarea{
+  width:100%;
+  background:#000;
+  border:1px solid #333;
+  border-radius:12px;
+  color:#fff;
+  padding:10px;
+  margin-bottom:10px;
+  font-size:14px;
+}
+textarea{min-height:110px;resize:none}
+button{
+  width:100%;
+  padding:12px;
+  border:none;
+  border-radius:14px;
+  background:#ff3b3b;
+  color:#fff;
+  font-size:15px;
+  cursor:pointer;
+}
+button:disabled{opacity:.6}
+.back{
+  margin-top:10px;
+  text-align:center;
+  font-size:13px;
+  color:#aaa;
+  cursor:pointer;
+}
+.back:hover{color:#fff}
+</style>
+</head>
+
+<body>
+<div id="bg"></div>
+
+<div class="report-card">
+  <h1>Report a Problem</h1>
+  <p>แจ้งปัญหาที่พบในการใช้งาน</p>
+
+  <input id="page" placeholder="หน้าที่พบปัญหา (เช่น หน้า Anime / ตอนที่)">
+  <textarea id="detail" placeholder="อธิบายปัญหาที่พบ..."></textarea>
+
+  <button id="sendBtn">ส่งปัญหา</button>
+  <div class="back" onclick="history.back()">← กลับหน้าเดิม</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, push, set }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC1S1BToUhVmWqyeTWbHlPdI8hY0aGKNDg",
+  authDomain: "darkframe300.firebaseapp.com",
+  databaseURL: "https://darkframe300-default-rtdb.firebaseio.com",
+  projectId: "darkframe300",
+  appId: "1:296568248360:web:7867a60675ce32e3d6bd1d"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const btn = document.getElementById("sendBtn");
+
+const spamLimit = 10000; // 10 วิ
+const spamKey = "lastReportTime";
+
+btn.onclick = async () => {
+
+  const now = Date.now();
+  const last = localStorage.getItem(spamKey);
+
+  if(last && now - last < spamLimit){
+    alert("กรุณารอสักครู่ก่อนส่งอีกครั้ง");
+    return;
+  }
+
+  const page = document.getElementById("page").value.trim() 
+      || document.title 
+      || location.pathname;
+
+  const detail = document.getElementById("detail").value.trim();
+
+  if(!detail){
+    alert("กรุณาพิมพ์รายละเอียด");
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = "กำลังส่ง...";
+
+  try{
+
+    const reportData = {
+      page,
+      detail,
+      time: now,
+      read:false,
+      userAgent: navigator.userAgent,
+      language: navigator.language,
+      screen: screen.width + "x" + screen.height
+    };
+
+    await set(push(ref(db,"reports/")), reportData);
+
+    localStorage.setItem(spamKey, now);
+
+    showSuccess();
+
+  }catch(e){
+    alert("ส่งไม่สำเร็จ");
+  }
+
+  btn.disabled = false;
+  btn.textContent = "ส่งปัญหา";
+};
+
+function showSuccess(){
+  const card = document.querySelector(".report-card");
+  card.innerHTML = `
+    <h1 style="color:#4cff7a">ส่งเรียบร้อย ✅</h1>
+    <p>ขอบคุณที่ช่วยแจ้งปัญหา</p>
+    <button onclick="history.back()" 
+      style="margin-top:10px;background:#4cff7a;color:#000">
+      กลับหน้าเดิม
+    </button>
+  `;
+}
+</script>
+
+</body>
+</html>

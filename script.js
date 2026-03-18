@@ -39,36 +39,39 @@ onDisconnect(userRef).remove();
 
 }
 
-/* ================= VIEW COUNTER ================= */
+/* ================= LOAD FROM SHEET ================= */
 
-function initViews(){
+function loadFromSheet(){
 
-const today = new Date().toISOString().slice(0,10);
-const key = "view-"+today;
+const url = "https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1";
 
-if(!localStorage.getItem(key)){
+fetch(url)
+  .then(res => res.json())
+  .then(data => {
 
-localStorage.setItem(key,"1");
+    const container = document.getElementById("animeList");
 
-runTransaction(ref(db,"stats/total"),v=>(v||0)+1);
-runTransaction(ref(db,"stats/daily/"+today),v=>(v||0)+1);
+    data.forEach(row => {
 
-}
+      const card = document.createElement("div");
+      card.className = "anime-card";
 
-document.querySelectorAll(".anime-card").forEach(card=>{
+      // 👇 สำคัญ (ให้ระบบเดิมใช้ได้)
+      card.dataset.id = row.id || row.name;
+      card.dataset.title = row.name;
+      card.dataset.year = row.year || "0";
 
-const id = card.dataset.id;
+      card.innerHTML = `
+        <img src="${row.image}" style="width:100%;">
+        <h3>${row.name}</h3>
+        <p>${row.detail}</p>
+      `;
 
-card.addEventListener("click",()=>{
+      container.appendChild(card);
 
-runTransaction(
-ref(db,"animeViews/"+id),
-v=>(v||0)+1
-);
+    });
 
-});
-
-});
+  });
 
 }
 
@@ -332,6 +335,8 @@ renderPage();
 };
 
 /* ================= START ================= */
+
+loadFromSheet();
 
 document.addEventListener("DOMContentLoaded",()=>{
 

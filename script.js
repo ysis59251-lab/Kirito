@@ -336,9 +336,9 @@ renderPage();
 
 /* ================= START ================= */
 
-loadFromSheet();
-
 document.addEventListener("DOMContentLoaded",()=>{
+
+loadFromSheet();
 
 document.querySelectorAll(".anime-card").forEach(card=>{
 

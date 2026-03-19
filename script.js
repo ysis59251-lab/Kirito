@@ -27,7 +27,6 @@ const db = getDatabase(app);
 /* ================= ONLINE USERS ================= */
 
 function initOnline(){
-
 const userRef = push(ref(db,"onlineUsers"));
 
 set(userRef,{
@@ -36,6 +35,26 @@ time: Date.now()
 });
 
 onDisconnect(userRef).remove();
+}
+
+/* ================= VIEW COUNT (เพิ่มให้) ================= */
+
+function initViews(){
+
+document.addEventListener("click",(e)=>{
+
+const card = e.target.closest(".anime-card");
+if(!card) return;
+
+const id = card.dataset.id;
+
+const viewRef = ref(db,"animeViews/"+id);
+
+runTransaction(viewRef,(val)=>{
+return (val || 0) + 1;
+});
+
+});
 
 }
 
@@ -46,32 +65,40 @@ function loadFromSheet(){
 const url = "https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1";
 
 fetch(url)
-  .then(res => res.json())
-  .then(data => {
+.then(res => res.json())
+.then(data => {
 
-    const container = document.getElementById("animeList");
+const container = document.getElementById("animeList");
 
-    data.forEach(row => {
+container.innerHTML=""; // เคลียร์ก่อน
 
-      const card = document.createElement("div");
-      card.className = "anime-card";
+data.forEach(row => {
 
-      // 👇 สำคัญ (ให้ระบบเดิมใช้ได้)
-      card.dataset.id = row.id || row.name;
-      card.dataset.title = row.name;
-      card.dataset.year = row.year || "0";
+const card = document.createElement("div");
+card.className = "anime-card";
 
-      card.innerHTML = `
-        <img src="${row.image}" style="width:100%;">
-        <h3>${row.name}</h3>
-        <p>${row.detail}</p>
-      `;
+card.dataset.id = row.id || row.name;
+card.dataset.title = row.name;
+card.dataset.year = row.year || "0";
+card.dataset.search = "1";
+card.dataset.hidden = "0";
 
-      container.appendChild(card);
+card.innerHTML = `
+<img src="${row.image}" style="width:100%;">
+<h3>${row.name}</h3>
+<p>${row.detail}</p>
+`;
 
-    });
+container.appendChild(card);
 
-  });
+});
+
+/* 🔥 สำคัญ: เรียกหลังโหลดเสร็จ */
+sortYear();
+initPagination();
+initHot();
+
+});
 
 }
 
@@ -80,7 +107,6 @@ fetch(url)
 function initSearch(){
 
 const input=document.querySelector(".search");
-
 if(!input) return;
 
 input.addEventListener("input",()=>{
@@ -101,7 +127,7 @@ refreshPagination();
 
 }
 
-/* ================= ADMIN HIDE ================= */
+/* ================= ADMIN ================= */
 
 function initAdmin(){
 
@@ -110,12 +136,10 @@ onValue(ref(db,"animeList"),snap=>{
 document.querySelectorAll(".anime-card").forEach(card=>{
 
 const id=card.dataset.id;
-
 const data=snap.child(id).val();
 
 card.dataset.hidden =
-(data && data.hidden)
-? "1":"0";
+(data && data.hidden) ? "1":"0";
 
 });
 
@@ -125,7 +149,7 @@ refreshPagination();
 
 }
 
-/* ================= SORT YEAR ================= */
+/* ================= SORT ================= */
 
 function sortYear(){
 
@@ -135,15 +159,11 @@ if(!box) return;
 const cards=[...box.querySelectorAll(".anime-card")];
 
 cards.sort((a,b)=>{
-
 return (b.dataset.year||0)-(a.dataset.year||0);
-
 });
 
 box.innerHTML="";
-
 cards.forEach(c=>box.appendChild(c));
-
 }
 
 /* ================= PAGINATION ================= */
@@ -155,23 +175,19 @@ let currentPage=1;
 function initPagination(){
 
 cards=[...document.querySelectorAll(".anime-card")];
-
 currentPage=parseInt(localStorage.getItem("animePage"))||1;
 
 renderPage();
-
 }
 
 function renderPage(){
 
 const visible = cards.filter(card=>{
-
 return card.dataset.hidden!=="1" &&
 card.dataset.search!=="0";
-
 });
 
-const total=Math.ceil(visible.length/perPage) || 1;
+const total=Math.ceil(visible.length/perPage)||1;
 
 if(currentPage>total) currentPage=1;
 
@@ -185,13 +201,11 @@ card.style.display="";
 });
 
 renderNumbers(total);
-
 }
 
 function renderNumbers(total){
 
 const box=document.getElementById("numberBox");
-
 if(!box) return;
 
 box.innerHTML="";
@@ -199,9 +213,7 @@ box.innerHTML="";
 for(let i=1;i<=total;i++){
 
 const btn=document.createElement("div");
-
 btn.className="num";
-
 btn.textContent=i;
 
 if(i===currentPage){
@@ -209,37 +221,27 @@ btn.classList.add("active");
 }
 
 btn.onclick=()=>{
-
 currentPage=i;
-
 localStorage.setItem("animePage",i);
-
 renderPage();
-
 };
 
 box.appendChild(btn);
-
+}
 }
 
-}
+window.refreshPagination=()=>renderPage();
 
-window.refreshPagination=()=>{
-renderPage();
-};
-
-/* ================= HOT ANIME ================= */
+/* ================= HOT ================= */
 
 function initHot(){
 
 const slider=document.getElementById("hotSlider");
-
 if(!slider) return;
 
 onValue(ref(db,"animeViews"),snap=>{
 
 const data=snap.val();
-
 if(!data) return;
 
 const arr=[...document.querySelectorAll(".anime-card")].map(card=>{
@@ -260,17 +262,13 @@ slider.innerHTML="";
 arr.slice(0,6).forEach(item=>{
 
 const clone=item.card.cloneNode(true);
-
 clone.classList.add("hot-card");
 
 const badge=document.createElement("div");
-
 badge.className="hot-badge";
-
 badge.innerText=item.views+" views";
 
 clone.appendChild(badge);
-
 slider.appendChild(clone);
 
 });
@@ -279,83 +277,15 @@ slider.appendChild(clone);
 
 }
 
-/* ================= MENU ================= */
-
-const menuBtn=document.getElementById("menuBtn");
-const menu=document.getElementById("menuDropdown");
-
-if(menuBtn){
-menuBtn.onclick=()=>{
-menu.style.display =
-menu.style.display==="flex"
-?"none":"flex";
-};
-}
-
-/* ================= FOOTER ================= */
-
-const year=document.getElementById("year");
-
-if(year){
-year.textContent = new Date().getFullYear();
-}
-
-/* ================= BOTTOM NAV ================= */
-
-function toggleBottom(){
-
-const box=document.getElementById("bottomNav");
-
-if(box) box.classList.toggle("show");
-
-}
-
-window.toggleBottom=toggleBottom;
-
-window.nextSet=()=>{
-
-currentPage++;
-
-localStorage.setItem("animePage",currentPage);
-
-renderPage();
-
-};
-
-window.prevSet=()=>{
-
-currentPage--;
-
-if(currentPage<1) currentPage=1;
-
-localStorage.setItem("animePage",currentPage);
-
-renderPage();
-
-};
-
 /* ================= START ================= */
 
 document.addEventListener("DOMContentLoaded",()=>{
 
 loadFromSheet();
 
-document.querySelectorAll(".anime-card").forEach(card=>{
-
-card.dataset.search="1";
-card.dataset.hidden="0";
-
-});
-
 initOnline();
 initViews();
 initSearch();
 initAdmin();
-sortYear();
-initHot();
-
-setTimeout(()=>{
-initPagination();
-},200);
 
 });

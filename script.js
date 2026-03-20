@@ -46,11 +46,10 @@ if(!card) return;
 const id = card.dataset.id;
 if(!id) return;
 
-const viewRef = ref(db,"animeViews/"+id);
-
-runTransaction(viewRef,(val)=>(val||0)+1);
+const visible = cards.filter(c=>{
+return c.dataset.search !== "0" &&
+       c.dataset.hidden !== "1";
 });
-}
 
 /* ================= LOAD ================= */
 
@@ -73,14 +72,17 @@ const card=document.createElement("div");
 card.className="anime-card";
 
 card.dataset.id=row.id||row.name;
-card.dataset.title=row.name||"";
 card.dataset.year=row.year||"0";
 card.dataset.search="1";
 card.dataset.hidden="0";
 
-card.innerHTML=`
-<img src="${row.image}" style="width:100%">
-<h4>${row.name||""}</h4>
+card.dataset.title = row.title || "";
+
+card.dataset.hidden = row.hidden === "TRUE" ? "1" : "0";
+
+card.innerHTML = `
+<img src="${row.image || ''}" style="width:100%">
+<h4>${row.title || "ไม่มีชื่อ"}</h4>
 `;
 
 container.appendChild(card);

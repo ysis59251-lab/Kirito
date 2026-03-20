@@ -3,28 +3,18 @@
 ========================= */
 const bottomNav = document.getElementById("bottomNav");
 
-// เลือกทุกปุ่ม FAB (สามารถมีมากกว่า 1 ปุ่ม)
+// รองรับหลายปุ่ม FAB
 document.querySelectorAll(".fab").forEach(fab => {
   fab.addEventListener("click", () => {
-    // toggle คลาส 'show' บน bottom nav
     bottomNav.classList.toggle("show");
   });
 });
 
 /* =========================
-   FIREBASE IMPORT (ต้องอยู่บนสุด)
+   FIREBASE IMPORT
 ========================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getDatabase,
-  ref,
-  onValue,
-  runTransaction,
-  set,
-  onDisconnect,
-  push
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-
+import { getDatabase, ref, onValue, runTransaction, set, onDisconnect, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 /* =========================
    FIREBASE CONFIG
@@ -38,10 +28,8 @@ const firebaseConfig = {
   messagingSenderId: "220776049054",
   appId: "1:220776049054:web:53524fb1e90ba83a12ce8f"
 };
-
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
-
 
 /* =========================
    GLOBAL STATE
@@ -50,307 +38,157 @@ let cards = [];
 let perPage = 40;
 let currentPage = 1;
 
-
 /* =========================
-   UI CONTROL
+   MENU + FOOTER
 ========================= */
-function toggleBottom(){
-  document.getElementById("bottomNav")?.classList.toggle("show");
-}
-
-
-/* =========================
-   MENU CONTROL
-========================= */
-function initMenu(){
+function initMenu() {
   const btn = document.getElementById("menuBtn");
   const menu = document.getElementById("menuDropdown");
-
   if(!btn || !menu) return;
-
-  btn.onclick = ()=>{
-    menu.style.display = menu.style.display === "flex" ? "none" : "flex";
-  };
+  btn.onclick = () => menu.style.display = menu.style.display === "flex" ? "none" : "flex";
 }
-
-
-/* =========================
-   FOOTER YEAR
-========================= */
-function initFooter(){
+function initFooter() {
   const el = document.getElementById("year");
-  if(el){
-    el.textContent = new Date().getFullYear();
-  }
+  if(el) el.textContent = new Date().getFullYear();
 }
-
 
 /* =========================
-   BOTTOM NAV CONTROL
-========================= */
-const fabBtn = document.getElementById("fabBtn");
-const bottomNav = document.getElementById("bottomNav");
-
-fabBtn?.addEventListener("click", () => {
-  bottomNav?.classList.toggle("show");
-});
-
-document.getElementById("prevBtn")?.addEventListener("click", prevSet);
-document.getElementById("nextBtn")?.addEventListener("click", nextSet);
-
-function nextSet(){
-  const total = Math.ceil(cards.filter(c=>c.dataset.search!=="0" && c.dataset.hidden!=="1").length / perPage);
-  if(currentPage < total){
-    currentPage++;
-    renderPage();
-  }
-}
-
-function prevSet(){
-  if(currentPage > 1){
-    currentPage--;
-    renderPage();
-  }
-}
-
-
-/* =========================
-   ONLINE USERS SYSTEM
+   ONLINE SYSTEM
 ========================= */
 function initOnline(){
   try{
     const userRef = push(ref(db,"onlineUsers"));
-
-    set(userRef,{
-      page:location.pathname,
-      time:Date.now()
-    });
-
+    set(userRef,{page:location.pathname,time:Date.now()});
     onDisconnect(userRef).remove();
-
-  }catch(e){
-    console.error("online error",e);
-  }
+  }catch(e){ console.error("online error", e); }
 }
 
-
 /* =========================
-   VIEW COUNT SYSTEM
+   VIEW COUNT
 ========================= */
 function initViews(){
-  document.addEventListener("click",(e)=>{
-
+  document.addEventListener("click", e => {
     const card = e.target.closest(".anime-card");
     if(!card) return;
-
     const id = card.dataset.id;
     if(!id) return;
-
-    const viewRef = ref(db,"animeViews/"+id);
-    runTransaction(viewRef,(val)=>(val||0)+1);
-
+    runTransaction(ref(db,"animeViews/"+id), v => (v||0)+1);
   });
 }
 
-
 /* =========================
-   LOAD DATA FROM SHEET
-========================= */
-function loadFromSheet(){
-
-  const url="https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1";
-
-  fetch(url)
-  .then(r=>r.json())
-  .then(data=>{
-
-    const container=document.getElementById("animeList");
-    if(!container) return;
-
-    container.innerHTML="";
-
-    data.forEach(row=>{
-
-      const card=document.createElement("a");
-      card.href = row.link || "#";
-      card.className="anime-card";
-
-      card.dataset.id = row.id || row.title;
-      card.dataset.year = row.year || "0";
-      card.dataset.search = "1";
-      card.dataset.title = row.title || "";
-      card.dataset.hidden = row.hidden === "TRUE" ? "1" : "0";
-
-      card.innerHTML = `
-        <div class="card-img">
-          <img src="${row.image || ''}" loading="lazy">
-          <div class="overlay">
-            ${row.title || "ไม่มีชื่อ"}
-          </div>
-        </div>
-      `;
-
-      container.appendChild(card);
-
-    });
-
-    sortYear();
-    initPagination();
-    initHot();
-
-  })
-  .catch(err=>{
-    console.error("โหลด sheet ไม่ได้",err);
-  });
-}
-
-
-/* =========================
-   SEARCH SYSTEM
+   SEARCH
 ========================= */
 function initSearch(){
-
-  const input=document.querySelector(".search");
+  const input = document.querySelector(".search");
   if(!input) return;
-
-  input.addEventListener("input",()=>{
-
-    const val=input.value.toLowerCase();
-
-    document.querySelectorAll(".anime-card").forEach(c=>{
-      const t=(c.dataset.title||"").toLowerCase();
+  input.addEventListener("input", () => {
+    const val = input.value.toLowerCase();
+    document.querySelectorAll(".anime-card").forEach(c => {
+      const t = (c.dataset.title||"").toLowerCase();
       c.dataset.search = t.includes(val) ? "1" : "0";
     });
-
     renderPage();
   });
 }
 
-
 /* =========================
-   SORT SYSTEM
+   SORT
 ========================= */
 function sortYear(){
-
-  const box=document.getElementById("animeList");
+  const box = document.getElementById("animeList");
   if(!box) return;
-
-  const cardsArr=[...box.children];
-
-  cardsArr.sort((a,b)=>(b.dataset.year||0)-(a.dataset.year||0));
-
+  const cardsArr = [...box.children];
+  cardsArr.sort((a,b) => (b.dataset.year||0) - (a.dataset.year||0));
   box.innerHTML="";
-  cardsArr.forEach(c=>box.appendChild(c));
+  cardsArr.forEach(c => box.appendChild(c));
 }
 
-
 /* =========================
-   PAGINATION SYSTEM
+   PAGINATION
 ========================= */
 function initPagination(){
-  cards=[...document.querySelectorAll(".anime-card")];
-  currentPage=1;
+  cards = [...document.querySelectorAll(".anime-card")];
+  currentPage = parseInt(localStorage.getItem("animePage")) || 1;
   renderPage();
 }
 
 function renderPage(){
-
-  const visible=cards.filter(c=>{
-    return c.dataset.search!=="0" && c.dataset.hidden!=="1";
-  });
-
-  const total=Math.ceil(visible.length/perPage)||1;
-
-  const start=(currentPage-1)*perPage;
-  const end=start+perPage;
-
-  cards.forEach(c=>c.style.display="none");
-
-  visible.slice(start,end).forEach(c=>{
-    c.style.display="";
-  });
-
+  const visible = cards.filter(c => c.dataset.search!=="0" && c.dataset.hidden!=="1");
+  const total = Math.ceil(visible.length/perPage) || 1;
+  if(currentPage > total) currentPage = 1;
+  const start = (currentPage-1)*perPage;
+  const end = start+perPage;
+  cards.forEach(c => c.style.display = "none");
+  visible.slice(start,end).forEach(c => c.style.display = "");
   renderNumbers(total);
 }
 
 function renderNumbers(total){
-
-  const box=document.getElementById("numberBox");
+  const box = document.getElementById("numberBox");
   if(!box) return;
-
   box.innerHTML="";
-
   for(let i=1;i<=total;i++){
-
-    const btn=document.createElement("div");
+    const btn = document.createElement("div");
     btn.className="num";
     btn.textContent=i;
-
     if(i===currentPage) btn.classList.add("active");
-
-    btn.onclick=()=>{
-      currentPage=i;
-      renderPage();
-    };
-
+    btn.onclick=()=>{ currentPage=i; localStorage.setItem("animePage",i); renderPage(); };
     box.appendChild(btn);
   }
 }
 
+/* =========================
+   BOTTOM NAV BUTTONS ◀ ▶
+========================= */
+document.querySelectorAll(".nav-btn").forEach(btn=>{
+  btn.addEventListener("click", () => {
+    const action = btn.dataset.action;
+    const visible = cards.filter(c => c.dataset.search!=="0" && c.dataset.hidden!=="1");
+    const total = Math.ceil(visible.length/perPage) || 1;
+    if(action==="prev" && currentPage>1) currentPage--;
+    if(action==="next" && currentPage<total) currentPage++;
+    localStorage.setItem("animePage", currentPage);
+    renderPage();
+  });
+});
 
 /* =========================
    HOT (TRENDING)
 ========================= */
 function initHot(){
-
-  const slider=document.getElementById("hotSlider");
+  const slider = document.getElementById("hotSlider");
   if(!slider) return;
-
   onValue(ref(db,"animeViews"),snap=>{
-
-    const data=snap.val();
+    const data = snap.val();
     if(!data) return;
-
-    const arr=[...document.querySelectorAll(".anime-card")].map(c=>{
-      return {
-        card:c,
-        views:data[c.dataset.id]||0
-      };
+    const arr = [...document.querySelectorAll(".anime-card")].map(c=>{
+      return {card:c, views:data[c.dataset.id]||0};
     });
-
     arr.sort((a,b)=>b.views-a.views);
-
     slider.innerHTML="";
-
     arr.slice(0,6).forEach(item=>{
-
-      const clone=item.card.cloneNode(true);
+      const clone = item.card.cloneNode(true);
       clone.classList.add("hot-card");
-
-      const badge=document.createElement("div");
+      const badge = document.createElement("div");
       badge.className="hot-badge";
-      badge.innerText=item.views+" views";
-
+      badge.innerText = item.views+" views";
       clone.appendChild(badge);
       slider.appendChild(clone);
-
     });
-
   });
 }
-
 
 /* =========================
    START SYSTEM
 ========================= */
-document.addEventListener("DOMContentLoaded",()=>{
-
+document.addEventListener("DOMContentLoaded", () => {
   initMenu();
   initFooter();
-
-  loadFromSheet();
   initOnline();
   initViews();
   initSearch();
-
+  sortYear();
+  initHot();
+  initPagination();
 });

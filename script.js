@@ -75,14 +75,18 @@ function initFooter(){
 /* =========================
    BOTTOM NAV CONTROL
 ========================= */
+const fabBtn = document.getElementById("fabBtn");
+const bottomNav = document.getElementById("bottomNav");
+
+fabBtn?.addEventListener("click", () => {
+  bottomNav?.classList.toggle("show");
+});
+
+document.getElementById("prevBtn")?.addEventListener("click", prevSet);
+document.getElementById("nextBtn")?.addEventListener("click", nextSet);
+
 function nextSet(){
-
-  const total = Math.ceil(
-    cards.filter(c=>{
-      return c.dataset.search!=="0" && c.dataset.hidden!=="1";
-    }).length / perPage
-  );
-
+  const total = Math.ceil(cards.filter(c=>c.dataset.search!=="0" && c.dataset.hidden!=="1").length / perPage);
   if(currentPage < total){
     currentPage++;
     renderPage();

@@ -86,7 +86,7 @@ card.innerHTML = `
   <div class="card-img">
     <img src="${row.image || ''}" loading="lazy">
 
-    <div class="badge">0 views</div>
+    <div class="badge"></div>
 
     <div class="overlay">
       ${row.title || "ไม่มีชื่อ"}

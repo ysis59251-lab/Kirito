@@ -46,7 +46,15 @@ document.addEventListener("click",(e)=>{
 const card = e.target.closest(".anime-card");
 if(!card) return;
 
-const id = card.dataset.id;
+// 🔥 ดึง id แบบกันพลาด
+let id = card.dataset.id;
+
+if(!id){
+const inner = card.querySelector("[data-id]");
+id = inner ? inner.dataset.id : null;
+}
+
+if(!id) return; // กัน error
 
 const viewRef = ref(db,"animeViews/"+id);
 

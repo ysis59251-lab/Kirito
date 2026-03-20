@@ -1,4 +1,17 @@
 /* =========================
+   FAB BUTTONS TOGGLE BOTTOM NAV
+========================= */
+const bottomNav = document.getElementById("bottomNav");
+
+// เลือกทุกปุ่ม FAB (สามารถมีมากกว่า 1 ปุ่ม)
+document.querySelectorAll(".fab").forEach(fab => {
+  fab.addEventListener("click", () => {
+    // toggle คลาส 'show' บน bottom nav
+    bottomNav.classList.toggle("show");
+  });
+});
+
+/* =========================
    FIREBASE IMPORT (ต้องอยู่บนสุด)
 ========================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";

@@ -40,16 +40,18 @@ console.error("online error",e);
 
 function initViews(){
 document.addEventListener("click",(e)=>{
+
 const card = e.target.closest(".anime-card");
 if(!card) return;
 
 const id = card.dataset.id;
 if(!id) return;
 
-const visible = cards.filter(c=>{
-return c.dataset.search !== "0" &&
-       c.dataset.hidden !== "1";
-});
+const viewRef = ref(db,"animeViews/"+id);
+runTransaction(viewRef,(val)=>(val||0)+1);
+
+}); // ✅ ปิดให้ถูก
+}
 
 /* ================= LOAD ================= */
 
@@ -71,13 +73,12 @@ data.forEach(row=>{
 const card=document.createElement("div");
 card.className="anime-card";
 
-card.dataset.id=row.id||row.name;
+card.dataset.id=row.id||row.title;
 card.dataset.year=row.year||"0";
 card.dataset.search="1";
-card.dataset.hidden="0";
+card.dataset.title=row.title||"";
 
-card.dataset.title = row.title || "";
-
+// 🔥 hidden fix
 card.dataset.hidden = row.hidden === "TRUE" ? "1" : "0";
 
 card.innerHTML = `

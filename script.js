@@ -1,13 +1,5 @@
 /* =========================
-   UI CONTROL
-========================= */
-function toggleBottom(){
-  document.getElementById("bottomNav").classList.toggle("show");
-}
-
-
-/* =========================
-   FIREBASE IMPORT
+   FIREBASE IMPORT (ต้องอยู่บนสุด)
 ========================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -36,6 +28,73 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+
+
+/* =========================
+   GLOBAL STATE
+========================= */
+let cards = [];
+let perPage = 40;
+let currentPage = 1;
+
+
+/* =========================
+   UI CONTROL
+========================= */
+function toggleBottom(){
+  document.getElementById("bottomNav")?.classList.toggle("show");
+}
+
+
+/* =========================
+   MENU CONTROL
+========================= */
+function initMenu(){
+  const btn = document.getElementById("menuBtn");
+  const menu = document.getElementById("menuDropdown");
+
+  if(!btn || !menu) return;
+
+  btn.onclick = ()=>{
+    menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+  };
+}
+
+
+/* =========================
+   FOOTER YEAR
+========================= */
+function initFooter(){
+  const el = document.getElementById("year");
+  if(el){
+    el.textContent = new Date().getFullYear();
+  }
+}
+
+
+/* =========================
+   BOTTOM NAV CONTROL
+========================= */
+function nextSet(){
+
+  const total = Math.ceil(
+    cards.filter(c=>{
+      return c.dataset.search!=="0" && c.dataset.hidden!=="1";
+    }).length / perPage
+  );
+
+  if(currentPage < total){
+    currentPage++;
+    renderPage();
+  }
+}
+
+function prevSet(){
+  if(currentPage > 1){
+    currentPage--;
+    renderPage();
+  }
+}
 
 
 /* =========================
@@ -103,14 +162,11 @@ function loadFromSheet(){
       card.dataset.year = row.year || "0";
       card.dataset.search = "1";
       card.dataset.title = row.title || "";
-
-      // hidden fix
       card.dataset.hidden = row.hidden === "TRUE" ? "1" : "0";
 
       card.innerHTML = `
         <div class="card-img">
           <img src="${row.image || ''}" loading="lazy">
-
           <div class="overlay">
             ${row.title || "ไม่มีชื่อ"}
           </div>
@@ -162,22 +218,18 @@ function sortYear(){
   const box=document.getElementById("animeList");
   if(!box) return;
 
-  const cards=[...box.children];
+  const cardsArr=[...box.children];
 
-  cards.sort((a,b)=>(b.dataset.year||0)-(a.dataset.year||0));
+  cardsArr.sort((a,b)=>(b.dataset.year||0)-(a.dataset.year||0));
 
   box.innerHTML="";
-  cards.forEach(c=>box.appendChild(c));
+  cardsArr.forEach(c=>box.appendChild(c));
 }
 
 
 /* =========================
    PAGINATION SYSTEM
 ========================= */
-let cards=[];
-let perPage=40;
-let currentPage=1;
-
 function initPagination(){
   cards=[...document.querySelectorAll(".anime-card")];
   currentPage=1;
@@ -275,6 +327,9 @@ function initHot(){
    START SYSTEM
 ========================= */
 document.addEventListener("DOMContentLoaded",()=>{
+
+  initMenu();
+  initFooter();
 
   loadFromSheet();
   initOnline();

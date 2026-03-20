@@ -1,3 +1,25 @@
+.card{
+  position: relative;
+  width: 180px;
+}
+
+.card img{
+  width: 100%;
+  border-radius: 12px;
+}
+
+.title{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  color: white;
+  padding: 8px;
+  font-size: 13px;
+
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+}
+
 html{
 scroll-behavior:smooth;
 }

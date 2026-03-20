@@ -83,8 +83,15 @@ card.dataset.title=row.title||"";
 card.dataset.hidden = row.hidden === "TRUE" ? "1" : "0";
 
 card.innerHTML = `
-<img src="${row.image || ''}" style="width:100%">
-<h4>${row.title || "ไม่มีชื่อ"}</h4>
+  <div class="card-img">
+    <img src="${row.image || ''}" loading="lazy">
+
+    <div class="badge">0 views</div>
+
+    <div class="overlay">
+      ${row.title || "ไม่มีชื่อ"}
+    </div>
+  </div>
 `;
 
 container.appendChild(card);

@@ -70,7 +70,8 @@ container.innerHTML="";
 
 data.forEach(row=>{
 
-const card=document.createElement("div");
+const card=document.createElement("a"); // 🔥 เปลี่ยนจาก div
+card.href = row.link || "#";
 card.className="anime-card";
 
 card.dataset.id=row.id||row.title;

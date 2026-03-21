@@ -189,105 +189,10 @@ function initSearch(){
 function sortYear(){
   const box=document.getElementById("animeList");
   if(!box) return;
-
   const cardsArr=[...box.children];
-
-  // เรียงปี (ใหม่ → เก่า)
   cardsArr.sort((a,b)=>(b.dataset.year||0)-(a.dataset.year||0));
-
   box.innerHTML="";
   cardsArr.forEach(c=>box.appendChild(c));
-
-  // 🔥 อัปเดต cards ใหม่หลัง sort (สำคัญ)
-  cards = [...document.querySelectorAll(".anime-card")];
-}
-
-function renderNumbers(total){
-  const box=document.getElementById("numberBox");
-  if(!box) return;
-  box.innerHTML="";
-
-  const maxShow = 5; // แสดงทีละ 5 หน้า
-  const group = Math.ceil(currentPage / maxShow);
-
-  const start = (group - 1) * maxShow + 1;
-  const end = Math.min(start + maxShow - 1, total);
-
-  // << ย้อนกลุ่ม
-  if(start > 1){
-    const prev=document.createElement("div");
-    prev.className="num";
-    prev.textContent="«";
-    prev.onclick=()=>{
-      currentPage = start - 1;
-      renderPage();
-    };
-    box.appendChild(prev);
-  }
-
-  // เลขหน้า
-  for(let i=start;i<=end;i++){
-    const btn=document.createElement("div");
-    btn.className="num";
-    btn.textContent=i;
-
-    if(i===currentPage) btn.classList.add("active");
-
-    btn.onclick=()=>{
-      currentPage=i;
-      renderPage();
-    };
-
-    box.appendChild(btn);
-  }
-
-  // >> ไปกลุ่มถัดไป
-  if(end < total){
-    const next=document.createElement("div");
-    next.className="num";
-    next.textContent="»";
-    next.onclick=()=>{
-      currentPage = end + 1;
-      renderPage();
-    };
-    box.appendChild(next);
-  }
-}
-
-/* =========================
-   PAGINATION SYSTEM
-========================= */
-function initPagination(){
-  cards=[...document.querySelectorAll(".anime-card")];
-  currentPage=1;
-  renderPage();
-}
-
-function renderPage(){
-  const visible=cards.filter(c=>c.dataset.search!=="0" && c.dataset.hidden!=="1");
-  const total=Math.ceil(visible.length/perPage)||1;
-  const start=(currentPage-1)*perPage;
-  const end=start+perPage;
-  cards.forEach(c=>c.style.display="none");
-  visible.slice(start,end).forEach(c=>{ c.style.display=""; });
-  renderNumbers(total);
-}
-
-function renderNumbers(total){
-  const box=document.getElementById("numberBox");
-  if(!box) return;
-  box.innerHTML="";
-  for(let i=1;i<=total;i++){
-    const btn=document.createElement("div");
-    btn.className="num";
-    btn.textContent=i;
-    if(i===currentPage) btn.classList.add("active");
-    btn.onclick=()=>{
-      currentPage=i;
-      renderPage();
-    };
-    box.appendChild(btn);
-  }
 }
 
 /* =========================

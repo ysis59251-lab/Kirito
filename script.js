@@ -194,7 +194,6 @@ function sortYear(){
   box.innerHTML="";
   cardsArr.forEach(c=>box.appendChild(c));
 }
-
 /* =========================
    HOT (TRENDING)
 ========================= */

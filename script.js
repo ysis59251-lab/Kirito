@@ -48,7 +48,7 @@ const db = getDatabase(app);
 ========================= */
 let cards = [];
 let perPage = 40;
-let currentPage = 1;
+let currentPage = 5;
 
 /* =========================
    UI CONTROL

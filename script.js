@@ -186,13 +186,55 @@ function initSearch(){
 /* =========================
    SORT SYSTEM1
 ========================= */
-function sortYear(){
-  const box=document.getElementById("animeList");
+function renderNumbers(total){
+  const box=document.getElementById("numberBox");
   if(!box) return;
-  const cardsArr=[...box.children];
-  cardsArr.sort((a,b)=>(b.dataset.year||0)-(a.dataset.year||0));
   box.innerHTML="";
-  cardsArr.forEach(c=>box.appendChild(c));
+
+  const maxShow = 5; // แสดงทีละ 5 หน้า
+  const group = Math.ceil(currentPage / maxShow);
+
+  const start = (group - 1) * maxShow + 1;
+  const end = Math.min(start + maxShow - 1, total);
+
+  // ปุ่มย้อน <<
+  if(start > 1){
+    const prev=document.createElement("div");
+    prev.className="num";
+    prev.textContent="«";
+    prev.onclick=()=>{
+      currentPage = start - 1;
+      renderPage();
+    };
+    box.appendChild(prev);
+  }
+
+  for(let i=start;i<=end;i++){
+    const btn=document.createElement("div");
+    btn.className="num";
+    btn.textContent=i;
+
+    if(i===currentPage) btn.classList.add("active");
+
+    btn.onclick=()=>{
+      currentPage=i;
+      renderPage();
+    };
+
+    box.appendChild(btn);
+  }
+
+  // ปุ่มถัดไป >>
+  if(end < total){
+    const next=document.createElement("div");
+    next.className="num";
+    next.textContent="»";
+    next.onclick=()=>{
+      currentPage = end + 1;
+      renderPage();
+    };
+    box.appendChild(next);
+  }
 }
 
 /* =========================

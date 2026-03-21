@@ -135,39 +135,48 @@ LOAD DATA FROM SHEET
 function loadFromSheet(){
   const url="https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1";
   fetch(url)
-  .then(r=>r.json())
-  .then(data=>{
-    const container=document.getElementById("animeList");
-    if(!container) return;
-    container.innerHTML="";
-    data.forEach(row=>{
-      const card=document.createElement("a");
-      card.href = row.link || "#";
-      card.className="anime-card";
-      card.dataset.id = row.id || row.title;
-      card.dataset.year = row.year || "0";
-      card.dataset.search = "1";
-      card.dataset.title = row.title || "";
-      card.dataset.hidden = row.hidden?.toUpperCase() === "TRUE" ? "1" : "0";
+    .then(r => r.json())
+    .then(data => {
+      const container = document.getElementById("animeList");
+      if(!container) return;
+      container.innerHTML = "";
 
-      // ✅ แก้ไข template literal ให้ถูกต้อง
-      card.innerHTML = `
-        <div class="card-img">
-          <img src="${row.image || ''}" loading="lazy">
-          <div class="overlay">${row.title || "ไม่มีชื่อ"}</div>
-        </div>
-      `;
+      // ✅ ลบแถวเกิน 200 (จำกัดแค่ 200 แถว)
+      data.splice(200);
 
-      container.appendChild(card);
+      data.forEach(row => {
+        const card = document.createElement("a");
+        card.href = row.link || "#";
+        card.className = "anime-card";
+        card.dataset.id = row.id || row.title;
+        card.dataset.year = row.year || "0";
+        card.dataset.search = "1";
+        card.dataset.title = row.title || "";
+        card.dataset.hidden = row.hidden?.toUpperCase() === "TRUE" ? "1" : "0";
+
+        card.innerHTML = `
+          <div class="card-img">
+            <img src="${row.image || ''}" loading="lazy">
+            <div class="overlay">${row.title || "ไม่มีชื่อ"}</div>
+          </div>
+        `;
+
+        container.appendChild(card);
+      });
+
+      sortYear();
+
+      // ✅ กำหนด perPage และจำกัดหน้าไม่เกิน 5
+      perPage = 40;
+      const totalPages = Math.ceil(cards.length / perPage);
+      currentPage = 1;
+      renderPage(totalPages > 5 ? 5 : totalPages);
+
+      initHot();
+    })
+    .catch(err => {
+      console.error("โหลด sheet ไม่ได้", err);
     });
-
-    sortYear();
-    initPagination();
-    initHot();
-  })
-  .catch(err=>{
-    console.error("โหลด sheet ไม่ได้",err);
-  });
 }
 
 /* =========================
@@ -188,21 +197,28 @@ function initSearch(){
 
 /* =========================
 SORT SYSTEM
-========================= */
-function sortYear(){
-  const box=document.getElementById("animeList");
+======function renderNumbers(total){
+  const box = document.getElementById("numberBox");
   if(!box) return;
+  box.innerHTML = "";
 
-  const cardsArr=[...box.children];
+  const maxVisible = 5;
+  let start = Math.max(currentPage - Math.floor(maxVisible / 2), 1);
+  let end = Math.min(start + maxVisible - 1, total);
 
-  // ✅ parseInt เพื่อความปลอดภัย
-  cardsArr.sort((a,b)=>(parseInt(b.dataset.year)||0)-(parseInt(a.dataset.year)||0));
+  start = Math.max(end - maxVisible + 1, 1);
 
-  box.innerHTML="";
-  cardsArr.forEach(c=>box.appendChild(c));
-
-  // ✅ update global cards array
-  cards = [...document.querySelectorAll(".anime-card")];
+  for(let i = start; i <= end; i++){
+    const btn = document.createElement("div");
+    btn.className = "num";
+    btn.textContent = i;
+    if(i === currentPage) btn.classList.add("active");
+    btn.onclick = () => {
+      currentPage = i;
+      renderPage();
+    };
+    box.appendChild(btn);
+  }
 }
 
 /* =========================

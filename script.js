@@ -182,12 +182,18 @@ renderPage();
 SORT SYSTEM1
 ========================= */
 function sortYear(){
-const box=document.getElementById("animeList");
-if(!box) return;
-const cardsArr=[...box.children];
-cardsArr.sort((a,b)=>(b.dataset.year||0)-(a.dataset.year||0));
-box.innerHTML="";
-cardsArr.forEach(c=>box.appendChild(c));
+  const box=document.getElementById("animeList");
+  if(!box) return;
+
+  const cardsArr=[...box.children];
+
+  cardsArr.sort((a,b)=>(b.dataset.year||0)-(a.dataset.year||0));
+
+  box.innerHTML="";
+  cardsArr.forEach(c=>box.appendChild(c));
+
+  // ✅ เพิ่มบรรทัดนี้
+  cards = [...document.querySelectorAll(".anime-card")];
 }
 
 /* =========================

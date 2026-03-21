@@ -184,15 +184,38 @@ function initSearch(){
 }
 
 /* =========================
-   SORT SYSTEM
+   SORT SYSTEM1
 ========================= */
-function sortYear(){
-  const box=document.getElementById("animeList");
+function renderNumbers(total){
+  const box = document.getElementById("numberBox");
   if(!box) return;
-  const cardsArr=[...box.children];
-  cardsArr.sort((a,b)=>(b.dataset.year||0)-(a.dataset.year||0));
-  box.innerHTML="";
-  cardsArr.forEach(c=>box.appendChild(c));
+
+  box.innerHTML = "";
+
+  const maxShow = 5;
+
+  let start = Math.max(1, currentPage - 2);
+  let end = start + maxShow - 1;
+
+  if(end > total){
+    end = total;
+    start = Math.max(1, end - maxShow + 1);
+  }
+
+  for(let i = start; i <= end; i++){
+    const btn = document.createElement("div");
+    btn.className = "num";
+    btn.textContent = i;
+
+    if(i === currentPage) btn.classList.add("active");
+
+    btn.onclick = () => {
+      currentPage = i;
+      renderPage();
+    };
+
+    box.appendChild(btn);
+  }
 }
 
 /* =========================

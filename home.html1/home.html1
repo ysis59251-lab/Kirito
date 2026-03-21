@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anime Fume ดูอนิเมะออนน์</title>
+
+
+<link rel="stylesheet" href="style.css">
+
+<meta name="theme-color" content="#000000">
+</head>
+
+<body>
+
+<div id="bg"></div>
+<a href="ระบบควบคุมภายในเว็บ/Report a Problem.html" id="reportBtn">⚠</a>
+<div id="menuBtn">☰</div>
+<div id="menuDropdown">
+  <a href="#">หน้าแรก</a>
+  <a href="index2.html">ซับไทย</a>
+  <a href="index3.html">พากย์ไทย</a>
+  <a href="ระบบควบคุมภายในเว็บ/Administrator.html">เเอดมิน</a>
+  <a href="ระบบควบคุมภายในเว็บDMCA.html">DMCA</a>
+</div>
+
+<header class="header">
+  <h1>AnimeFume</h1>
+  <input class="search" placeholder="ค้นหาอนิเมะ...">
+</header>
+
+<section class="hot-section">
+  <h2>🔥 ยอดฮิต</h2>
+  <div class="hot-slider" id="hotSlider"></div>
+</section>
+
+<div class="anime-list" id="animeList"></div>
+
+
+
+
+</section>
+
+<div class="footer">
+  <footer>
+    <p>
+      © <span id="year"></span> Anime Fume อนิเมะออนไลน์ <br>
+      ดูอนิเมะซับไทย <br>
+      ดูอนิเมะพากย์ไทย <br>
+      อัปเดตไวที่เว็บ <br>
+      <a href="https://kirito00.vercel.app/">kirito-sandy.vercel.app</a>
+    </p>
+  </footer>
+</div>
+
+<!-- ===== NAV ล่างสุด ===== -->
+<div class="bottom-area" id="bottomNav">
+  <div class="center-box" id="numberBox"></div>
+
+  <div class="bottom-nav">
+    <button onclick="prevSet()">◀</button>
+    <button onclick="nextSet()">▶</button>
+  </div>
+</div>
+
+<!-- ปุ่มลอย -->
+<button class="fab" onclick="toggleBottom()">☰</button>
+
+<script type="module" src="script.js"></script>
+
+</body>
+</html>

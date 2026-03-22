@@ -26,7 +26,18 @@ let cards = [];
 let perPage = 40;
 let currentPage = 1;
 
-
+/* =========================
+FAB BUTTONS MULTI-ACTION
+========================= */
+document.querySelectorAll(".fab").forEach(fab => {
+  fab.addEventListener("click", () => {
+    const action = fab.dataset.action;
+    switch(action){
+      case "toggle-nav":
+        
+    }
+  });
+});
 
 /* =========================
 UI CONTROL

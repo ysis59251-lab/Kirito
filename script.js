@@ -189,35 +189,26 @@ function initSearch(){
 /* =========================
 SORT SYSTEM
 ========================= */
-function renderNumbers(total){
-  const box = document.getElementById("numberBox");
+function renderPage(){
+  const box = document.getElementById("animeList");
   if(!box) return;
+
+  const visible = cards.filter(c=>c.dataset.search!=="0" && c.dataset.hidden!=="1");
+
+  const total = Math.ceil(visible.length / perPage) || 1;
+
+  if(currentPage > total) currentPage = total;
+
+  const start = (currentPage-1)*perPage;
+  const end = start + perPage;
 
   box.innerHTML = "";
 
-  const groupSize = 5;
+  visible.slice(start,end).forEach(c=>{
+    box.appendChild(c);
+  });
 
-  // 🔥 กัน currentPage เกิน
-  if(currentPage > total) currentPage = total;
-
-  // 🔥 ใช้สูตรเดิม แต่ไม่แตะระบบอื่น
-  const startPage = Math.floor((currentPage - 1) / groupSize) * groupSize + 1;
-  const endPage = Math.min(startPage + groupSize - 1, total);
-
-  for(let i = startPage; i <= endPage; i++){
-    const btn = document.createElement("div");
-    btn.className = "num";
-    btn.textContent = i;
-
-    if(i === currentPage) btn.classList.add("active");
-
-    btn.onclick = () => {
-      currentPage = i;
-      renderPage(); // ใช้ของเดิม
-    };
-
-    box.appendChild(btn);
-  }
+  renderNumbers(total);
 }
 
 /* =========================

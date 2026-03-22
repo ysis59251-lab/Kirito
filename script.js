@@ -47,7 +47,7 @@ GLOBAL STATE
 ========================= */
 let cards = [];
 let perPage = 40;
-let currentPage = 5;
+let currentPage = 1;
 
 /* =========================
 UI CONTROL

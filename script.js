@@ -189,26 +189,20 @@ function initSearch(){
 /* =========================
 SORT SYSTEM
 ========================= */
-function renderPage(){
-  const box = document.getElementById("animeList");
+function sortYear(){
+  const box=document.getElementById("animeList");
   if(!box) return;
 
-  const visible = cards.filter(c=>c.dataset.search!=="0" && c.dataset.hidden!=="1");
+  const cardsArr=[...box.children];
 
-  const total = Math.ceil(visible.length / perPage) || 1;
+  // ✅ parseInt เพื่อความปลอดภัย
+  cardsArr.sort((a,b)=>(parseInt(b.dataset.year)||0)-(parseInt(a.dataset.year)||0));
 
-  if(currentPage > total) currentPage = total;
+  box.innerHTML="";
+  cardsArr.forEach(c=>box.appendChild(c));
 
-  const start = (currentPage-1)*perPage;
-  const end = start + perPage;
-
-  box.innerHTML = "";
-
-  visible.slice(start,end).forEach(c=>{
-    box.appendChild(c);
-  });
-
-  renderNumbers(total);
+  // ✅ update global cards array
+  cards = [...document.querySelectorAll(".anime-card")];
 }
 
 /* =========================

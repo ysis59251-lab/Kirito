@@ -26,28 +26,7 @@ let cards = [];
 let perPage = 40;
 let currentPage = 1;
 
-/* =========================
-FAB BUTTONS MULTI-ACTION
-========================= */
-document.querySelectorAll(".fab").forEach(fab => {
-  fab.addEventListener("click", () => {
-    const action = fab.dataset.action;
-    switch(action){
-      case "toggle-nav":
-        document.getElementById("bottomNav")?.classList.toggle("show");
-        break;
-      case "open-search":
-        document.querySelector(".search")?.focus();
-        break;
-      case "open-hot":
-        document.getElementById("hotSlider")?.scrollIntoView({behavior:"smooth"});
-        break;
-      default:
-        document.getElementById("bottomNav")?.classList.toggle("show");
-        break;
-    }
-  });
-});
+
 
 /* =========================
 UI CONTROL

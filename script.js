@@ -189,20 +189,34 @@ function initSearch(){
 /* =========================
 SORT SYSTEM
 ========================= */
-function sortYear(){
-  const box=document.getElementById("animeList");
+function renderNumbers(total){
+  const box = document.getElementById("numberBox");
   if(!box) return;
 
-  const cardsArr=[...box.children];
+  box.innerHTML = "";
 
-  // ✅ parseInt เพื่อความปลอดภัย
-  cardsArr.sort((a,b)=>(parseInt(b.dataset.year)||0)-(parseInt(a.dataset.year)||0));
+  const groupSize = 5; // แสดงทีละ 5 หน้า
 
-  box.innerHTML="";
-  cardsArr.forEach(c=>box.appendChild(c));
+  // หาว่าอยู่ชุดไหน
+  const currentGroup = Math.ceil(currentPage / groupSize);
 
-  // ✅ update global cards array
-  cards = [...document.querySelectorAll(".anime-card")];
+  const startPage = (currentGroup - 1) * groupSize + 1;
+  const endPage = Math.min(startPage + groupSize - 1, total);
+
+  for(let i = startPage; i <= endPage; i++){
+    const btn = document.createElement("div");
+    btn.className = "num";
+    btn.textContent = i;
+
+    if(i === currentPage) btn.classList.add("active");
+
+    btn.onclick = () => {
+      currentPage = i;
+      renderPage();
+    };
+
+    box.appendChild(btn);
+  }
 }
 
 /* =========================

@@ -127,8 +127,16 @@ button:active { transform: none; }
 }
 .card-wrap { margin-top: 16px; }
 .card { border-radius: 16px; overflow: hidden; margin-bottom: 16px; }
-.card img { width: 100%; border-radius: 16px; }
-.desc { font-size: 16px; line-height: 1.6; margin-top: 12px; opacity: 0.9; }
+
+
+.card img {
+  width: 100%;      /* เต็มความกว้างของ container */
+  max-width: 300px; /* เล็กลงจากเดิม */
+  display: block;
+  margin: 0 auto;   /* อยู่ตรงกลาง */
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+}
 
 /* =========================
    MOBILE

@@ -18,7 +18,6 @@ html{
   scroll-behavior:smooth;
 }
 
-
 /* =========================
    BACKGROUND
 ========================= */
@@ -28,7 +27,6 @@ html{
   background:url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center/cover;
   z-index:-1;
 }
-
 
 /* =========================
    HEADER + SEARCH
@@ -50,7 +48,6 @@ html{
   border-radius:20px;
   border:none;
 }
-
 
 /* =========================
    MENU
@@ -85,7 +82,6 @@ html{
   background:#222
 }
 
-
 /* =========================
    GRID LIST (ANIME)
 ========================= */
@@ -102,7 +98,6 @@ html{
   grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
   gap:16px;
 }
-
 
 /* =========================
    CARD BASE
@@ -145,7 +140,6 @@ html{
   object-fit:cover;
   display:block
 }
-
 
 /* =========================
    TEXT / OVERLAY
@@ -194,7 +188,6 @@ html{
   pointer-events: none;
 }
 
-
 /* =========================
    BADGE
 ========================= */
@@ -212,7 +205,6 @@ html{
 .hot{background:#ff3b3b}
 .new{background:#00c853}
 .recommend{background:#ffd600;color:#000}
-
 
 /* =========================
    HOT SECTION
@@ -241,7 +233,6 @@ html{
 
 .hot-slider::-webkit-scrollbar{display:none}
 
-
 /* =========================
    HOT CARD
 ========================= */
@@ -266,7 +257,7 @@ html{
 }
 
 .hot-card img{
-  width:%;
+  width:100%;
   height:260px;
   object-fit:cover;
   display:block;
@@ -311,7 +302,6 @@ html{
   box-shadow:0 6px 18px rgba(255,77,77,.45);
   z-index:2;
 }
-
 
 /* =========================
    ANIME GLOW EFFECT
@@ -371,7 +361,6 @@ html{
   from{ transform: rotate(0deg) scale(1); }
   to{ transform: rotate(360deg) scale(1.1); }
 }
-
 
 /* =========================
    BOTTOM CONTROL
@@ -463,7 +452,6 @@ html{
   cursor:pointer;
 }
 
-
 /* =========================
    REPORT SYSTEM
 ========================= */
@@ -523,7 +511,6 @@ html{
   font-size:14px;
   cursor:pointer;
 }
-
 
 /* =========================
    FOOTER

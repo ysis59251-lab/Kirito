@@ -208,38 +208,78 @@ function sortYear(){
 /* =========================
 PAGINATION SYSTEM
 ========================= */
-function initPagination(){
-  cards=[...document.querySelectorAll(".anime-card")];
-  currentPage=1;
+// =========================
+// SORT BY YEAR + UPDATE PAGINATION
+// =========================
+function sortYear(){
+  const box = document.getElementById("animeList");
+  if(!box) return;
+
+  const cardsArr = [...box.children];
+
+  // ✅ parseInt เพื่อความปลอดภัย
+  cardsArr.sort((a,b) => (parseInt(b.dataset.year) || 0) - (parseInt(a.dataset.year) || 0));
+
+  // ล้าง container แล้วเพิ่มการ์ดใหม่
+  box.innerHTML = "";
+  cardsArr.forEach(c => box.appendChild(c));
+
+  // ✅ update global cards array
+  cards = [...document.querySelectorAll(".anime-card")];
+
+  // รีเซ็ตหน้าแรกหลังเรียง
+  currentPage = 1;
   renderPage();
 }
 
-function renderPage(){
-  const visible=cards.filter(c=>c.dataset.search!=="0" && c.dataset.hidden!=="1");
-  const total=Math.ceil(visible.length/perPage)||1;
-  const start=(currentPage-1)*perPage;
-  const end=start+perPage;
-
-  cards.forEach(c=>c.style.display="none");
-  visible.slice(start,end).forEach(c=>{ c.style.display=""; });
-
-  renderNumbers(total);
-}
-
+// =========================
+// RENDER PAGINATION WITH 5-PAGE SETS
+// =========================
 function renderNumbers(total){
-  const box=document.getElementById("numberBox");
+  const box = document.getElementById("numberBox");
   if(!box) return;
-  box.innerHTML="";
-  for(let i=1;i<=total;i++){
-    const btn=document.createElement("div");
-    btn.className="num";
-    btn.textContent=i;
-    if(i===currentPage) btn.classList.add("active");
-    btn.onclick=()=>{
-      currentPage=i;
+  box.innerHTML = "";
+
+  const pagesPerSet = 5; // แสดง 5 หน้า ต่อชุด
+  const currentSet = Math.floor((currentPage - 1) / pagesPerSet); // ชุดปัจจุบัน
+  const startPage = currentSet * pagesPerSet + 1;
+  const endPage = Math.min(startPage + pagesPerSet - 1, total);
+
+  // ปุ่ม prev set
+  if(currentSet > 0){
+    const prevSetBtn = document.createElement("div");
+    prevSetBtn.className = "num set-nav";
+    prevSetBtn.textContent = "<";
+    prevSetBtn.onclick = () => {
+      currentPage = startPage - 1;
+      renderPage();
+    };
+    box.appendChild(prevSetBtn);
+  }
+
+  // สร้างปุ่มเลขหน้าในชุด
+  for(let i = startPage; i <= endPage; i++){
+    const btn = document.createElement("div");
+    btn.className = "num";
+    btn.textContent = i;
+    if(i === currentPage) btn.classList.add("active");
+    btn.onclick = () => {
+      currentPage = i;
       renderPage();
     };
     box.appendChild(btn);
+  }
+
+  // ปุ่ม next set
+  if(endPage < total){
+    const nextSetBtn = document.createElement("div");
+    nextSetBtn.className = "num set-nav";
+    nextSetBtn.textContent = ">";
+    nextSetBtn.onclick = () => {
+      currentPage = endPage + 1;
+      renderPage();
+    };
+    box.appendChild(nextSetBtn);
   }
 }
 

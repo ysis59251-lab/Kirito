@@ -2,229 +2,259 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-
-<!-- ✅ สำคัญมาก -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>เลือกตอน</title>
+<title>AnimeFume - Dead Mount Death Play</title>
 
 <style>
-
-    /* ====== ACCORDION ====== */
-.ep-toggle{
-  background:#111;
-  border-radius:16px;
-  padding:18px;
-  margin-bottom:14px;
-  cursor:pointer;
-  font-size:1.1rem;
-  box-shadow:0 6px 14px rgba(0,0,0,.4);
+/* =========================
+   GLOBAL
+========================= */
+* { box-sizing:border-box; margin:0; padding:0; font-family: 'Segoe UI', sans-serif; }
+body {
+  color: #fff;
+  background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)),
+              url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg") center/cover fixed;
+  min-height: 100vh;
+  line-height: 1.5;
 }
 
-.ep-list{
-  max-height:0;
-  overflow:hidden;
-  transition:max-height .45s ease;
+/* =========================
+   HEADER
+========================= */
+.header {
+  padding: 16px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: linear-gradient(90deg, #e50914, #b20710);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
 }
 
-.ep-list.open{
-  max-height:3000px; /* พอสำหรับ 24 ตอน */
+/* =========================
+   PLAYER
+========================= */
+.player {
+  max-width: 900px;
+  margin: 24px auto;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 20px 50px rgba(0,0,0,0.85);
+}
+.player iframe { width: 100%; height: 100%; border: 0; }
+
+/* =========================
+   CONTROL BUTTON
+========================= */
+.control {
+  text-align: center;
+  margin: 16px 0;
+}
+button {
+  background: linear-gradient(135deg, #e50914, #b20710);
+  color: #fff;
+  border: none;
+  padding: 14px 28px;
+  border-radius: 40px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(229,9,20,0.45);
+  transition: 0.25s;
+}
+button:hover { transform: translateY(-2px); background: linear-gradient(135deg,#ff1b26,#c8000a); }
+button:active { transform: none; }
+
+/* =========================
+   MODAL
+========================= */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 10;
+  padding: 20px;
+}
+.modal-content {
+  background: linear-gradient(180deg,#111,#0b0b0b);
+  max-width: 520px;
+  margin: 60px auto;
+  padding: 16px;
+  border-radius: 18px;
+  max-height: 70vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+  animation: fadeUp 0.25s ease;
+}
+@keyframes fadeUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: none; opacity: 1; }
 }
 
-/* ====== BASE ====== */
-html{
-  font-size:20px;
+/* =========================
+   EPISODE LIST IN MODAL
+========================= */
+.ep {
+  padding: 14px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  background: rgba(255,255,255,0.03);
+  transition: 0.2s;
+  font-size: 16px;
+}
+.ep:hover { background: rgba(255,255,255,0.08); }
+.ep.active { background: linear-gradient(135deg,#e50914,#b20710); font-weight: 700; }
+
+/* =========================
+   ANIME IMAGE & CARD
+========================= */
+.container {
+  max-width: 540px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+.anime-img {
+  width: 100%;
+  max-width: 280px;
+  display: block;
+  margin: 24px auto;
+  border-radius: 16px;
+  filter: drop-shadow(0 12px 30px rgba(0,0,0,0.8));
+}
+.card-wrap { margin-top: 16px; }
+.card { border-radius: 16px; overflow: hidden; margin-bottom: 16px; }
+
+
+.card img {
+  width: 100%;      /* เต็มความกว้างของ container */
+  max-width: 300px; /* เล็กลงจากเดิม */
+  display: block;
+  margin: 0 auto;   /* อยู่ตรงกลาง */
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
 }
 
-body{
-  margin:0;
-  padding:0;
-  min-height:100vh;
-  font-family:sans-serif;
-  color:#fff;
-  overflow-x:hidden;
-  position:relative;
-}
-
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  background:url("https://www.akerufeed.com/wp-content/uploads/2021/07/Wallpaper-Japanese-Cartoon-Street-22.jpg")
-             center/cover no-repeat;
-  filter:blur(2px); 
-  transform:scale(1.04);
-  z-index:-2;
-}
-
-body::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  background:linear-gradient(
-    rgba(0,0,0,0.45),
-    rgba(0,0,0,0.65)
-  );
-  z-index:-1;
-}
-
-/* ====== CONTAINER ====== */
-.container{
-  width:100%;
-  max-width:540px;   /* เต็มจอมือถือ */
-  margin:0 auto;
-  padding:16px;
-}
-
-/* ====== CARD ====== */
-.card{
-  width:100%;
-  border-radius:16px;
-  overflow:hidden;
-  margin-bottom:16px;
-}
-
-.card img{
-  width:330px;
-  height:430px;       /* ❗ไม่ fix สูง */
-  display:block;
-}
-
-.overlay-text{
-  position:absolute;
-  bottom:0;
-  left:0;
-  right:0;
-  padding:14px;
-  background:linear-gradient(transparent, rgba(0,0,0,.85));
-  font-size:1rem;
-}
-
-.card-wrap{
-  position:relative;
-}
-
-/* ====== DESCRIPTION ====== */
-.desc{
-  font-size:1rem;
-  line-height:1.6;
-  opacity:.9;
-  margin-bottom:20px;
-}
-
-/* ====== EPISODE LIST ====== */
-.episode-box{
-  width:100%;
-}
-
-.episode{
-  background:linear-gradient(135deg,#1e1e1e,#2b2b2b);
-  border-radius:16px;
-  padding:18px;
-  margin-bottom:14px;
-  display:flex;
-  align-items:center;
-  gap:14px;
-  cursor:pointer;
-  box-shadow:0 6px 14px rgba(0,0,0,.4);
-}
-
-.episode.watched{
-  background:linear-gradient(135deg,#1b3b1b,#244d24);
-}
-
-.ep-num{
-  background:#ff4d4d;
-  padding:8px 14px;
-  border-radius:12px;
-  font-weight:bold;
-}
-
-.ep-title{
-  flex:1;
-  font-size:1.05rem;
-}
-
-.status{
-  font-size:20px;
+/* =========================
+   MOBILE
+========================= */
+@media(max-width:600px) {
+  .header { font-size: 20px; }
+  button { width: 100%; padding: 14px 0; }
+  .desc { font-size: 15px; }
 }
 </style>
 </head>
 
-<body>
 <div class="container">
-
 <h2>
-DAN DA DAN ดันดาดัน (ภาค1) <br>
-ตอนที่ 1–12 พากย์ไทย จบเเล้ว
+Dead Mount Death Play เดด เมานท์ เดธ เพลย์ (ภาค1) <br>
+ตอนที่ 1–12 พากย์ไทย จบแล้ว
 </h2>
 
 <div class="card-wrap">
   <div class="card">
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3G46VISYTyNvhfCIRxvFe6KExkWlNdekrUg88tKYhZ7wA0NNXGmQg74rj&s=10">
+    <img src="https://img.shirokami.me/images/2023/07/31/e2ff123f347b9c34bdd689c6ff468e3b.jpg">
   </div>
 
 <p class="desc">
 เรื่องย่อ
-หลังจากถูกปฏิเสธอย่างรุนแรง โมโมะ อายาเสะ กำลังนั่งหงอยเศร้าเมื่อบังเอิญเจอเด็กผู้ชายคนหนึ่งที่กำลังถูกกลั่นแกล้ง ด้วยความใจร้อนและความมีน้ำใจ เธอจึงช่วยเขาไว้ เด็กชายที่หลงใหลในเรื่องมนุษย์ต่างดาวพยายามพูดคุยกับเธอเกี่ยวกับความสนใจในเรื่องสิ่งมีชีวิตนอกโลกที่เขาเชื่อว่าทั้งสองคนมีเหมือนกัน แต่เมื่ออายาเสะปฏิเสธคำกล่าวของเขา เธอก็ประกาศตัวว่าแท้จริงแล้วเธอเชื่อในเรื่องผีมากกว่า ซึ่งนำไปสู่การถกเถียงระหว่างทั้งสองคนว่าอะไรกันแน่ที่มีจริง เพื่อหาคำตอบ ทั้งสองจึงตัดสินใจทำการเดิมพันกัน โดยจะแยกกันไปเยี่ยมชมสถานที่ที่เกี่ยวข้องกับสิ่งมีชีวิตนอกโลกและสิ่งเหนือธรรมชาติ—อายาเสะไปเยี่ยมสถานที่ของมนุษย์ต่างดาว ส่วนเด็กผู้ชายไปเยี่ยมสถานที่ของผี เมื่อทั้งสองไปถึงสถานที่ที่กำหนดไว้ ปรากฏว่าต่างฝ่ายต่างไม่ผิด ทั้งมนุษย์ต่างดาวและผีมีอยู่จริง นี่เป็นจุดเริ่มต้นของการผจญภัยของอายาเสะและเด็กผู้ชาย ขณะที่พวกเขาพยายามแก้ไขเหตุการณ์เหนือธรรมชาติและสิ่งแปลกประหลาดจากนอกโลกที่เกิดขึ้นรอบตัวพวกเขา เพื่อที่จะได้กลับไปใช้ชีวิตตามปกติ
+เทพแห่งซากศพ อดีตเนโครแมนเซอร์ผู้แข็งแกร่งพ่ายแพ้ในการต่อสู้กับพวกศาสนจักร เขาใช้เวทมนตร์เกิดใหม่ ฟื้นขึ้นมาในร่าง ชิโนมิยะ พอลก้า หนุ่มลูกครึ่งญี่ปุ่นยุคปัจจุบันที่เพิ่งถูกปาดคอโดยนักฆ่าสาว มิซากิ หลังแสดงพลังของเนโครแมนเซอร์ ทำให้เขาต้องมาพัวพันกับองค์กรลับในญี่ปุ่น
 </p>
-
-<!-- ปุ่มกดเปิดกล่อง -->
-<div class="ep-toggle" onclick="toggleEp()">
-  ▼ กล่อง
 </div>
 
-<!-- กล่องพับ -->
-<div id="epList" class="ep-list">
+<body>
+<div class="header">🎬 AnimeFume</div>
 
-  <div class="episode" onclick="openEp(1)" data-ep="1">
-    <span class="ep-num">รวม </span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
-  </div>
+<div class="player">
+  <iframe id="video" allowfullscreen></iframe>
+</div>
 
+<div class="control">
+  <button onclick="openModal()"> เลือกตอน </button>
 </div>
+
+<!-- Anime Card -->
+<img class="anime-img" src="https://www.pngarts.com/files/12/Manga-Anime-Girl-Transparent-Image.png" alt="Anime Girl">
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="modal-content" id="episodeList"></div>
 </div>
+
 
 <script>
+// =========================
+// EPISODE PLAYER FROM GOOGLE SHEET
+// =========================
+const SHEET_ID = "1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
+const API = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
+let episodes = [];
+let current = "";
+
+fetch(API)
+  .then(res => res.text())
+  .then(text => {
+    const json = JSON.parse(text.substring(47).slice(0, -2));
+    episodes = json.table.rows.map(r => ({
+      ep: r.c[1]?.v,
+      title: r.c[2]?.v,
+      url: r.c[3]?.v
+    }));
+    renderEpisodes();
+    if (episodes[0]) play(episodes[0].url);
+  });
+
+function renderEpisodes(){
+  const box = document.getElementById("episodeList");
+  box.innerHTML = "";
+  episodes.forEach(e=>{
+    const div = document.createElement("div");
+    div.className = "ep";
+    div.innerText = `ตอนที่ ${e.ep} • ${e.title}`;
+    div.onclick = ()=>play(e.url);
+    box.appendChild(div);
+  });
+}
+
+function play(url){
+  if(url.includes("drive.google.com")){
+    const id = url.match(/\/d\/(.+?)\//)[1];
+    url = `https://drive.google.com/file/d/${id}/preview`;
+  }
+  document.getElementById("video").src = url;
+  current = url;
+  highlight();
+  closeModal();
+}
+
+function highlight(){
+  document.querySelectorAll(".ep").forEach((e,i)=>{
+    e.classList.toggle(
+      "active",
+      episodes[i].url &&
+      current.includes(episodes[i].url.split("/d/")[1])
+    );
+  });
+}
+
+function openModal(){ document.getElementById("modal").style.display="block"; }
+function closeModal(){ document.getElementById("modal").style.display="none"; }
+document.getElementById("modal").onclick = closeModal;
+
+// =========================
+// TRACK PAGE VIEWS
+// =========================
 const title = document.body.dataset.title || document.title;
-
 if(title){
   const views = JSON.parse(localStorage.getItem("animeViews") || "{}");
   views[title] = (views[title] || 0) + 1;
   localStorage.setItem("animeViews", JSON.stringify(views));
 }
-
-let watched = JSON.parse(localStorage.getItem("watchedEpisodes")) || [];
-
-document.querySelectorAll(".episode").forEach(el=>{
-  let ep = parseInt(el.dataset.ep);
-  if(watched.includes(ep)){
-    el.classList.add("watched");
-    el.querySelector(".status").innerHTML = "✔";
-  }
-});
-
-function openEp(ep){
-  if(!watched.includes(ep)){
-    watched.push(ep);
-    localStorage.setItem("watchedEpisodes", JSON.stringify(watched));
-  }
-
-  const epLinks={
-    1:"DANDADAN.html",
-
-  };
-
-  window.location.href=epLinks[ep];
-}
-
-function toggleEp(){
-  document.getElementById("epList").classList.toggle("open");
-}
-
 </script>
-
 </body>
 </html>

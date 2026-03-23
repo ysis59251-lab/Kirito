@@ -6,23 +6,6 @@
 <title>AnimeFume - Dead Mount Death Play</title>
 
 <style>
-
-.ep.active {
-  background: linear-gradient(135deg,#e50914,#b20710);
-  font-weight: 700;
-  box-shadow: 0 0 10px rgba(229,9,20,0.7);
-}
-
-.ep.watched {
-  background: rgba(255,255,255,0.08);
-  color: #bbb;
-}
-
-.ep.watched::after {
-  content: " ✔";
-  color: #00ffcc;
-}
-
 /* =========================
    GLOBAL
 ========================= */
@@ -60,7 +43,42 @@ body {
   overflow: hidden;
   box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 20px 50px rgba(0,0,0,0.85);
 }
-.player iframe { width: 100%; height: 100%; border: 0; }
+
+.video-box {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.video-box iframe {
+  width: 100%;
+  height: 100%;
+}
+
+.thumb {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 2;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.thumb:hover { filter: brightness(0.7); }
+
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  font-size: 50px;
+  background: rgba(0,0,0,0.6);
+  padding: 15px 20px;
+  border-radius: 50%;
+  z-index: 3;
+  cursor: pointer;
+}
 
 /* =========================
    CONTROL BUTTON
@@ -69,6 +87,7 @@ body {
   text-align: center;
   margin: 16px 0;
 }
+
 button {
   background: linear-gradient(135deg, #e50914, #b20710);
   color: #fff;
@@ -95,6 +114,7 @@ button:active { transform: none; }
   z-index: 10;
   padding: 20px;
 }
+
 .modal-content {
   background: linear-gradient(180deg,#111,#0b0b0b);
   max-width: 520px;
@@ -106,6 +126,7 @@ button:active { transform: none; }
   box-shadow: 0 20px 50px rgba(0,0,0,0.8);
   animation: fadeUp 0.25s ease;
 }
+
 @keyframes fadeUp {
   from { transform: translateY(30px); opacity: 0; }
   to { transform: none; opacity: 1; }
@@ -123,8 +144,24 @@ button:active { transform: none; }
   transition: 0.2s;
   font-size: 16px;
 }
+
 .ep:hover { background: rgba(255,255,255,0.08); }
-.ep.active { background: linear-gradient(135deg,#e50914,#b20710); font-weight: 700; }
+
+.ep.active {
+  background: linear-gradient(135deg,#e50914,#b20710);
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(229,9,20,0.7);
+}
+
+.ep.watched {
+  background: rgba(255,255,255,0.08);
+  color: #bbb;
+}
+
+.ep.watched::after {
+  content: " ✔";
+  color: #00ffcc;
+}
 
 /* =========================
    ANIME IMAGE & CARD
@@ -134,6 +171,7 @@ button:active { transform: none; }
   margin: 24px auto;
   padding: 0 16px;
 }
+
 .anime-img {
   width: 100%;
   max-width: 280px;
@@ -142,15 +180,15 @@ button:active { transform: none; }
   border-radius: 16px;
   filter: drop-shadow(0 12px 30px rgba(0,0,0,0.8));
 }
+
 .card-wrap { margin-top: 16px; }
 .card { border-radius: 16px; overflow: hidden; margin-bottom: 16px; }
 
-
 .card img {
-  width: 100%;      /* เต็มความกว้างของ container */
-  max-width: 300px; /* เล็กลงจากเดิม */
+  width: 100%;
+  max-width: 300px;
   display: block;
-  margin: 0 auto;   /* อยู่ตรงกลาง */
+  margin: 0 auto;
   border-radius: 16px;
   box-shadow: 0 8px 20px rgba(0,0,0,0.5);
 }
@@ -166,33 +204,33 @@ button:active { transform: none; }
 </style>
 </head>
 
+<body>
+<div class="header">🎬 AnimeFume</div>
+
 <div class="container">
-<h2>
-Dead Mount Death Play 
-เดด เมานท์ เดธ เพลย์ (ภาค1) <br>
-ตอนที่ 1–12 พากย์ไทย จบแล้ว
-</h2>
+<h2>Dead Mount Death Play (ภาค 1)<br>ตอนที่ 1–12 พากย์ไทย จบแล้ว</h2>
 
 <div class="card-wrap">
   <div class="card">
     <img src="https://img.shirokami.me/images/2023/07/31/e2ff123f347b9c34bdd689c6ff468e3b.jpg">
   </div>
 
-<p class="desc">
-เรื่องย่อ
-เทพแห่งซากศพ อดีตเนโครแมนเซอร์ผู้แข็งแกร่งพ่ายแพ้ในการต่อสู้กับพวกศาสนจักร เขาใช้เวทมนตร์เกิดใหม่ ฟื้นขึ้นมาในร่าง ชิโนมิยะ พอลก้า หนุ่มลูกครึ่งญี่ปุ่นยุคปัจจุบันที่เพิ่งถูกปาดคอโดยนักฆ่าสาว มิซากิ หลังแสดงพลังของเนโครแมนเซอร์ ทำให้เขาต้องมาพัวพันกับองค์กรลับในญี่ปุ่น
-</p>
+  <p class="desc">
+    เรื่องย่อ: เทพแห่งซากศพ อดีตเนโครแมนเซอร์ผู้แข็งแกร่งพ่ายแพ้ในการต่อสู้กับพวกศาสนจักร...
+  </p>
 </div>
 
-<body>
-<div class="header">🎬 AnimeFume</div>
-
+<!-- Player -->
 <div class="player">
-  <iframe id="video" allowfullscreen></iframe>
+  <div class="video-box">
+    <img id="thumb" class="thumb">
+    <div class="play-btn" onclick="startVideo()">▶</div>
+    <iframe id="video" allowfullscreen></iframe>
+  </div>
 </div>
 
 <div class="control">
-  <button onclick="openModal()"> เลือกตอน </button>
+  <button onclick="openModal()">เลือกตอน</button>
 </div>
 
 <!-- Anime Card -->
@@ -203,7 +241,6 @@ Dead Mount Death Play
   <div class="modal-content" id="episodeList"></div>
 </div>
 
-
 <script>
 const SHEET_ID = "1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
 const API = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
@@ -212,100 +249,77 @@ let episodes = [];
 let current = "";
 let watched = JSON.parse(localStorage.getItem("watchedEpisodes") || "[]");
 
-// ================= FETCH =================
 fetch(API)
   .then(res => res.text())
   .then(text => {
-    const json = JSON.parse(text.substring(47).slice(0, -2));
-
+    const json = JSON.parse(text.substring(47).slice(0,-2));
     episodes = json.table.rows.map(r => ({
       ep: r.c[1]?.v,
       title: r.c[2]?.v,
-      url: r.c[3]?.v
+      url: r.c[3]?.v,
+      cover: r.c[4]?.v
     }));
-
     renderEpisodes();
-
-    // ▶ เล่นตอนล่าสุด
     const last = localStorage.getItem("lastEpisode");
-    if(last){
-      play(last);
-    } else if (episodes[0]){
-      play(episodes[0].url);
-    }
+    if(last) play(last);
+    else if(episodes[0]) play(episodes[0].url);
   });
 
-// ================= RENDER =================
 function renderEpisodes(){
   const box = document.getElementById("episodeList");
   box.innerHTML = "";
-
   episodes.forEach(e=>{
     const div = document.createElement("div");
     div.className = "ep";
     div.innerText = `ตอนที่ ${e.ep} • ${e.title}`;
-
-    // ✔ ดูแล้ว
-    if(watched.includes(e.url)){
-      div.classList.add("watched");
-    }
-
+    if(watched.includes(e.url)) div.classList.add("watched");
     div.onclick = ()=>play(e.url);
     box.appendChild(div);
   });
-
-  highlight(); // สำคัญ
+  highlight();
 }
 
-// ================= PLAY =================
 function play(url){
-  let originalUrl = url;
-
+  const ep = episodes.find(e=>e.url===url);
+  const originalUrl = url;
   if(url.includes("drive.google.com")){
     const id = url.match(/\/d\/(.+?)\//)[1];
     url = `https://drive.google.com/file/d/${id}/preview`;
   }
-
   document.getElementById("video").src = url;
   current = originalUrl;
-
-  // ✔ บันทึกตอนล่าสุด
+  if(ep && ep.cover){
+    document.getElementById("thumb").src = ep.cover;
+    document.getElementById("thumb").style.display="block";
+    document.querySelector(".play-btn").style.display="block";
+  }
   localStorage.setItem("lastEpisode", originalUrl);
-
-  // ✔ บันทึกว่าดูแล้ว
   if(!watched.includes(originalUrl)){
     watched.push(originalUrl);
     localStorage.setItem("watchedEpisodes", JSON.stringify(watched));
   }
-
   highlight();
   renderEpisodes();
   closeModal();
 }
 
-// ================= HIGHLIGHT =================
-function highlight(){
-  document.querySelectorAll(".ep").forEach((el, i) => {
-    el.classList.remove("active");
+function startVideo(){
+  document.getElementById("thumb").style.display="none";
+  document.querySelector(".play-btn").style.display="none";
+}
 
-    if(episodes[i].url === current){
+function highlight(){
+  document.querySelectorAll(".ep").forEach((el,i)=>{
+    el.classList.remove("active");
+    if(episodes[i] && episodes[i].url === current){
       el.classList.add("active");
     }
   });
 }
 
-// ================= MODAL =================
 function openModal(){ document.getElementById("modal").style.display="block"; }
 function closeModal(){ document.getElementById("modal").style.display="none"; }
 document.getElementById("modal").onclick = closeModal;
-
-// ================= VIEW COUNT =================
-const title = document.body.dataset.title || document.title;
-if(title){
-  const views = JSON.parse(localStorage.getItem("animeViews") || "{}");
-  views[title] = (views[title] || 0) + 1;
-  localStorage.setItem("animeViews", JSON.stringify(views));
-}
 </script>
 </body>
 </html>

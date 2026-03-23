@@ -6,6 +6,23 @@
 <title>AnimeFume - Dead Mount Death Play</title>
 
 <style>
+
+.ep.active {
+  background: linear-gradient(135deg,#e50914,#b20710);
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(229,9,20,0.7);
+}
+
+.ep.watched {
+  background: rgba(255,255,255,0.08);
+  color: #bbb;
+}
+
+.ep.watched::after {
+  content: " ✔";
+  color: #00ffcc;
+}
+
 /* =========================
    GLOBAL
 ========================= */
@@ -188,68 +205,101 @@ Dead Mount Death Play
 
 
 <script>
-// =========================
-// EPISODE PLAYER FROM GOOGLE SHEET
-// =========================
 const SHEET_ID = "1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
 const API = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
 let episodes = [];
 let current = "";
+let watched = JSON.parse(localStorage.getItem("watchedEpisodes") || "[]");
 
+// ================= FETCH =================
 fetch(API)
   .then(res => res.text())
   .then(text => {
     const json = JSON.parse(text.substring(47).slice(0, -2));
+
     episodes = json.table.rows.map(r => ({
       ep: r.c[1]?.v,
       title: r.c[2]?.v,
       url: r.c[3]?.v
     }));
+
     renderEpisodes();
-    if (episodes[0]) play(episodes[0].url);
+
+    // ▶ เล่นตอนล่าสุด
+    const last = localStorage.getItem("lastEpisode");
+    if(last){
+      play(last);
+    } else if (episodes[0]){
+      play(episodes[0].url);
+    }
   });
 
+// ================= RENDER =================
 function renderEpisodes(){
   const box = document.getElementById("episodeList");
   box.innerHTML = "";
+
   episodes.forEach(e=>{
     const div = document.createElement("div");
     div.className = "ep";
     div.innerText = `ตอนที่ ${e.ep} • ${e.title}`;
+
+    // ✔ ดูแล้ว
+    if(watched.includes(e.url)){
+      div.classList.add("watched");
+    }
+
     div.onclick = ()=>play(e.url);
     box.appendChild(div);
   });
+
+  highlight(); // สำคัญ
 }
 
+// ================= PLAY =================
 function play(url){
+  let originalUrl = url;
+
   if(url.includes("drive.google.com")){
     const id = url.match(/\/d\/(.+?)\//)[1];
     url = `https://drive.google.com/file/d/${id}/preview`;
   }
+
   document.getElementById("video").src = url;
-  current = url;
+  current = originalUrl;
+
+  // ✔ บันทึกตอนล่าสุด
+  localStorage.setItem("lastEpisode", originalUrl);
+
+  // ✔ บันทึกว่าดูแล้ว
+  if(!watched.includes(originalUrl)){
+    watched.push(originalUrl);
+    localStorage.setItem("watchedEpisodes", JSON.stringify(watched));
+  }
+
   highlight();
+  renderEpisodes();
   closeModal();
 }
 
+// ================= HIGHLIGHT =================
 function highlight(){
-  document.querySelectorAll(".ep").forEach((e,i)=>{
-    e.classList.toggle(
-      "active",
-      episodes[i].url &&
-      current.includes(episodes[i].url.split("/d/")[1])
-    );
+  document.querySelectorAll(".ep").forEach((el, i) => {
+    el.classList.remove("active");
+
+    if(episodes[i].url === current){
+      el.classList.add("active");
+    }
   });
 }
 
+// ================= MODAL =================
 function openModal(){ document.getElementById("modal").style.display="block"; }
 function closeModal(){ document.getElementById("modal").style.display="none"; }
 document.getElementById("modal").onclick = closeModal;
 
-// =========================
-// TRACK PAGE VIEWS
-// =========================
+// ================= VIEW COUNT =================
 const title = document.body.dataset.title || document.title;
 if(title){
   const views = JSON.parse(localStorage.getItem("animeViews") || "{}");

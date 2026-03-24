@@ -6,6 +6,15 @@
 <title>AnimeFume - Dead Mount Death Play</title>
 
 <style>
+
+#nowEp {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ff3b3b;
+}
+
 /* =========================
    GLOBAL
 ========================= */
@@ -253,12 +262,13 @@ body {
   </p>
 </div>
 
-<!-- PLAYER -->
 <div class="player">
   <div class="video-box">
     <iframe id="video" allowfullscreen></iframe>
   </div>
 </div>
+
+<div id="nowEp">🎬 กำลังโหลด...</div>
 
 <!-- CONTROL -->
 <div class="control">
@@ -276,98 +286,84 @@ body {
 </div>
 
 <script>
-const SHEET_ID = "1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
-const API = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+const SHEET_ID="1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
+const API=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-let episodes = [];
-let current = "";
-let currentIndex = 0;
-let watched = JSON.parse(localStorage.getItem("watchedEpisodes") || "[]");
+let episodes=[];
+let currentIndex=0;
+let watched=JSON.parse(localStorage.getItem("watchedEpisodes")||"[]");
 
 fetch(API)
-.then(res => res.text())
-.then(text => {
-  const json = JSON.parse(text.substring(47).slice(0,-2));
-  episodes = json.table.rows.map(r => ({
-    ep: r.c[1]?.v,
-    title: r.c[2]?.v,
-    url: r.c[3]?.v
+.then(res=>res.text())
+.then(text=>{
+  const json=JSON.parse(text.substring(47).slice(0,-2));
+  episodes=json.table.rows.map(r=>({
+    ep:r.c[1]?.v,
+    title:r.c[2]?.v,
+    url:r.c[3]?.v
   }));
 
   renderEpisodes();
 
-  const last = localStorage.getItem("lastEpisode");
-
+  const last=localStorage.getItem("lastEpisode");
   if(last){
-    const i = episodes.findIndex(e=>e.url===last);
-    if(i !== -1){
-      currentIndex = i;
-      play(episodes[i].url);
-    } else {
-      play(episodes[0].url);
-    }
-  } else {
-    play(episodes[0].url);
+    const i=episodes.findIndex(e=>e.url===last);
+    currentIndex=i!==-1?i:0;
   }
+
+  play(episodes[currentIndex].url);
 });
 
 function renderEpisodes(){
-  const box = document.getElementById("episodeList");
-  box.innerHTML = "";
+  const box=document.getElementById("episodeList");
+  box.innerHTML="";
   episodes.forEach((e,i)=>{
-    const div = document.createElement("div");
-    div.className = "ep";
-    div.innerText = `ตอนที่ ${e.ep} • ${e.title}`;
-
+    const div=document.createElement("div");
+    div.className="ep";
+    div.innerText=`ตอนที่ ${e.ep}`;
     if(watched.includes(e.url)) div.classList.add("watched");
-
-    div.onclick = ()=>play(e.url);
+    div.onclick=()=>play(e.url);
     box.appendChild(div);
   });
   highlight();
 }
 
 function play(url){
-  const original = url;
+  const video=document.getElementById("video");
 
-  const video = document.getElementById("video");
-  video.style.opacity = 0;
+  if(url.includes("drive.google.com")){
+    const id=url.match(/\/d\/(.+?)\//)[1];
+    url=`https://drive.google.com/file/d/${id}/preview`;
+  }
 
-  setTimeout(()=>{
-    if(url.includes("drive.google.com")){
-      const id = url.match(/\/d\/(.+?)\//)[1];
-      url = `https://drive.google.com/file/d/${id}/preview`;
-    }
+  video.src=url;
 
-    video.src = url;
-    current = original;
+  currentIndex=episodes.findIndex(e=>e.url===url || url.includes(e.url));
+  localStorage.setItem("lastEpisode",episodes[currentIndex].url);
 
-    currentIndex = episodes.findIndex(e=>e.url===original);
-    localStorage.setItem("lastEpisode", original);
+  if(!watched.includes(episodes[currentIndex].url)){
+    watched.push(episodes[currentIndex].url);
+    localStorage.setItem("watchedEpisodes",JSON.stringify(watched));
+  }
 
-    if(!watched.includes(original)){
-      watched.push(original);
-      localStorage.setItem("watchedEpisodes", JSON.stringify(watched));
-    }
+  highlight();
+  renderEpisodes();
+  closeModal();
 
-    highlight();
-    renderEpisodes();
-    closeModal();
-
-    video.style.opacity = 1;
-
-  },150);
+  /* 🔥 แสดงตอน */
+  document.getElementById("nowEp").innerText=
+    "🎬 กำลังดู: ตอนที่ "+episodes[currentIndex].ep+" • "+episodes[currentIndex].title;
 }
 
 function nextEp(){
-  if(currentIndex < episodes.length - 1){
+  if(currentIndex<episodes.length-1){
     currentIndex++;
     play(episodes[currentIndex].url);
   }
 }
 
 function prevEp(){
-  if(currentIndex > 0){
+  if(currentIndex>0){
     currentIndex--;
     play(episodes[currentIndex].url);
   }
@@ -375,14 +371,15 @@ function prevEp(){
 
 function highlight(){
   document.querySelectorAll(".ep").forEach((el,i)=>{
-    el.classList.toggle("active", i===currentIndex);
+    el.classList.toggle("active",i===currentIndex);
   });
 }
 
-function openModal(){ document.getElementById("modal").style.display="block"; }
-function closeModal(){ document.getElementById("modal").style.display="none"; }
-document.getElementById("modal").onclick = closeModal;
+function openModal(){document.getElementById("modal").style.display="block";}
+function closeModal(){document.getElementById("modal").style.display="none";}
+document.getElementById("modal").onclick=closeModal;
 </script>
+
 
 </body>
 </html>

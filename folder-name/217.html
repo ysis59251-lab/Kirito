@@ -9,7 +9,13 @@
 /* =========================
    GLOBAL
 ========================= */
-* { box-sizing:border-box; margin:0; padding:0; font-family: 'Segoe UI', sans-serif; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
+}
+
 body {
   color: #fff;
   background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)),
@@ -53,8 +59,10 @@ body {
 .video-box iframe {
   width: 100%;
   height: 100%;
+  border: none;
 }
 
+/* Thumbnail */
 .thumb {
   position: absolute;
   width: 100%;
@@ -65,8 +73,11 @@ body {
   transition: 0.3s;
 }
 
-.thumb:hover { filter: brightness(0.7); }
+.thumb:hover {
+  filter: brightness(0.7);
+}
 
+/* Play Button */
 .play-btn {
   position: absolute;
   top: 50%;
@@ -84,24 +95,35 @@ body {
    CONTROL BUTTON
 ========================= */
 .control {
-  text-align: center;
-  margin: 16px 0;
+  display: flex;
+  flex-direction: row;   /* บังคับแนวนอน */
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
 }
 
-button {
+.btn {
+  padding: 8px 16px;   /* ทำให้เล็กลง */
+  font-size: 14px;
+  border-radius: 30px;
   background: linear-gradient(135deg, #e50914, #b20710);
-  color: #fff;
+  color: white;
   border: none;
-  padding: 14px 28px;
-  border-radius: 40px;
-  font-size: 16px;
-  font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 8px 22px rgba(229,9,20,0.45);
-  transition: 0.25s;
+  transition: 0.2s;
 }
-button:hover { transform: translateY(-2px); background: linear-gradient(135deg,#ff1b26,#c8000a); }
-button:active { transform: none; }
+
+/* ปุ่มหลัก (เลือกตอน) */
+.btn.main {
+  padding: 10px 20px;
+  font-weight: bold;
+}
+
+/* hover */
+.btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg,#ff1b26,#c8000a);
+}
 
 /* =========================
    MODAL
@@ -133,7 +155,7 @@ button:active { transform: none; }
 }
 
 /* =========================
-   EPISODE LIST IN MODAL
+   EPISODE LIST
 ========================= */
 .ep {
   padding: 14px;
@@ -145,7 +167,9 @@ button:active { transform: none; }
   font-size: 16px;
 }
 
-.ep:hover { background: rgba(255,255,255,0.08); }
+.ep:hover {
+  background: rgba(255,255,255,0.08);
+}
 
 .ep.active {
   background: linear-gradient(135deg,#e50914,#b20710);
@@ -164,7 +188,7 @@ button:active { transform: none; }
 }
 
 /* =========================
-   ANIME IMAGE & CARD
+   ANIME CARD
 ========================= */
 .container {
   max-width: 540px;
@@ -181,8 +205,15 @@ button:active { transform: none; }
   filter: drop-shadow(0 12px 30px rgba(0,0,0,0.8));
 }
 
-.card-wrap { margin-top: 16px; }
-.card { border-radius: 16px; overflow: hidden; margin-bottom: 16px; }
+.card-wrap {
+  margin-top: 16px;
+}
+
+.card {
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
 
 .card img {
   width: 100%;
@@ -205,6 +236,7 @@ button:active { transform: none; }
 </head>
 
 <body>
+
 <div class="header">🎬 AnimeFume</div>
 
 <div class="container">
@@ -221,23 +253,24 @@ button:active { transform: none; }
   </p>
 </div>
 
-<!-- Player -->
+<!-- PLAYER -->
 <div class="player">
   <div class="video-box">
-    <img id="thumb" class="thumb">
-    <div class="play-btn" onclick="startVideo()">▶</div>
     <iframe id="video" allowfullscreen></iframe>
   </div>
 </div>
 
+<!-- CONTROL -->
 <div class="control">
-  <button onclick="openModal()">เลือกตอน</button>
+  <button onclick="prevEp()">⏮ ก่อนหน้า</button>
+  <button onclick="openModal()">📺 เลือกตอน</button>
+  <button onclick="nextEp()">⏭ ถัดไป</button>
 </div>
 
 <!-- Anime Card -->
 <img class="anime-img" src="https://www.pngarts.com/files/12/Manga-Anime-Girl-Transparent-Image.png" alt="Anime Girl">
 
-<!-- Modal -->
+<!-- MODAL -->
 <div class="modal" id="modal">
   <div class="modal-content" id="episodeList"></div>
 </div>
@@ -248,32 +281,46 @@ const API = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:
 
 let episodes = [];
 let current = "";
+let currentIndex = 0;
 let watched = JSON.parse(localStorage.getItem("watchedEpisodes") || "[]");
 
 fetch(API)
-  .then(res => res.text())
-  .then(text => {
-    const json = JSON.parse(text.substring(47).slice(0,-2));
-    episodes = json.table.rows.map(r => ({
-      ep: r.c[1]?.v,
-      title: r.c[2]?.v,
-      url: r.c[3]?.v,
-      cover: r.c[4]?.v
-    }));
-    renderEpisodes();
-    const last = localStorage.getItem("lastEpisode");
-    if(last) play(last);
-    else if(episodes[0]) play(episodes[0].url);
-  });
+.then(res => res.text())
+.then(text => {
+  const json = JSON.parse(text.substring(47).slice(0,-2));
+  episodes = json.table.rows.map(r => ({
+    ep: r.c[1]?.v,
+    title: r.c[2]?.v,
+    url: r.c[3]?.v
+  }));
+
+  renderEpisodes();
+
+  const last = localStorage.getItem("lastEpisode");
+
+  if(last){
+    const i = episodes.findIndex(e=>e.url===last);
+    if(i !== -1){
+      currentIndex = i;
+      play(episodes[i].url);
+    } else {
+      play(episodes[0].url);
+    }
+  } else {
+    play(episodes[0].url);
+  }
+});
 
 function renderEpisodes(){
   const box = document.getElementById("episodeList");
   box.innerHTML = "";
-  episodes.forEach(e=>{
+  episodes.forEach((e,i)=>{
     const div = document.createElement("div");
     div.className = "ep";
     div.innerText = `ตอนที่ ${e.ep} • ${e.title}`;
+
     if(watched.includes(e.url)) div.classList.add("watched");
+
     div.onclick = ()=>play(e.url);
     box.appendChild(div);
   });
@@ -281,40 +328,54 @@ function renderEpisodes(){
 }
 
 function play(url){
-  const ep = episodes.find(e=>e.url===url);
-  const originalUrl = url;
-  if(url.includes("drive.google.com")){
-    const id = url.match(/\/d\/(.+?)\//)[1];
-    url = `https://drive.google.com/file/d/${id}/preview`;
-  }
-  document.getElementById("video").src = url;
-  current = originalUrl;
-  if(ep && ep.cover){
-    document.getElementById("thumb").src = ep.cover;
-    document.getElementById("thumb").style.display="block";
-    document.querySelector(".play-btn").style.display="block";
-  }
-  localStorage.setItem("lastEpisode", originalUrl);
-  if(!watched.includes(originalUrl)){
-    watched.push(originalUrl);
-    localStorage.setItem("watchedEpisodes", JSON.stringify(watched));
-  }
-  highlight();
-  renderEpisodes();
-  closeModal();
+  const original = url;
+
+  const video = document.getElementById("video");
+  video.style.opacity = 0;
+
+  setTimeout(()=>{
+    if(url.includes("drive.google.com")){
+      const id = url.match(/\/d\/(.+?)\//)[1];
+      url = `https://drive.google.com/file/d/${id}/preview`;
+    }
+
+    video.src = url;
+    current = original;
+
+    currentIndex = episodes.findIndex(e=>e.url===original);
+    localStorage.setItem("lastEpisode", original);
+
+    if(!watched.includes(original)){
+      watched.push(original);
+      localStorage.setItem("watchedEpisodes", JSON.stringify(watched));
+    }
+
+    highlight();
+    renderEpisodes();
+    closeModal();
+
+    video.style.opacity = 1;
+
+  },150);
 }
 
-function startVideo(){
-  document.getElementById("thumb").style.display="none";
-  document.querySelector(".play-btn").style.display="none";
+function nextEp(){
+  if(currentIndex < episodes.length - 1){
+    currentIndex++;
+    play(episodes[currentIndex].url);
+  }
+}
+
+function prevEp(){
+  if(currentIndex > 0){
+    currentIndex--;
+    play(episodes[currentIndex].url);
+  }
 }
 
 function highlight(){
   document.querySelectorAll(".ep").forEach((el,i)=>{
-    el.classList.remove("active");
-    if(episodes[i] && episodes[i].url === current){
-      el.classList.add("active");
-    }
+    el.classList.toggle("active", i===currentIndex);
   });
 }
 
@@ -322,5 +383,6 @@ function openModal(){ document.getElementById("modal").style.display="block"; }
 function closeModal(){ document.getElementById("modal").style.display="none"; }
 document.getElementById("modal").onclick = closeModal;
 </script>
+
 </body>
 </html>

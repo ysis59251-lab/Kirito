@@ -285,6 +285,8 @@ body {
 const SHEET_ID="1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
 const API=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
+const currentAnime = "DMDP"; // 👈 ชื่อเรื่อง (ต้องตรงกับในชีต)
+
 let episodes=[];
 let currentIndex=0;
 let watched=JSON.parse(localStorage.getItem("watchedEpisodes")||"[]");
@@ -294,21 +296,24 @@ fetch(API)
 .then(text=>{
   const json=JSON.parse(text.substring(47).slice(0,-2));
 
-  episodes=json.table.rows.map(r=>({
+  episodes=json.table.rows
+  .map(r=>({
+    anime:r.c[0]?.v,
     ep:r.c[1]?.v,
     title:r.c[2]?.v,
     url:r.c[3]?.v,
-    desc:r.c[5]?.v,     // 📖 เรื่องย่อ
-    cover:r.c[6]?.v     // 🖼️ รูปปก
-  }));
+    desc:r.c[5]?.v,
+    cover:r.c[6]?.v
+  }))
+  .filter(e=>e.anime === currentAnime); // 🔥 กรองเรื่อง
 
-  // 🔥 แสดงเรื่องย่อ
+  // 🔥 เรื่องย่อ
   document.getElementById("desc").innerHTML =
     `<b>📖 เรื่องย่อ</b><br><br>` +
-    (episodes[0].desc || "").replace(/\n/g,"<br><br>");
+    (episodes[0]?.desc || "").replace(/\n/g,"<br><br>");
 
-  // 🔥 แสดงรูปปก
-  document.getElementById("coverImg").src = episodes[0].cover;
+  // 🔥 รูปปก (ไม่เปลี่ยนตามตอน)
+  document.getElementById("coverImg").src = episodes[0]?.cover || "";
 
   renderEpisodes();
 
@@ -357,8 +362,8 @@ function play(url){
   renderEpisodes();
   closeModal();
 
-  // 🔥 เปลี่ยนรูปตามตอน
-  document.getElementById("coverImg").src = episodes[0].cover;
+  // ❗ ไม่เปลี่ยนรูปตามตอน (คงรูปหลักไว้)
+  document.getElementById("coverImg").src = episodes[0]?.cover || "";
 
   document.getElementById("nowEp").innerText =
     "🎬 กำลังดู: ตอนที่ "+episodes[currentIndex].ep+" • "+episodes[currentIndex].title;

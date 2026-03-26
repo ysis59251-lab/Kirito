@@ -358,7 +358,7 @@ function play(url){
   closeModal();
 
   // 🔥 เปลี่ยนรูปตามตอน
-  document.getElementById("coverImg").src = episodes[currentIndex].cover;
+  document.getElementById("coverImg").src = episodes[0].cover;
 
   document.getElementById("nowEp").innerText =
     "🎬 กำลังดู: ตอนที่ "+episodes[currentIndex].ep+" • "+episodes[currentIndex].title;

@@ -249,18 +249,14 @@ body {
 <div class="header">🎬 AnimeFume</div>
 
 <div class="container">
-<h2>Sword Art Online ซอร์ดอาร์ตออนไลน์(ภาค1) ตอนที่ 1-25 พากย์ไทย จบแล้ว</h2>
+<h2>Dead Mount Death Play (ภาค 1)<br>ตอนที่ 1–12 พากย์ไทย จบแล้ว</h2>
 
 <div class="card-wrap">
   <div class="card">
-    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <img id="coverImg">
   </div>
 
-  <p class="desc">
-    เรื่องย่อ
-เทพแห่งซากศพ อดีตเนโครแมนเซอร์ผู้แข็งแกร่งพ่ายแพ้ในการต่อสู้กับพวกศาสนจักร เขาใช้เวทมนตร์เกิดใหม่ ฟื้นขึ้นมาในร่าง ชิโนมิยะ พอลก้า หนุ่มลูกครึ่งญี่ปุ่นยุคปัจจุบันที่เพิ่งถูกปาดคอโดยนักฆ่าสาว มิซากิ หลังแสดงพลังของเนโครแมนเซอร์ ทำให้เขาต้องมาพัวพันกับองค์กรลับในญี่ปุ่น
-  </p>
-</div>
+  <p class="desc" id="desc"></p></div>
 
 <div class="player">
   <div class="video-box">
@@ -286,8 +282,10 @@ body {
 </div>
 
 <script>
-const SHEET_ID = "1r2QhYu826ZomrOOAOmAjsHfWv17aVmnBFylaeKnfsU8";
-const API = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+const SHEET_ID="1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
+const API=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+
+const currentAnime = "Dark Beginning"; // 👈 ชื่อเรื่อง (ต้องตรงกับในชีต)
 
 let episodes=[];
 let currentIndex=0;
@@ -297,11 +295,25 @@ fetch(API)
 .then(res=>res.text())
 .then(text=>{
   const json=JSON.parse(text.substring(47).slice(0,-2));
-  episodes=json.table.rows.map(r=>({
+
+  episodes=json.table.rows
+  .map(r=>({
+    anime:r.c[0]?.v,
     ep:r.c[1]?.v,
     title:r.c[2]?.v,
-    url:r.c[3]?.v
-  }));
+    url:r.c[3]?.v,
+    desc:r.c[5]?.v,
+    cover:r.c[6]?.v
+  }))
+  .filter(e=>e.anime === currentAnime); // 🔥 กรองเรื่อง
+
+  // 🔥 เรื่องย่อ
+  document.getElementById("desc").innerHTML =
+    `<b>📖 เรื่องย่อ</b><br><br>` +
+    (episodes[0]?.desc || "").replace(/\n/g,"<br><br>");
+
+  // 🔥 รูปปก (ไม่เปลี่ยนตามตอน)
+  document.getElementById("coverImg").src = episodes[0]?.cover || "";
 
   renderEpisodes();
 
@@ -350,8 +362,10 @@ function play(url){
   renderEpisodes();
   closeModal();
 
-  /* 🔥 แสดงตอน */
-  document.getElementById("nowEp").innerText=
+  // ❗ ไม่เปลี่ยนรูปตามตอน (คงรูปหลักไว้)
+  document.getElementById("coverImg").src = episodes[0]?.cover || "";
+
+  document.getElementById("nowEp").innerText =
     "🎬 กำลังดู: ตอนที่ "+episodes[currentIndex].ep+" • "+episodes[currentIndex].title;
 }
 

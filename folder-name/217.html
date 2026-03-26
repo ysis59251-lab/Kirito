@@ -253,14 +253,10 @@ body {
 
 <div class="card-wrap">
   <div class="card">
-    <img src="https://img.shirokami.me/images/2023/07/31/e2ff123f347b9c34bdd689c6ff468e3b.jpg">
+    <img id="coverImg">
   </div>
 
-  <p class="desc">
-    เรื่องย่อ
-เทพแห่งซากศพ อดีตเนโครแมนเซอร์ผู้แข็งแกร่งพ่ายแพ้ในการต่อสู้กับพวกศาสนจักร เขาใช้เวทมนตร์เกิดใหม่ ฟื้นขึ้นมาในร่าง ชิโนมิยะ พอลก้า หนุ่มลูกครึ่งญี่ปุ่นยุคปัจจุบันที่เพิ่งถูกปาดคอโดยนักฆ่าสาว มิซากิ หลังแสดงพลังของเนโครแมนเซอร์ ทำให้เขาต้องมาพัวพันกับองค์กรลับในญี่ปุ่น
-  </p>
-</div>
+  <p class="desc" id="desc"></p></div>
 
 <div class="player">
   <div class="video-box">
@@ -297,11 +293,22 @@ fetch(API)
 .then(res=>res.text())
 .then(text=>{
   const json=JSON.parse(text.substring(47).slice(0,-2));
+
   episodes=json.table.rows.map(r=>({
     ep:r.c[1]?.v,
     title:r.c[2]?.v,
-    url:r.c[3]?.v
+    url:r.c[3]?.v,
+    desc:r.c[5]?.v,     // 📖 เรื่องย่อ
+    cover:r.c[6]?.v     // 🖼️ รูปปก
   }));
+
+  // 🔥 แสดงเรื่องย่อ
+  document.getElementById("desc").innerHTML =
+    `<b>📖 เรื่องย่อ</b><br><br>` +
+    (episodes[0].desc || "").replace(/\n/g,"<br><br>");
+
+  // 🔥 แสดงรูปปก
+  document.getElementById("coverImg").src = episodes[0].cover;
 
   renderEpisodes();
 
@@ -350,8 +357,10 @@ function play(url){
   renderEpisodes();
   closeModal();
 
-  /* 🔥 แสดงตอน */
-  document.getElementById("nowEp").innerText=
+  // 🔥 เปลี่ยนรูปตามตอน
+  document.getElementById("coverImg").src = episodes[currentIndex].cover;
+
+  document.getElementById("nowEp").innerText =
     "🎬 กำลังดู: ตอนที่ "+episodes[currentIndex].ep+" • "+episodes[currentIndex].title;
 }
 

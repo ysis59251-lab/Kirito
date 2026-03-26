@@ -285,7 +285,7 @@ body {
 const SHEET_ID="1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
 const API=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-const currentAnime = "DMDP"; // 👈 ชื่อเรื่อง (ต้องตรงกับในชีต)
+const currentAnime = "DMDP"; // 👈 ต้องตรงกับคอลัมน์ anime ในชีต
 
 let episodes=[];
 let currentIndex=0;
@@ -296,25 +296,38 @@ fetch(API)
 .then(text=>{
   const json=JSON.parse(text.substring(47).slice(0,-2));
 
+  // 🔥 ดึง + กรองเรื่อง
   episodes=json.table.rows
-  .map(r=>({
-    anime:r.c[0]?.v,
-    name:r.c[1]?.v,     // 👈 ชื่อเรื่อง
-    ep:r.c[2]?.v,
-    title:r.c[3]?.v,
-    url:r.c[4]?.v,
-    desc:r.c[6]?.v,
-    cover:r.c[7]?.v
-  }))
-  .filter(e=>e.anime === currentAnime);
+    .map(r=>({
+      anime:r.c[0]?.v,
+      name:r.c[1]?.v,
+      ep:r.c[2]?.v,
+      title:r.c[3]?.v,
+      url:r.c[4]?.v,
+      desc:r.c[6]?.v,
+      cover:r.c[7]?.v
+    }))
+    .filter(e=>e.anime === currentAnime);
 
-  // 🔥 เรื่องย่อ
+  // ❗ กัน error ถ้าไม่มีข้อมูล
+  if(episodes.length === 0){
+    document.getElementById("animeName").innerText = "ไม่พบข้อมูล";
+    return;
+  }
+
+  // 🔥 หา info จริง (ไม่ใช้ index 0 มั่วๆ)
+  const info = episodes.find(e => e.cover || e.desc) || episodes[0];
+
+  // 🏷️ ชื่อเรื่อง
+  document.getElementById("animeName").innerText = info.name || "";
+
+  // 📖 เรื่องย่อ
   document.getElementById("desc").innerHTML =
     `<b>📖 เรื่องย่อ</b><br><br>` +
-    (episodes[0]?.desc || "").replace(/\n/g,"<br><br>");
+    (info.desc || "").replace(/\n/g,"<br><br>");
 
-  // 🔥 รูปปก (ไม่เปลี่ยนตามตอน)
-  document.getElementById("animeName").innerText = episodes[0]?.name || "";
+  // 🖼️ รูปปก (คงที่)
+  document.getElementById("coverImg").src = info.cover || "";
 
   renderEpisodes();
 
@@ -330,14 +343,17 @@ fetch(API)
 function renderEpisodes(){
   const box=document.getElementById("episodeList");
   box.innerHTML="";
+
   episodes.forEach((e,i)=>{
     const div=document.createElement("div");
     div.className="ep";
     div.innerText=`ตอนที่ ${e.ep}`;
     if(watched.includes(e.url)) div.classList.add("watched");
+
     div.onclick=()=>play(e.url);
     box.appendChild(div);
   });
+
   highlight();
 }
 
@@ -352,6 +368,7 @@ function play(url){
   video.src=url;
 
   currentIndex=episodes.findIndex(e=>e.url===url || url.includes(e.url));
+
   localStorage.setItem("lastEpisode",episodes[currentIndex].url);
 
   if(!watched.includes(episodes[currentIndex].url)){
@@ -362,9 +379,6 @@ function play(url){
   highlight();
   renderEpisodes();
   closeModal();
-
-  // ❗ ไม่เปลี่ยนรูปตามตอน (คงรูปหลักไว้)
-  document.getElementById("coverImg").src = episodes[0]?.cover || "";
 
   document.getElementById("nowEp").innerText =
     "🎬 กำลังดู: ตอนที่ "+episodes[currentIndex].ep+" • "+episodes[currentIndex].title;
@@ -390,8 +404,14 @@ function highlight(){
   });
 }
 
-function openModal(){document.getElementById("modal").style.display="block";}
-function closeModal(){document.getElementById("modal").style.display="none";}
+function openModal(){
+  document.getElementById("modal").style.display="block";
+}
+
+function closeModal(){
+  document.getElementById("modal").style.display="none";
+}
+
 document.getElementById("modal").onclick=closeModal;
 </script>
 

@@ -249,7 +249,7 @@ body {
 <div class="header">🎬 AnimeFume</div>
 
 <div class="container">
-<h2>Dead Mount Death Play (ภาค 1)<br>ตอนที่ 1–12 พากย์ไทย จบแล้ว</h2>
+<h2 id="animeName"></h2>
 
 <div class="card-wrap">
   <div class="card">
@@ -299,13 +299,14 @@ fetch(API)
   episodes=json.table.rows
   .map(r=>({
     anime:r.c[0]?.v,
-    ep:r.c[1]?.v,
-    title:r.c[2]?.v,
-    url:r.c[3]?.v,
-    desc:r.c[5]?.v,
-    cover:r.c[6]?.v
+    name:r.c[1]?.v,     // 👈 ชื่อเรื่อง
+    ep:r.c[2]?.v,
+    title:r.c[3]?.v,
+    url:r.c[4]?.v,
+    desc:r.c[6]?.v,
+    cover:r.c[7]?.v
   }))
-  .filter(e=>e.anime === currentAnime); // 🔥 กรองเรื่อง
+  .filter(e=>e.anime === currentAnime);
 
   // 🔥 เรื่องย่อ
   document.getElementById("desc").innerHTML =
@@ -313,7 +314,7 @@ fetch(API)
     (episodes[0]?.desc || "").replace(/\n/g,"<br><br>");
 
   // 🔥 รูปปก (ไม่เปลี่ยนตามตอน)
-  document.getElementById("coverImg").src = episodes[0]?.cover || "";
+  document.getElementById("animeName").innerText = episodes[0]?.name || "";
 
   renderEpisodes();
 

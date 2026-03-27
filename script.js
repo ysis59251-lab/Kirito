@@ -140,30 +140,44 @@ function initHot(){
 
   onValue(ref(db,"animeViews"), snap => {
     const data = snap.val();
-    if(!data) return;
+    if(!data || cards.length === 0) return;
 
-    // 🔥 ใช้ cards ทั้งหมด (ไม่ใช่แค่หน้าปัจจุบัน)
+    // 🔥 รวมข้อมูลทั้งเว็บจริง
     const arr = cards.map(c => ({
-      card: c,
+      id: c.dataset.id,
+      title: c.dataset.title,
+      image: c.querySelector("img")?.src || "",
+      link: c.href,
       views: data[c.dataset.id] || 0
     }));
 
-    // 👑 เรียงยอดรวมทั้งเว็บ
+    // 👑 เรียงยอดวิวมาก → น้อย
     arr.sort((a,b) => b.views - a.views);
 
     slider.innerHTML = "";
 
-    arr.slice(0,6).forEach((item,i) => {
-      const clone = item.card.cloneNode(true);
-      clone.classList.add("hot-card");
+    // 🔥 เอา Top 5
+    arr.slice(0,5).forEach((item,i) => {
+
+      const card = document.createElement("a");
+      card.href = item.link;
+      card.className = "anime-card hot-card";
+
+      card.innerHTML = `
+        <div class="card-img">
+          <img src="${item.image}" loading="lazy">
+          <div class="overlay">${item.title}</div>
+        </div>
+      `;
 
       const badge = document.createElement("div");
       badge.className = "hot-badge";
-      badge.innerText = `🔥 #${i+1} (${item.views})`;
+      badge.innerText = `🔥 #${i+1} • ${item.views} views`;
 
-      clone.appendChild(badge);
-      slider.appendChild(clone);
+      card.appendChild(badge);
+      slider.appendChild(card);
     });
+
   });
 }
 

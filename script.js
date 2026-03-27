@@ -142,11 +142,13 @@ function initHot(){
     const data = snap.val();
     if(!data) return;
 
-    const arr = [...document.querySelectorAll(".anime-card")].map(c => ({
+    // 🔥 ใช้ cards ทั้งหมด (ไม่ใช่แค่หน้าปัจจุบัน)
+    const arr = cards.map(c => ({
       card: c,
       views: data[c.dataset.id] || 0
     }));
 
+    // 👑 เรียงยอดรวมทั้งเว็บ
     arr.sort((a,b) => b.views - a.views);
 
     slider.innerHTML = "";

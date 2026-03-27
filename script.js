@@ -172,7 +172,7 @@ function initHot(){
 
       const badge = document.createElement("div");
       badge.className = "hot-badge";
-      badge.innerText = `{i+1} • ${item.views} views`;
+      badge.innerText = `${item.views} views`;
 
       card.appendChild(badge);
       slider.appendChild(card);

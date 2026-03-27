@@ -157,7 +157,7 @@ function initHot(){
     slider.innerHTML = "";
 
     // 🔥 เอา Top 10
-    arr.slice(10).forEach((item,i) => {
+    arr.slice(0.7).forEach((item,i) => {
 
       const card = document.createElement("a");
       card.href = item.link;

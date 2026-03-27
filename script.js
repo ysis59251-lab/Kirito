@@ -156,8 +156,8 @@ function initHot(){
 
     slider.innerHTML = "";
 
-    // 🔥 เอา Top 5
-    arr.slice(0,5).forEach((item,i) => {
+    // 🔥 เอา Top 10
+    arr.slice(0.10).forEach((item,i) => {
 
       const card = document.createElement("a");
       card.href = item.link;

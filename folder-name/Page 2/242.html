@@ -360,9 +360,32 @@ function renderEpisodes(){
 function play(url){
   const video=document.getElementById("video");
 
+  // 🔴 รองรับ Google Drive
   if(url.includes("drive.google.com")){
     const id=url.match(/\/d\/(.+?)\//)[1];
     url=`https://drive.google.com/file/d/${id}/preview`;
+  }
+
+  // 🔴 รองรับ YouTube
+  else if(url.includes("youtube.com") || url.includes("youtu.be")){
+    let id="";
+
+    // แบบ youtu.be/xxxxx
+    if(url.includes("youtu.be")){
+      id=url.split("youtu.be/")[1];
+    }
+
+    // แบบ youtube.com/watch?v=xxxxx
+    else if(url.includes("watch?v=")){
+      id=url.split("v=")[1];
+    }
+
+    // กันพารามิเตอร์เกิน เช่น &t=10
+    if(id.includes("&")){
+      id=id.split("&")[0];
+    }
+
+    url=`https://www.youtube.com/embed/${id}`;
   }
 
   video.src=url;

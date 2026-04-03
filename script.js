@@ -27,105 +27,113 @@ let perPage = 40;
 let currentPage = 1;
 let savedSearch = "";
 let isChangingPage = false;
-let hotLoaded = false;
 
 /* =========================
 SAVE STATE
 ========================= */
-function saveState(){
-  try{
-    localStorage.setItem("scrollY", window.scrollY);
-    localStorage.setItem("lastPage", currentPage);
-    localStorage.setItem("searchText", savedSearch);
-    localStorage.setItem("lastTime", Date.now());
-  }catch(e){}
+function saveState() {
+  localStorage.setItem("scrollY", window.scrollY);
+  localStorage.setItem("lastPage", currentPage);
+  localStorage.setItem("searchText", savedSearch);
+  localStorage.setItem("lastTime", Date.now());
 }
 
 /* =========================
 FAB BUTTONS
 ========================= */
-function initFAB(){
-  document.querySelectorAll(".fab").forEach(fab=>{
-    fab.onclick = () => {
-      const action = fab.dataset.action;
-      if(action==="toggle-nav") document.getElementById("bottomNav")?.classList.toggle("show");
-      else if(action==="open-search") document.querySelector(".search")?.focus();
-      else if(action==="open-hot") document.getElementById("hotSlider")?.scrollIntoView({behavior:"smooth"});
-    };
+document.querySelectorAll(".fab").forEach(fab => {
+  fab.addEventListener("click", () => {
+    const action = fab.dataset.action;
+    switch (action) {
+      case "toggle-nav":
+        document.getElementById("bottomNav")?.classList.toggle("show");
+        break;
+      case "open-search":
+        document.querySelector(".search")?.focus();
+        break;
+      case "open-hot":
+        document.getElementById("hotSlider")?.scrollIntoView({ behavior: "smooth" });
+        break;
+      default:
+        document.getElementById("bottomNav")?.classList.toggle("show");
+        break;
+    }
   });
-}
+});
 
 /* =========================
 MENU
 ========================= */
-function initMenu(){
+function initMenu() {
   const btn = document.getElementById("menuBtn");
   const menu = document.getElementById("menuDropdown");
-  if(!btn || !menu) return;
-  btn.onclick = ()=> menu.style.display = menu.style.display==="flex"?"none":"flex";
+  if (!btn || !menu) return;
+  btn.onclick = () => {
+    menu.style.display = menu.style.display === "flex" ? "none" : "flex";
+  };
 }
 
 /* =========================
 FOOTER
 ========================= */
-function initFooter(){
+function initFooter() {
   const el = document.getElementById("year");
-  if(el) el.textContent = new Date().getFullYear();
+  if (el) el.textContent = new Date().getFullYear();
 }
 
 /* =========================
 ONLINE USERS
 ========================= */
-function initOnline(){
-  try{
-    const userRef = push(ref(db,"onlineUsers"));
-    set(userRef,{ page: location.pathname, time: Date.now() });
+function initOnline() {
+  try {
+    const userRef = push(ref(db, "onlineUsers"));
+    set(userRef, { page: location.pathname, time: Date.now() });
     onDisconnect(userRef).remove();
-  }catch(e){}
+  } catch (e) {
+    console.error("online error", e);
+  }
 }
 
 /* =========================
 VIEW COUNT
 ========================= */
-function initViews(){
-  document.addEventListener("click", e=>{
+function initViews() {
+  document.addEventListener("click", e => {
     const card = e.target.closest(".anime-card");
-    if(!card) return;
-
+    if (!card) return;
     const id = card.dataset.id;
-    if(!id) return;
+    if (!id) return;
 
-    const last = localStorage.getItem("view_"+id);
-    if(last && Date.now()-last<10000) return; // กันกดซ้ำ 10 วินาที
+    const last = localStorage.getItem("view_" + id);
+    const now = Date.now();
+    if (last && (now - last) < 10000) return;
 
-    localStorage.setItem("view_"+id, Date.now());
-    runTransaction(ref(db,"animeViews/"+id), val=>(val||0)+1);
+    localStorage.setItem("view_" + id, now);
+    runTransaction(ref(db, "animeViews/" + id), val => (val || 0) + 1);
   });
 }
 
 /* =========================
 HOT LIST
 ========================= */
-function initHot(){
-  if(hotLoaded) return;
-  hotLoaded = true;
+function initHot() {
   const slider = document.getElementById("hotSlider");
-  if(!slider) return;
+  if (!slider) return;
 
-  onValue(ref(db,"animeViews"), snap=>{
+  onValue(ref(db, "animeViews"), snap => {
     const data = snap.val();
-    if(!data || !cards.length) return;
+    if (!data || cards.length === 0) return;
 
-    const arr = cards.map(c=>({
+    const arr = cards.map(c => ({
       id: c.dataset.id,
       title: c.dataset.title,
       image: c.querySelector("img")?.src || "https://via.placeholder.com/300x400?text=No+Image",
       link: c.href,
-      views: data[c.dataset.id]||0
-    })).sort((a,b)=>b.views-a.views);
+      views: data[c.dataset.id] || 0
+    })).sort((a, b) => b.views - a.views);
 
     slider.innerHTML = "";
-    arr.slice(0,10).forEach(item=>{
+    arr.slice(0, 10).forEach(item => {
       const card = document.createElement("a");
       card.href = item.link;
       card.className = "anime-card hot-card";
@@ -144,66 +152,68 @@ function initHot(){
 /* =========================
 LOAD DATA FROM SHEET
 ========================= */
-function loadFromSheet(){
+function loadFromSheet() {
   const url = "https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1";
-
-  fetch(url).then(r=>r.ok?r.json():Promise.reject())
-  .then(data=>{
+  fetch(url).then(r => r.json()).then(data => {
     const container = document.getElementById("animeList");
-    if(!container) return;
+    if (!container) return;
+    container.innerHTML = "";
 
-    container.innerHTML="";
-    cards=[];
-
-    data.forEach((row,i)=>{
-      const id = row.id||row.title||("anime_"+i);
-      const title = row.title||"ไม่มีชื่อ";
-      const year = parseInt(row.year)||0;
-      const image = row.image && row.image.startsWith("http") ? row.image : "https://via.placeholder.com/300x400?text=No+Image";
-
+    data.forEach((row, i) => {
       const card = document.createElement("a");
-      card.href = row.link||"#";
-      card.className="anime-card";
-      card.dataset.id=id;
-      card.dataset.year=year;
-      card.dataset.title=title.toLowerCase();
-      card.dataset.search="1";
-      card.dataset.hidden = row.hidden?.toUpperCase()==="TRUE"?"1":"0";
+      card.href = row.link || "#";
+      card.className = "anime-card";
+      card.dataset.id = row.id || row.title || "anime_" + i;
+      card.dataset.year = row.year || "0";
+      card.dataset.search = "1";
+      card.dataset.title = (row.title || "").toLowerCase();
+      card.dataset.hidden = row.hidden?.toUpperCase() === "TRUE" ? "1" : "0";
 
-      card.innerHTML=`
+      const imgSrc = row.image && row.image.startsWith("http") ? row.image : "https://via.placeholder.com/300x400?text=No+Image";
+      card.innerHTML = `
         <div class="card-img">
-          <img src="${image}" loading="lazy">
-          <div class="overlay">${title}</div>
+          <img src="${imgSrc}" loading="lazy">
+          <div class="overlay">${row.title || "ไม่มีชื่อ"}</div>
         </div>
       `;
       container.appendChild(card);
-      cards.push(card);
     });
 
-    if(savedSearch){
-      cards.forEach(c=>c.dataset.search=c.dataset.title.includes(savedSearch)?"1":"0");
+    cards = [...document.querySelectorAll(".anime-card")];
+
+    if (savedSearch) {
+      cards.forEach(c => {
+        c.dataset.search = c.dataset.title.includes(savedSearch) ? "1" : "0";
+      });
     }
 
     sortYear();
     renderPage();
-    setTimeout(()=>initHot(),300);
+    initHot();
 
-  }).catch(()=>document.getElementById("animeList").innerHTML="โหลดข้อมูลไม่ได้");
+    const y = localStorage.getItem("scrollY");
+    if (y) setTimeout(() => window.scrollTo(0, parseInt(y)), 200);
+  }).catch(() => {
+    document.getElementById("animeList").innerHTML = "โหลดข้อมูลไม่ได้";
+  });
 }
 
 /* =========================
 SEARCH
 ========================= */
-function initSearch(){
+function initSearch() {
   const input = document.querySelector(".search");
-  if(!input) return;
-  if(savedSearch) input.value = savedSearch;
+  if (!input) return;
 
-  input.addEventListener("input", ()=>{
+  if (savedSearch) input.value = savedSearch;
+
+  input.addEventListener("input", () => {
     savedSearch = input.value.toLowerCase();
-    cards.forEach(c=>c.dataset.search=c.dataset.title.includes(savedSearch)?"1":"0");
-    currentPage=1;
-    isChangingPage=true;
+    cards.forEach(c => {
+      c.dataset.search = (c.dataset.title || "").includes(savedSearch) ? "1" : "0";
+    });
+    currentPage = 1;
+    isChangingPage = true;
     saveState();
     renderPage();
   });
@@ -212,56 +222,96 @@ function initSearch(){
 /* =========================
 SORT
 ========================= */
-function sortYear(){
-  cards.sort((a,b)=>Number(b.dataset.year)-Number(a.dataset.year));
-  const container=document.getElementById("animeList");
-  cards.forEach(c=>container.appendChild(c));
+function sortYear() {
+  cards.sort((a, b) => (parseInt(b.dataset.year) || 0) - (parseInt(a.dataset.year) || 0));
+  const container = document.getElementById("animeList");
+  cards.forEach(c => container.appendChild(c));
 }
 
 /* =========================
 PAGINATION
 ========================= */
-function renderPage(){
-  const visible = cards.filter(c=>c.dataset.search!="0" && c.dataset.hidden!="1");
-  const totalPages=Math.ceil(visible.length/perPage)||1;
-  const start=(currentPage-1)*perPage;
+function renderPage() {
+  const visible = cards.filter(c => c.dataset.search !== "0" && c.dataset.hidden !== "1");
+  const totalPages = Math.ceil(visible.length / perPage) || 1;
+  const start = (currentPage - 1) * perPage;
+  const end = start + perPage;
 
-  cards.forEach(c=>c.style.display="none");
-  visible.slice(start,start+perPage).forEach(c=>c.style.display="");
+  cards.forEach(c => c.style.display = "none");
+  visible.slice(start, end).forEach(c => c.style.display = "");
 
   renderNumbers(totalPages);
-  if(isChangingPage) window.scrollTo({top:0,behavior:"smooth"});
+  if (isChangingPage) window.scrollTo({ top: 0, behavior: "smooth" });
+
   saveState();
-  isChangingPage=false;
+  isChangingPage = false;
 }
 
-function renderNumbers(totalPages){
+function renderNumbers(totalPages) {
   const box = document.getElementById("numberBox");
-  if(!box) return;
-  box.innerHTML="";
-  for(let i=1;i<=totalPages;i++){
-    const btn=document.createElement("div");
-    btn.className="num";
-    btn.textContent=i;
-    if(i===currentPage) btn.classList.add("active");
-    btn.onclick=()=>{currentPage=i;isChangingPage=true;renderPage();};
+  if (!box) return;
+  box.innerHTML = "";
+
+  const pagesPerSet = 5;
+  const currentSet = Math.floor((currentPage - 1) / pagesPerSet);
+  const startPage = currentSet * pagesPerSet + 1;
+  const endPage = Math.min(startPage + pagesPerSet - 1, totalPages);
+
+  if (currentSet > 0) {
+    const prevBtn = document.createElement("div");
+    prevBtn.className = "num set-nav";
+    prevBtn.textContent = "<";
+    prevBtn.onclick = () => { isChangingPage = true; currentPage = startPage - 1; renderPage(); };
+    box.appendChild(prevBtn);
+  }
+
+  for (let i = startPage; i <= endPage; i++) {
+    const btn = document.createElement("div");
+    btn.className = "num";
+    btn.textContent = i;
+    if (i === currentPage) btn.classList.add("active");
+    btn.onclick = () => { isChangingPage = true; currentPage = i; renderPage(); };
     box.appendChild(btn);
+  }
+
+  if (endPage < totalPages) {
+    const nextBtn = document.createElement("div");
+    nextBtn.className = "num set-nav";
+    nextBtn.textContent = ">";
+    nextBtn.onclick = () => { isChangingPage = true; currentPage = endPage + 1; renderPage(); };
+    box.appendChild(nextBtn);
   }
 }
 
 /* =========================
+BOTTOM NAV
+========================= */
+document.getElementById("prevBtn")?.addEventListener("click", () => {
+  if (currentPage > 1) { isChangingPage = true; currentPage--; renderPage(); }
+});
+
+document.getElementById("nextBtn")?.addEventListener("click", () => {
+  const visible = cards.filter(c => c.dataset.search !== "0" && c.dataset.hidden !== "1");
+  const totalPages = Math.ceil(visible.length / perPage) || 1;
+  if (currentPage < totalPages) { isChangingPage = true; currentPage++; renderPage(); }
+});
+
+/* =========================
 START
 ========================= */
-document.addEventListener("DOMContentLoaded", ()=>{
+document.addEventListener("DOMContentLoaded", () => {
   initMenu();
   initFooter();
-  initFAB();
 
   const lastTime = localStorage.getItem("lastTime");
-  if(lastTime && Date.now()-lastTime<=30000){
-    currentPage=parseInt(localStorage.getItem("lastPage"))||1;
-    savedSearch=localStorage.getItem("searchText")||"";
-  }else localStorage.clear();
+  const now = Date.now();
+
+  if (lastTime && (now - lastTime) <= 30000) {
+    const savedPage = localStorage.getItem("lastPage");
+    if (savedPage) currentPage = parseInt(savedPage);
+    const saved = localStorage.getItem("searchText");
+    if (saved) savedSearch = saved.toLowerCase();
+  } else localStorage.clear();
 
   loadFromSheet();
   initOnline();

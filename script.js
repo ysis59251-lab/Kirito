@@ -9,8 +9,7 @@ import {
   runTransaction,
   set,
   onDisconnect,
-  push,
-  remove
+  push
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 /* =========================
@@ -30,7 +29,7 @@ const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 /* =========================
-GLOBAL
+GLOBAL STATE
 ========================= */
 let cards = [];
 let perPage = 40;
@@ -52,7 +51,28 @@ function saveState(){
 }
 
 /* =========================
-MENU + FOOTER
+FAB BUTTONS (แก้ให้ DOM พร้อมก่อน)
+========================= */
+function initFAB(){
+  document.querySelectorAll(".fab").forEach(fab => {
+    fab.onclick = () => {
+      const action = fab.dataset.action;
+
+      if(action === "toggle-nav"){
+        document.getElementById("bottomNav")?.classList.toggle("show");
+      }
+      else if(action === "open-search"){
+        document.querySelector(".search")?.focus();
+      }
+      else if(action === "open-hot"){
+        document.getElementById("hotSlider")?.scrollIntoView({behavior:"smooth"});
+      }
+    };
+  });
+}
+
+/* =========================
+MENU
 ========================= */
 function initMenu(){
   const btn = document.getElementById("menuBtn");
@@ -64,13 +84,16 @@ function initMenu(){
   };
 }
 
+/* =========================
+FOOTER
+========================= */
 function initFooter(){
   const el = document.getElementById("year");
   if(el) el.textContent = new Date().getFullYear();
 }
 
 /* =========================
-ONLINE (แก้แล้ว)
+ONLINE
 ========================= */
 function initOnline(){
   try{
@@ -81,12 +104,8 @@ function initOnline(){
       time: Date.now()
     });
 
-    // ✅ FIX ของเดิม
     onDisconnect(userRef).remove();
-
-  }catch(e){
-    console.warn("online error", e);
-  }
+  }catch(e){}
 }
 
 /* =========================
@@ -106,17 +125,13 @@ function initViews(){
 
     localStorage.setItem("view_"+id, now);
 
-    try{
-      const viewRef = ref(db,"animeViews/"+id);
-      runTransaction(viewRef, val => (val||0)+1);
-    }catch(err){
-      console.warn("view error", err);
-    }
+    const viewRef = ref(db,"animeViews/"+id);
+    runTransaction(viewRef, val => (val||0)+1);
   });
 }
 
 /* =========================
-HOT
+HOT (แก้ไม่ขึ้น)
 ========================= */
 function initHot(){
   if(hotLoaded) return;
@@ -142,14 +157,14 @@ function initHot(){
     slider.innerHTML = "";
 
     arr.slice(0,10).forEach(item => {
+
       const card = document.createElement("a");
       card.href = item.link;
       card.className = "anime-card hot-card";
 
       card.innerHTML = `
         <div class="card-img">
-          <img src="${item.image}" loading="lazy"
-          onerror="this.src='https://via.placeholder.com/300x400?text=Error'">
+          <img src="${item.image}" loading="lazy">
           <div class="overlay">${item.title}</div>
         </div>
       `;
@@ -165,13 +180,16 @@ function initHot(){
 }
 
 /* =========================
-LOAD SHEET (เสถียรขึ้น)
+LOAD DATA (แก้ดึงไม่ครบ)
 ========================= */
 function loadFromSheet(){
   const url = "https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1";
 
   fetch(url)
-  .then(r => r.json())
+  .then(r => {
+    if(!r.ok) throw new Error("โหลดไม่ได้");
+    return r.json();
+  })
   .then(data => {
 
     const container = document.getElementById("animeList");
@@ -184,12 +202,11 @@ function loadFromSheet(){
 
       const id = row.id || row.title || ("anime_"+i);
       const title = row.title || "ไม่มีชื่อ";
+      const year = parseInt(row.year) || 0;
 
       const image = row.image && row.image.startsWith("http")
         ? row.image
         : "https://via.placeholder.com/300x400?text=No+Image";
-
-      const year = parseInt(row.year) || 0;
 
       const card = document.createElement("a");
       card.href = row.link || "#";
@@ -203,8 +220,7 @@ function loadFromSheet(){
 
       card.innerHTML = `
         <div class="card-img">
-          <img src="${image}" loading="lazy"
-          onerror="this.src='https://via.placeholder.com/300x400?text=Error'">
+          <img src="${image}" loading="lazy">
           <div class="overlay">${title}</div>
         </div>
       `;
@@ -222,19 +238,11 @@ function loadFromSheet(){
     sortYear();
     renderPage();
 
-    // ✅ รอ cards มาก่อนค่อย initHot
-    setTimeout(()=>initHot(),500);
-
-    const y = localStorage.getItem("scrollY");
-    if(y){
-      setTimeout(()=>window.scrollTo(0,parseInt(y)),200);
-    }
+    setTimeout(()=>initHot(),400);
 
   })
-  .catch(err=>{
-    console.error(err);
-    const el = document.getElementById("animeList");
-    if(el) el.innerHTML = "โหลดข้อมูลไม่ได้ (Sheet พังหรือเน็ตช้า)";
+  .catch(()=>{
+    document.getElementById("animeList").innerHTML = "โหลดข้อมูลไม่ได้";
   });
 }
 
@@ -293,29 +301,6 @@ function renderPage(){
   isChangingPage=false;
 }
 
-function renderNumbers(totalPages){
-  const box = document.getElementById("numberBox");
-  if(!box) return;
-
-  box.innerHTML = "";
-
-  for(let i=1;i<=totalPages;i++){
-    const btn = document.createElement("div");
-    btn.className = "num";
-    btn.textContent = i;
-
-    if(i===currentPage) btn.classList.add("active");
-
-    btn.onclick = ()=>{
-      currentPage=i;
-      isChangingPage=true;
-      renderPage();
-    };
-
-    box.appendChild(btn);
-  }
-}
-
 /* =========================
 START
 ========================= */
@@ -323,8 +308,10 @@ document.addEventListener("DOMContentLoaded", ()=>{
 
   initMenu();
   initFooter();
+  initFAB(); // 🔥 สำคัญ
 
   const lastTime = localStorage.getItem("lastTime");
+
   if(lastTime && Date.now()-lastTime <= 30000){
     currentPage = parseInt(localStorage.getItem("lastPage"))||1;
     savedSearch = localStorage.getItem("searchText")||"";

@@ -2,15 +2,7 @@
 FIREBASE IMPORT
 ========================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getDatabase,
-  ref,
-  onValue,
-  runTransaction,
-  set,
-  onDisconnect,
-  push
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, onValue, runTransaction, set, onDisconnect, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 /* =========================
 FIREBASE CONFIG
@@ -51,7 +43,7 @@ function saveState(){
 }
 
 /* =========================
-FAB BUTTONS (แก้ให้ DOM พร้อมก่อน)
+FAB (แก้ให้ทำงานแน่นอน)
 ========================= */
 function initFAB(){
   document.querySelectorAll(".fab").forEach(fab => {
@@ -157,7 +149,6 @@ function initHot(){
     slider.innerHTML = "";
 
     arr.slice(0,10).forEach(item => {
-
       const card = document.createElement("a");
       card.href = item.link;
       card.className = "anime-card hot-card";
@@ -186,8 +177,8 @@ function loadFromSheet(){
   const url = "https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1";
 
   fetch(url)
-  .then(r => {
-    if(!r.ok) throw new Error("โหลดไม่ได้");
+  .then(r=>{
+    if(!r.ok) throw new Error();
     return r.json();
   })
   .then(data => {
@@ -238,7 +229,7 @@ function loadFromSheet(){
     sortYear();
     renderPage();
 
-    setTimeout(()=>initHot(),400);
+    setTimeout(()=>initHot(),300);
 
   })
   .catch(()=>{
@@ -274,7 +265,6 @@ SORT
 ========================= */
 function sortYear(){
   cards.sort((a,b)=> Number(b.dataset.year) - Number(a.dataset.year));
-
   const container = document.getElementById("animeList");
   cards.forEach(c=>container.appendChild(c));
 }
@@ -301,14 +291,36 @@ function renderPage(){
   isChangingPage=false;
 }
 
+function renderNumbers(totalPages){
+  const box = document.getElementById("numberBox");
+  if(!box) return;
+
+  box.innerHTML = "";
+
+  for(let i=1;i<=totalPages;i++){
+    const btn = document.createElement("div");
+    btn.className = "num";
+    btn.textContent = i;
+
+    if(i===currentPage) btn.classList.add("active");
+
+    btn.onclick = ()=>{
+      currentPage=i;
+      isChangingPage=true;
+      renderPage();
+    };
+
+    box.appendChild(btn);
+  }
+}
+
 /* =========================
 START
 ========================= */
 document.addEventListener("DOMContentLoaded", ()=>{
-
   initMenu();
   initFooter();
-  initFAB(); // 🔥 สำคัญ
+  initFAB();
 
   const lastTime = localStorage.getItem("lastTime");
 
@@ -323,5 +335,4 @@ document.addEventListener("DOMContentLoaded", ()=>{
   initOnline();
   initViews();
   initSearch();
-
 });

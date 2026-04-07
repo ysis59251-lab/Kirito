@@ -1,17 +1,17 @@
 /* =========================
-   RESET
+   RESET + GLOBAL
 ========================= */
 *{
   box-sizing:border-box;
   margin:0;
   padding:0;
-  font-family:'Segoe UI',sans-serif;
+  font-family:'Segoe UI',sans-serif
 }
 
 body{
   background:#000;
   color:#fff;
-  min-height:100vh;
+  min-height:100vh
 }
 
 html{
@@ -29,7 +29,7 @@ html{
 }
 
 /* =========================
-   HEADER
+   HEADER + SEARCH
 ========================= */
 .header{
   position:sticky;
@@ -47,7 +47,6 @@ html{
   padding:10px 14px;
   border-radius:20px;
   border:none;
-  outline:none;
 }
 
 /* =========================
@@ -59,7 +58,7 @@ html{
   left:15px;
   font-size:28px;
   cursor:pointer;
-  z-index:1000;
+  z-index:1000
 }
 
 #menuDropdown{
@@ -69,204 +68,375 @@ html{
   background:#111;
   border-radius:10px;
   display:none;
+  flex-direction:column;
   z-index:1000;
 }
 
 #menuDropdown a{
-  display:block;
   padding:10px 14px;
   color:#fff;
-  text-decoration:none;
+  text-decoration:none
 }
 
 #menuDropdown a:hover{
-  background:#222;
+  background:#222
 }
 
 /* =========================
-   HOT SECTION
+   GRID LIST (ANIME)
 ========================= */
-.hot-section{
+#animeList{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 12px;
+}
+
+.anime-list{
   padding:20px;
-  background:linear-gradient(180deg,#1e1e1e,#2a2a2a);
-}
-
-.hot-section h2{
-  font-size:20px;
-  margin-bottom:15px;
-  font-weight:800;
-  background:linear-gradient(90deg,#ff4d4d,#ffb347);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-}
-
-.hot-slider{
-  display:flex;
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
   gap:16px;
-  overflow-x:auto;
-  padding-bottom:10px;
 }
 
-.hot-slider::-webkit-scrollbar{
-  display:none;
-}
-
-.hot-card{
-  min-width:160px;
+/* =========================
+   CARD BASE
+========================= */
+.anime-card{
+  text-decoration: none;
+  background:rgba(255,255,255,.08);
   border-radius:16px;
   overflow:hidden;
+  color:#fff;
   position:relative;
-  transition:.3s;
 }
 
-.hot-card img{
-  width:100%;
-  height:240px;
-  object-fit:cover;
+.card{
+  position: relative;
+  width: 180px;
 }
 
-.hot-card:hover{
-  transform:translateY(-6px) scale(1.05);
+.card img{
+  width: 100%;
+  border-radius: 12px;
 }
 
-.hot-card::after{
-  content:"";
-  position:absolute;
-  bottom:0;
-  width:100%;
-  height:50%;
-  background:linear-gradient(to top,rgba(0,0,0,.8),transparent);
-}
-
-.hot-card .title{
-  position:absolute;
-  bottom:10px;
-  left:10px;
-  right:10px;
-  font-size:14px;
-  font-weight:600;
-}
-
-/* =========================
-   ANIME GRID
-========================= */
-.anime-list{
-  padding:15px;
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-  gap:12px;
-}
-
-.anime-card{
-  background:rgba(255,255,255,.05);
-  border-radius:12px;
-  overflow:hidden;
-  cursor:pointer;
-  transition:.25s;
-}
-
-.anime-card:hover{
-  transform:translateY(-5px) scale(1.03);
-}
-
-/* =========================
-   IMAGE + TEXT
-========================= */
 .card-img{
-  position:relative;
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .card-img img{
+  width: 100%;
+  height: 360px;
+  object-fit: cover;
+  display: block;
+}
+
+.img-box img{
   width:100%;
-  height:200px;
+  height:320px;
   object-fit:cover;
+  display:block
+}
+
+/* =========================
+   TEXT / OVERLAY
+========================= */
+.overlay{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px;
+  font-size: 13px;
+  color: white;
+  background: linear-gradient(transparent, rgba(0,0,0,0.9));
+}
+
+.overlay-text{
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  padding:10px;
+  font-size:13px;
+  background:linear-gradient(to top,rgba(0,0,0,.8),transparent)
 }
 
 .title{
-  position:absolute;
-  bottom:0;
-  width:100%;
-  padding:8px;
-  font-size:13px;
-  background:linear-gradient(transparent,rgba(0,0,0,.85));
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  color: white;
+  padding: 8px;
+  font-size: 13px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+}
+
+.text-center{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(0,0,0,0.7);
+  pointer-events: none;
 }
 
 /* =========================
    BADGE
 ========================= */
 .badge{
-  position:absolute;
-  top:8px;
-  left:8px;
-  padding:3px 8px;
-  font-size:11px;
-  border-radius:999px;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: orange;
+  color: white;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 999px;
 }
 
-.hot{background:#ff3b3b;}
-.new{background:#00c853;}
-.recommend{background:#ffd600;color:#000;}
+.hot{background:#ff3b3b}
+.new{background:#00c853}
+.recommend{background:#ffd600;color:#000}
+
+/* =========================
+   HOT SECTION
+========================= */
+.hot-section{
+  padding:20px;
+  background: linear-gradient(180deg,#1e1e1e,#2a2a2a);
+}
+
+.hot-section h2{
+  font-size:20px;
+  margin-bottom:15px;
+  font-weight:800;
+  background: linear-gradient(90deg,#ff4d4d,#ffb347);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+
+.hot-slider{
+  display:flex;
+  gap:18px;
+  overflow-x:auto;
+  padding-bottom:15px;
+  scroll-behavior:smooth;
+}
+
+.hot-slider::-webkit-scrollbar{display:none}
+
+/* =========================
+   HOT CARD
+========================= */
+.hot-card{
+  min-width:170px;
+  border-radius:20px;
+  overflow:hidden;
+  position:relative;
+  background:#fff;
+  text-decoration:none;
+  box-shadow:
+  0 10px 25px rgba(0,0,0,.25),
+  0 0 0 1px rgba(255,255,255,.4) inset;
+  transition:transform .35s ease, box-shadow .35s ease;
+}
+
+.hot-card:hover{
+  transform:translateY(-10px);
+  box-shadow:
+  0 20px 45px rgba(255,77,77,.35),
+  0 0 0 1px rgba(255,255,255,.6) inset;
+}
+
+.hot-card img{
+  width:100%;
+  height:260px;
+  object-fit:cover;
+  display:block;
+  transition:transform .5s ease;
+}
+
+.hot-card:hover img{
+  transform:scale(1.08);
+}
+
+.hot-card::after{
+  content:"";
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  height:50%;
+  background:linear-gradient(to top,rgba(0,0,0,.75),transparent);
+}
+
+.hot-card .title{
+  position:absolute;
+  bottom:12px;
+  left:14px;
+  right:14px;
+  font-size:15px;
+  font-weight:700;
+  color:#fff;
+  z-index:2;
+}
+
+.hot-badge{
+  position:absolute;
+  top:12px;
+  left:12px;
+  padding:6px 14px;
+  border-radius:50px;
+  font-size:12px;
+  font-weight:700;
+  background:linear-gradient(90deg,#ff4d4d,#ffb347);
+  color:#fff;
+  box-shadow:0 6px 18px rgba(255,77,77,.45);
+  z-index:2;
+}
+
+/* =========================
+   ANIME GLOW EFFECT
+========================= */
+.anime-wrapper{
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 80px 0;
+  overflow: visible;
+}
+
+.anime-wrapper::before{
+  content:"";
+  position:absolute;
+  width:500px;
+  height:500px;
+  background: conic-gradient(
+  from 180deg,
+  #ff6a6a,
+  #ffb347,
+  #ffd86b,
+  #ff6a6a
+  );
+  border-radius:50%;
+  filter: blur(100px);
+  opacity:0.6;
+  animation: rotateGlow 12s linear infinite;
+  z-index:0;
+}
+
+.anime-wrapper::after{
+  content:"";
+  position:absolute;
+  width:360px;
+  height:360px;
+  border-radius:50%;
+  border: 2px solid rgba(255,255,255,0.4);
+  box-shadow:
+  0 0 20px rgba(255,120,120,0.6),
+  inset 0 0 20px rgba(255,180,0,0.6);
+  z-index:1;
+}
+
+.anime-img{
+  width: 360px;
+  max-width: 90%;
+  position: relative;
+  z-index: 2;
+  filter:
+  drop-shadow(0 20px 40px rgba(0,0,0,0.4))
+  drop-shadow(0 0 30px rgba(255,150,100,0.5));
+}
+
+@keyframes rotateGlow{
+  from{ transform: rotate(0deg) scale(1); }
+  to{ transform: rotate(360deg) scale(1.1); }
+}
 
 /* =========================
    BOTTOM CONTROL
 ========================= */
 .bottom-area{
-  position:fixed;
-  left:50%;
-  bottom:-200px;
-  transform:translateX(-50%);
+  position: fixed;
+  left: 50%;
+  bottom: -200px;
+  transform: translateX(-50%);
   width:260px;
-  transition:.3s;
   z-index:20;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  transition: bottom .35s ease;
 }
 
 .bottom-area.show{
-  bottom:20px;
+  bottom: 20px;
 }
 
 #numberBox{
   display:flex;
-  gap:6px;
-  padding:10px;
-  background:rgba(0,0,0,.7);
-  border-radius:12px;
-  justify-content:center;
+  gap:8px;
+  padding:10px 12px;
+  background:rgba(0,0,0,.75);
+  backdrop-filter:blur(8px);
+  border-radius:16px;
+  box-shadow:0 6px 18px rgba(0,0,0,.6);
+  border:1px solid rgba(255,255,255,.08);
 }
 
 .num{
-  width:36px;
-  height:36px;
+  width:40px;
+  height:40px;
   background:#1c1c1c;
+  color:#fff;
+  border-radius:10px;
   display:flex;
   align-items:center;
   justify-content:center;
-  border-radius:8px;
+  font-weight:600;
   cursor:pointer;
+  transition:.2s ease;
+}
+
+.num:hover{
+  background:#ff3b3b;
+  transform:scale(1.05);
 }
 
 .num.active{
   background:#ffcc00;
   color:#000;
+  font-weight:bold;
+  cursor:default;
 }
 
 .bottom-nav{
+  width:260px;
   display:flex;
   justify-content:space-between;
-  margin-top:8px;
 }
 
 .bottom-nav button{
-  width:42px;
-  height:42px;
+  width:44px;
+  height:44px;
   border-radius:50%;
   border:none;
   background:#111;
   color:#fff;
+  font-size:18px;
 }
 
-/* =========================
-   FAB
-========================= */
+.toggle-bottom,
 .fab{
   position:fixed;
   bottom:20px;
@@ -279,10 +449,11 @@ html{
   border:none;
   font-size:20px;
   z-index:30;
+  cursor:pointer;
 }
 
 /* =========================
-   REPORT
+   REPORT SYSTEM
 ========================= */
 #reportBtn{
   position:fixed;
@@ -292,29 +463,79 @@ html{
   height:42px;
   border-radius:50%;
   background:#ff3b3b;
+  color:#fff;
+  font-size:20px;
   display:flex;
   align-items:center;
   justify-content:center;
-  color:#fff;
+  cursor:pointer;
+  z-index:1001;
+}
+
+#reportBox{
+  position:fixed;
+  top:70px;
+  right:-320px;
+  width:280px;
+  background:#111;
+  border-radius:16px;
+  padding:14px;
   z-index:1000;
+  transition:.35s ease;
+  box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+
+#reportBox.show{
+  right:15px;
+}
+
+#reportBox textarea{
+  width:100%;
+  height:90px;
+  background:#000;
+  border:1px solid #333;
+  border-radius:10px;
+  color:#fff;
+  padding:8px;
+  resize:none;
+}
+
+#reportBox button{
+  margin-top:10px;
+  width:100%;
+  padding:8px;
+  border:none;
+  border-radius:10px;
+  background:#ff3b3b;
+  color:#fff;
+  font-size:14px;
+  cursor:pointer;
 }
 
 /* =========================
    FOOTER
 ========================= */
 .footer{
+  width:100%;
+  background:#000;
   padding:25px 12px;
   text-align:center;
-  background:#000;
 }
 
 .footer p{
+  font-family: Arial, Helvetica, sans-serif;
   font-size:13px;
-  color:#aaa;
-  line-height:1.6;
+  color:#b5b5b5;
+  font-weight:400;
+  line-height:1.7;
+  margin:0;
 }
 
 .footer a{
   color:#4da3ff;
   text-decoration:none;
+}
+
+.footer a:hover{
+  text-decoration:underline;
 }

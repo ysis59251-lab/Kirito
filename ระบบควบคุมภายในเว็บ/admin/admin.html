@@ -166,7 +166,8 @@ import {
   getDatabase, ref, set, onValue, remove, update, onDisconnect
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* 🔥 Firebase Config */
+/* ================= FIREBASE ================= */
+
 const firebaseConfig = {
   apiKey: "AIzaSyC1S1BToUhVmWqyeTWbHlPdI8hY0aGKNDg",
   authDomain: "darkframe300.firebaseapp.com",
@@ -180,7 +181,7 @@ const db = getDatabase(app);
 
 /* ================= ONLINE USERS ================= */
 
-const userId = "admin_" + Math.random().toString(36).substr(2,9);
+const userId = "admin_" + Math.random().toString(36).slice(2);
 const onlineRef = ref(db, "onlineUsers/" + userId);
 
 set(onlineRef, true);
@@ -191,22 +192,27 @@ onValue(ref(db, "onlineUsers"), (snap)=>{
     snap.exists() ? Object.keys(snap.val()).length : 0;
 });
 
-/* ================= LOAD & SEARCH ANIME ================= */
+/* ================= ANIME ================= */
 
 let allAnime = [];
 
 onValue(ref(db, "anime"), (snap)=>{
-  allAnime = [];
+  const container = document.getElementById("animeList");
 
   if(!snap.exists()){
-    document.getElementById("animeList").innerHTML = "ไม่มีข้อมูล";
+    container.innerHTML = "ไม่มีข้อมูล";
     return;
   }
 
+  allAnime = [];
+
   snap.forEach(child=>{
+    const data = child.val();
     allAnime.push({
       id: child.key,
-      ...child.val()
+      title: data.title || "ไม่มีชื่อ",
+      status: data.status || "active",
+      views: data.views || 0
     });
   });
 
@@ -214,63 +220,71 @@ onValue(ref(db, "anime"), (snap)=>{
   renderRanking(allAnime);
 });
 
+/* ===== render anime ===== */
+
 function renderAnime(list){
   const container = document.getElementById("animeList");
   container.innerHTML = "";
 
   list.forEach(data=>{
-    container.innerHTML += `
-      <div class="anime-item">
-        ${data.title} (${data.status || "active"})
-        <div>
-          <button style="background:#ff9800"
-            onclick="disableAnime('${data.id}')">ปิด</button>
-          <button style="background:#ff3c3c"
-            onclick="deleteAnime('${data.id}')">ลบ</button>
-        </div>
+    const div = document.createElement("div");
+    div.className = "anime-item";
+
+    div.innerHTML = `
+      ${data.title} (${data.status})
+      <div>
+        <button style="background:#ff9800">ปิด</button>
+        <button style="background:#ff3c3c">ลบ</button>
       </div>
     `;
+
+    div.children[1].children[0].onclick = ()=> disableAnime(data.id);
+    div.children[1].children[1].onclick = ()=> deleteAnime(data.id);
+
+    container.appendChild(div);
   });
 }
+
+/* ===== search ===== */
 
 window.searchAnime = function(){
   const keyword = document.getElementById("searchInput").value.toLowerCase();
   const filtered = allAnime.filter(a =>
-    a.title?.toLowerCase().includes(keyword)
+    a.title.toLowerCase().includes(keyword)
   );
   renderAnime(filtered);
 };
 
-window.disableAnime = function(id){
-  update(ref(db, "anime/"+id), {status:"disabled"});
-};
+/* ===== actions ===== */
 
-window.deleteAnime = function(id){
+function disableAnime(id){
+  update(ref(db, "anime/"+id), {status:"disabled"});
+}
+
+function deleteAnime(id){
   if(confirm("ลบเรื่องนี้?")){
     remove(ref(db, "anime/"+id));
   }
-};
+}
 
 /* ================= RANKING ================= */
 
 function renderRanking(arr){
-  const sorted = [...arr].sort((a,b)=>
-    (b.views||0)-(a.views||0)
-  );
-
+  const sorted = [...arr].sort((a,b)=> b.views - a.views);
   const container = document.getElementById("ranking");
+
   container.innerHTML="";
 
   sorted.slice(0,5).forEach((anime,i)=>{
     container.innerHTML += `
       <div class="anime-item">
-        #${i+1} ${anime.title} (${anime.views||0} views)
+        #${i+1} ${anime.title} (${anime.views} views)
       </div>
     `;
   });
 }
 
-/* ================= REPORT SYSTEM ================= */
+/* ================= REPORT ================= */
 
 window.toggleReportPanel = function(){
   document.getElementById("reportPanel").classList.toggle("active");
@@ -303,7 +317,6 @@ onValue(ref(db,"reports"),(snapshot)=>{
     });
   });
 
-  // เรียงใหม่ล่าสุดก่อน
   reports.reverse();
 
   reports.forEach(data=>{
@@ -318,7 +331,7 @@ onValue(ref(db,"reports"),(snapshot)=>{
       <div>
         <b>${data.page || "ไม่ทราบหน้า"}</b>
         ${data.read ? "✅" : "🆕"}<br>
-        <small>${new Date(data.time).toLocaleString()}</small>
+        <small>${data.time ? new Date(data.time).toLocaleString() : "-"}</small>
       </div>
       <div class="message-actions">
         <button class="btn-view">เปิด</button>
@@ -328,9 +341,9 @@ onValue(ref(db,"reports"),(snapshot)=>{
 
     div.querySelector(".btn-view").onclick = () => {
       alert(
-        "หน้า: "+data.page+
-        "\n\nรายละเอียด:\n"+data.detail+
-        "\n\nเวลา: "+new Date(data.time).toLocaleString()
+        "หน้า: "+(data.page||"-")+
+        "\n\nรายละเอียด:\n"+(data.detail||"-")+
+        "\n\nเวลา: "+(data.time ? new Date(data.time).toLocaleString() : "-")
       );
 
       update(ref(db,"reports/"+data.id),{read:true});
@@ -348,7 +361,8 @@ onValue(ref(db,"reports"),(snapshot)=>{
   badge.innerText = unread;
 
   if(count > lastReportCount){
-    document.getElementById("notifySound").play().catch(()=>{});
+    const sound = document.getElementById("notifySound");
+    sound.play().catch(()=>{});
   }
 
   lastReportCount = count;

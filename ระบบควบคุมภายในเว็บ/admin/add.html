@@ -2,9 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>ระบบดึงข้อมูล</title>
+<title>เพิ่มอนิเมะ</title>
 
 <style>
 body{
@@ -15,93 +13,61 @@ body{
   padding:20px;
 }
 
-input{
-  width:80%;
+input,button{
+  width:90%;
   padding:10px;
-  border-radius:10px;
+  margin:5px;
   border:none;
-  margin-bottom:10px;
+  border-radius:8px;
 }
 
 button{
-  padding:10px 15px;
-  border:none;
-  border-radius:10px;
-  background:#00ff99;
-  cursor:pointer;
-  margin:5px;
-}
-
-#result{
-  margin-top:20px;
-  padding:15px;
-  border-radius:15px;
-  background:#222;
-  max-height:400px;
-  overflow:auto;
-  text-align:left;
-  white-space:pre-wrap;
+  background:#ff4d6d;
+  color:#fff;
 }
 </style>
 </head>
 
 <body>
 
-<h2>🔍 ดึงข้อมูลจากหน้าเว็บ</h2>
+<h2>เพิ่มอนิเมะ</h2>
 
-<input id="url" placeholder="วางลิงก์หน้าเว็บของคุณ">
-<br>
+<input id="anime" placeholder="anime">
+<input id="name" placeholder="name">
+<input id="episode" placeholder="episode">
+<input id="title" placeholder="title">
+<input id="video_url" placeholder="video_url">
+<input id="status" placeholder="status">
+<input id="desc" placeholder="desc">
+<input id="cover" placeholder="cover">
 
-<button onclick="load()">ดึงข้อมูล</button>
-<button onclick="copyText()">📋 ก็อปทั้งหมด</button>
-<button onclick="clearBox()">🗑️ ล้าง</button>
-
-<div id="result">ผลลัพธ์จะอยู่ตรงนี้...</div>
+<button onclick="send()">ส่งข้อมูล</button>
 
 <script>
-let savedText = "";
+const API = "https://script.google.com/macros/s/AKfycbwFYxU0PfE8j8AHlCtNXAMk8_-FlFF2qTXcWUhU9i6OdItaH5sft1ioGkcsL6CZcppi/exec";
 
-async function load(){
-  const url = document.getElementById("url").value;
+function send(){
 
-  if(!url){
-    alert("ใส่ลิงก์ก่อน!");
-    return;
-  }
+  const data = {
+    anime: anime.value,
+    name: name.value,
+    episode: episode.value,
+    title: title.value,
+    video_url: video_url.value,
+    status: status.value,
+    desc: desc.value,
+    cover: cover.value
+  };
 
-  try{
-    const res = await fetch(url);
-    const text = await res.text();
-
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(text, "text/html");
-
-    // 🔥 ดึงทั้งข้อความ
-    const content = doc.body.innerText;
-
-    savedText = content;
-
-    document.getElementById("result").innerText = content;
-
-  }catch(err){
-    document.getElementById("result").innerText = "❌ ดึงไม่ได้ (อาจติด CORS หรือ URL ผิด)";
-  }
-}
-
-function copyText(){
-  if(!savedText){
-    alert("ยังไม่มีข้อมูล!");
-    return;
-  }
-
-  navigator.clipboard.writeText(savedText)
-  .then(()=> alert("✅ คัดลอกแล้ว"))
-  .catch(()=> alert("❌ คัดลอกไม่สำเร็จ"));
-}
-
-function clearBox(){
-  savedText = "";
-  document.getElementById("result").innerText = "";
+  fetch(API,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json"
+    },
+    body: JSON.stringify(data)
+  })
+  .then(()=>alert("เพิ่มสำเร็จ!"))
+  .catch(()=>alert("พลาด!"));
 }
 </script>
 

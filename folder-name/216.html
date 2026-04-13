@@ -2,230 +2,419 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-
-<!-- ✅ สำคัญมาก -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>เลือกตอน</title>
+<title>AnimeFume - Dead Mount Death Play</title>
 
 <style>
 
-    /* ====== ACCORDION ====== */
-.ep-toggle{
-  background:#111;
-  border-radius:16px;
-  padding:18px;
-  margin-bottom:14px;
-  cursor:pointer;
-  font-size:1.1rem;
-  box-shadow:0 6px 14px rgba(0,0,0,.4);
+#nowEp {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ff3b3b;
 }
 
-.ep-list{
-  max-height:0;
-  overflow:hidden;
-  transition:max-height .45s ease;
+/* =========================
+   GLOBAL
+========================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: 'Segoe UI', sans-serif;
 }
 
-.ep-list.open{
-  max-height:3000px; /* พอสำหรับ 24 ตอน */
+body {
+  color: #fff;
+  background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.9)),
+              url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg") center/cover fixed;
+  min-height: 100vh;
+  line-height: 1.5;
 }
 
-/* ====== BASE ====== */
-html{
-  font-size:20px;
+/* =========================
+   HEADER
+========================= */
+.header {
+  padding: 16px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  background: linear-gradient(90deg, #e50914, #b20710);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.6);
 }
 
-body{
-  margin:0;
-  padding:0;
-  min-height:100vh;
-  font-family:sans-serif;
-  color:#fff;
-  overflow-x:hidden;
-  position:relative;
+/* =========================
+   PLAYER
+========================= */
+.player {
+  max-width: 900px;
+  margin: 24px auto;
+  aspect-ratio: 16/9;
+  background: #000;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.05), 0 20px 50px rgba(0,0,0,0.85);
 }
 
-body::before{
-  content:"";
-  position:fixed;
-  inset:0;
-  background:url("https://www.akerufeed.com/wp-content/uploads/2021/07/Wallpaper-Japanese-Cartoon-Street-22.jpg")
-             center/cover no-repeat;
-  filter:blur(2px); 
-  transform:scale(1.04);
-  z-index:-2;
+.video-box {
+  position: relative;
+  width: 100%;
+  height: 100%;
 }
 
-body::after{
-  content:"";
-  position:fixed;
-  inset:0;
-  background:linear-gradient(
-    rgba(0,0,0,0.45),
-    rgba(0,0,0,0.65)
-  );
-  z-index:-1;
+.video-box iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
 }
 
-
-/* ====== CONTAINER ====== */
-.container{
-  width:100%;
-  max-width:540px;   /* เต็มจอมือถือ */
-  margin:0 auto;
-  padding:16px;
+/* Thumbnail */
+.thumb {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 2;
+  cursor: pointer;
+  transition: 0.3s;
 }
 
-/* ====== CARD ====== */
-.card{
-  width:100%;
-  border-radius:16px;
-  overflow:hidden;
-  margin-bottom:16px;
+.thumb:hover {
+  filter: brightness(0.7);
 }
 
-.card img{
-  width:330px;
-  height:430px;       /* ❗ไม่ fix สูง */
-  display:block;
+/* Play Button */
+.play-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  font-size: 50px;
+  background: rgba(0,0,0,0.6);
+  padding: 15px 20px;
+  border-radius: 50%;
+  z-index: 3;
+  cursor: pointer;
 }
 
-.overlay-text{
-  position:absolute;
-  bottom:0;
-  left:0;
-  right:0;
-  padding:14px;
-  background:linear-gradient(transparent, rgba(0,0,0,.85));
-  font-size:1rem;
+/* =========================
+   CONTROL BUTTON
+========================= */
+.control {
+  display: flex;
+  flex-direction: row;   /* บังคับแนวนอน */
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
 }
 
-.card-wrap{
-  position:relative;
+.btn {
+  padding: 8px 16px;   /* ทำให้เล็กลง */
+  font-size: 14px;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #e50914, #b20710);
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
 }
 
-/* ====== DESCRIPTION ====== */
-.desc{
-  font-size:1rem;
-  line-height:1.6;
-  opacity:.9;
-  margin-bottom:20px;
+/* ปุ่มหลัก (เลือกตอน) */
+.btn.main {
+  padding: 10px 20px;
+  font-weight: bold;
 }
 
-/* ====== EPISODE LIST ====== */
-.episode-box{
-  width:100%;
+/* hover */
+.btn:hover {
+  transform: translateY(-2px);
+  background: linear-gradient(135deg,#ff1b26,#c8000a);
 }
 
-.episode{
-  background:linear-gradient(135deg,#1e1e1e,#2b2b2b);
-  border-radius:16px;
-  padding:18px;
-  margin-bottom:14px;
-  display:flex;
-  align-items:center;
-  gap:14px;
-  cursor:pointer;
-  box-shadow:0 6px 14px rgba(0,0,0,.4);
+/* =========================
+   MODAL
+========================= */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.9);
+  z-index: 10;
+  padding: 20px;
 }
 
-.episode.watched{
-  background:linear-gradient(135deg,#1b3b1b,#244d24);
+.modal-content {
+  background: linear-gradient(180deg,#111,#0b0b0b);
+  max-width: 520px;
+  margin: 60px auto;
+  padding: 16px;
+  border-radius: 18px;
+  max-height: 70vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+  animation: fadeUp 0.25s ease;
 }
 
-.ep-num{
-  background:#ff4d4d;
-  padding:8px 14px;
-  border-radius:12px;
-  font-weight:bold;
+@keyframes fadeUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: none; opacity: 1; }
 }
 
-.ep-title{
-  flex:1;
-  font-size:1.05rem;
+/* =========================
+   EPISODE LIST
+========================= */
+.ep {
+  padding: 14px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+  cursor: pointer;
+  background: rgba(255,255,255,0.03);
+  transition: 0.2s;
+  font-size: 16px;
 }
 
-.status{
-  font-size:20px;
+.ep:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.ep.active {
+  background: linear-gradient(135deg,#e50914,#b20710);
+  font-weight: 700;
+  box-shadow: 0 0 10px rgba(229,9,20,0.7);
+}
+
+.ep.watched {
+  background: rgba(255,255,255,0.08);
+  color: #bbb;
+}
+
+.ep.watched::after {
+  content: " ✔";
+  color: #00ffcc;
+}
+
+/* =========================
+   ANIME CARD
+========================= */
+.container {
+  max-width: 540px;
+  margin: 24px auto;
+  padding: 0 16px;
+}
+
+.anime-img {
+  width: 100%;
+  max-width: 280px;
+  display: block;
+  margin: 24px auto;
+  border-radius: 16px;
+  filter: drop-shadow(0 12px 30px rgba(0,0,0,0.8));
+}
+
+.card-wrap {
+  margin-top: 16px;
+}
+
+.card {
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.card img {
+  width: 100%;
+  max-width: 300px;
+  display: block;
+  margin: 0 auto;
+  border-radius: 16px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+}
+
+/* =========================
+   MOBILE
+========================= */
+@media(max-width:600px) {
+  .header { font-size: 20px; }
+  button { width: 100%; padding: 14px 0; }
+  .desc { font-size: 15px; }
 }
 </style>
 </head>
 
 <body>
-<div class="container">
 
-<h2>
-Sword Art Online ซอร์ดอาร์ตออนไลน์ (ภาค1) <br>
-ตอนที่ 1–25 พากย์ไทย จบเเล้ว
-</h2>
+<div class="header">🎬 AnimeFume</div>
+
+<div class="container">
+<h2 id="animeName"></h2>
 
 <div class="card-wrap">
   <div class="card">
-    <img src="https://anifume.com/images/18/Sword-Art-Online-1.jpg">
+    <img id="coverImg">
   </div>
 
-<p class="desc">
-เรื่องย่อ
-เรื่องราวของโปรแกรมเมอร์อัจฉริยะ คิริงายะ คาสึโตะ เขาได้เข้าร่วมเล่นเกมเสมือนจริงที่มีชื่อว่า Sword Art Online หรือ SAO ซึ่งเมื่อเขาเล่นเกมส์ ต้องพบว่าตนเองไม่สามารถล็อกเอาท์ออกจากเกมได้ เหล่าผู้เล่นเกมทั้งหมดต้องติดอยู่ภายในเกมโดยไม่มีใครรู้ว่าผู้พัฒนาเกมมีเป้าหมายที่แท้จริงอย่างไรกันแน่!! ทางออกจากเกมนี้ไปได้มีเพียงต้องเคลียร์เกมให้สำเร็จให้ได้ หรือโอเวอร์ในเกมก็หมายถึง การตายของผู้เล่นที่เกิดขึ้นจริง ดังนั้น เพื่อตอบสนองเงื่อนไขของการเคลียร์เกมนี้และออกจากโลกเสมือนจริง คาสึโตะจึงต้องเคลียร์เกมนี้ให้สำเร็จ หรือเขาต้องพบกับความตาย!
-</p>
+  <p class="desc" id="desc"></p></div>
 
-<!-- ปุ่มกดเปิดกล่อง -->
-<div class="ep-toggle" onclick="toggleEp()">
-  ▼ กล่อง
-</div>
-
-<!-- กล่องพับ -->
-<div id="epList" class="ep-list">
-
-  <div class="episode" onclick="openEp(1)" data-ep="1">
-    <span class="ep-num">รวม </span>
-    <span class="ep-title"> พากย์ไทย</span>
-    <span class="status"></span>
+<div class="player">
+  <div class="video-box">
+    <iframe id="video" allowfullscreen></iframe>
   </div>
-
 </div>
+
+<div id="nowEp">🎬 กำลังโหลด...</div>
+
+<!-- CONTROL -->
+<div class="control">
+  <button onclick="prevEp()">⏮ ก่อนหน้า</button>
+  <button onclick="openModal()">📺 เลือกตอน</button>
+  <button onclick="nextEp()">⏭ ถัดไป</button>
+</div>
+
+<!-- Anime Card -->
+<img class="anime-img" src="https://www.pngarts.com/files/12/Manga-Anime-Girl-Transparent-Image.png" alt="Anime Girl">
+
+<!-- MODAL -->
+<div class="modal" id="modal">
+  <div class="modal-content" id="episodeList"></div>
 </div>
 
 <script>
+const SHEET_ID="1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
+const API=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-const title = document.body.dataset.title || document.title;
+const currentAnime = "Dark Beginning"; // 👈 ต้องตรงกับคอลัมน์ anime ในชีต
 
-if(title){
-  const views = JSON.parse(localStorage.getItem("animeViews") || "{}");
-  views[title] = (views[title] || 0) + 1;
-  localStorage.setItem("animeViews", JSON.stringify(views));
-}
+let episodes=[];
+let currentIndex=0;
+let watched=JSON.parse(localStorage.getItem("watchedEpisodes")||"[]");
 
-let watched = JSON.parse(localStorage.getItem("watchedEpisodes")) || [];
+fetch(API)
+.then(res=>res.text())
+.then(text=>{
+  const json=JSON.parse(text.substring(47).slice(0,-2));
 
-document.querySelectorAll(".episode").forEach(el=>{
-  let ep = parseInt(el.dataset.ep);
-  if(watched.includes(ep)){
-    el.classList.add("watched");
-    el.querySelector(".status").innerHTML = "✔";
+  // 🔥 ดึง + กรองเรื่อง
+  episodes=json.table.rows
+    .map(r=>({
+      anime:r.c[0]?.v,
+      name:r.c[1]?.v,
+      ep:r.c[2]?.v,
+      title:r.c[3]?.v,
+      url:r.c[4]?.v,
+      desc:r.c[6]?.v,
+      cover:r.c[7]?.v
+    }))
+    .filter(e=>e.anime === currentAnime);
+
+  // ❗ กัน error ถ้าไม่มีข้อมูล
+  if(episodes.length === 0){
+    document.getElementById("animeName").innerText = "ไม่พบข้อมูล";
+    return;
   }
+
+  // 🔥 หา info จริง (ไม่ใช้ index 0 มั่วๆ)
+  const info = episodes.find(e => e.cover || e.desc) || episodes[0];
+
+  // 🏷️ ชื่อเรื่อง
+  document.getElementById("animeName").innerText = info.name || "";
+
+  // 📖 เรื่องย่อ
+  document.getElementById("desc").innerHTML =
+    `<b>📖 เรื่องย่อ</b><br><br>` +
+    (info.desc || "").replace(/\n/g,"<br><br>");
+
+  // 🖼️ รูปปก (คงที่)
+  document.getElementById("coverImg").src = info.cover || "";
+
+  renderEpisodes();
+
+  const last=localStorage.getItem("lastEpisode");
+  if(last){
+    const i=episodes.findIndex(e=>e.url===last);
+    currentIndex=i!==-1?i:0;
+  }
+
+  play(episodes[currentIndex].url);
 });
 
-function openEp(ep){
-  if(!watched.includes(ep)){
-    watched.push(ep);
-    localStorage.setItem("watchedEpisodes", JSON.stringify(watched));
+function renderEpisodes(){
+  const box=document.getElementById("episodeList");
+  box.innerHTML="";
+
+  episodes.forEach((e,i)=>{
+    const div=document.createElement("div");
+    div.className="ep";
+    div.innerText=`ตอนที่ ${e.ep}`;
+    if(watched.includes(e.url)) div.classList.add("watched");
+
+    div.onclick=()=>play(e.url);
+    box.appendChild(div);
+  });
+
+  highlight();
+}
+
+function play(url){
+  const video=document.getElementById("video");
+
+  if(url.includes("drive.google.com")){
+    const id=url.match(/\/d\/(.+?)\//)[1];
+    url=`https://drive.google.com/file/d/${id}/preview`;
   }
 
-  const epLinks={
-    1:"u1.html",
+  video.src=url;
 
-  };
+  currentIndex=episodes.findIndex(e=>e.url===url || url.includes(e.url));
 
-  window.location.href=epLinks[ep];
+  localStorage.setItem("lastEpisode",episodes[currentIndex].url);
+
+  if(!watched.includes(episodes[currentIndex].url)){
+    watched.push(episodes[currentIndex].url);
+    localStorage.setItem("watchedEpisodes",JSON.stringify(watched));
+  }
+
+  highlight();
+  renderEpisodes();
+  closeModal();
+
+  document.getElementById("nowEp").innerText =
+    "🎬 กำลังดู: ตอนที่ "+episodes[currentIndex].ep+" • "+episodes[currentIndex].title;
 }
 
-function toggleEp(){
-  document.getElementById("epList").classList.toggle("open");
+function nextEp(){
+  if(currentIndex<episodes.length-1){
+    currentIndex++;
+    play(episodes[currentIndex].url);
+  }
 }
 
+function prevEp(){
+  if(currentIndex>0){
+    currentIndex--;
+    play(episodes[currentIndex].url);
+  }
+}
+
+function highlight(){
+  document.querySelectorAll(".ep").forEach((el,i)=>{
+    el.classList.toggle("active",i===currentIndex);
+  });
+}
+
+function openModal(){
+  document.getElementById("modal").style.display="block";
+}
+
+function closeModal(){
+  document.getElementById("modal").style.display="none";
+}
+
+document.getElementById("modal").onclick=closeModal;
 </script>
+
 
 </body>
 </html>

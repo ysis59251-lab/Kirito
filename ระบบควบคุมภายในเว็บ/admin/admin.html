@@ -7,15 +7,6 @@
 
 <style>
 
-.btn-box{
-  position:fixed;
-  bottom:20px;   /* 🔥 ล่าง */
-  right:20px;    /* 🔥 ขวา */
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
 *{box-sizing:border-box;}
 
 body{
@@ -179,10 +170,17 @@ input:focus{
 .btn-ban{ background:#9c27b0; }
 
 /* ADD BUTTON */
-a button{
+.btn-box{
   position:fixed;
   bottom:20px;
   right:20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  z-index:999;
+}
+
+.btn-box button{
   background:linear-gradient(45deg,#00c6ff,#0072ff);
   padding:12px 18px;
   border-radius:30px;

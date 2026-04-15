@@ -6,54 +6,93 @@
 <title>เพิ่มอนิเมะ</title>
 
 <style>
-*{box-sizing:border-box;}
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:system-ui, sans-serif;
+}
 
 body{
-  margin:0;
-  height:100vh;
+  min-height:100vh;
   display:flex;
   justify-content:center;
   align-items:center;
-  background:linear-gradient(135deg,#0f0f0f,#1a1a2e);
+  background: radial-gradient(circle at top,#1a1a2e,#0f0f0f);
   color:#fff;
-  font-family:system-ui;
 }
 
+/* CARD */
 .box{
-  width:95%;
-  max-width:400px;
-  background:rgba(255,255,255,0.05);
-  backdrop-filter:blur(15px);
-  border-radius:20px;
-  padding:20px;
+  width:92%;
+  max-width:420px;
+  background:rgba(255,255,255,0.06);
+  backdrop-filter: blur(18px);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:22px;
+  padding:22px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
 }
 
+h2{
+  text-align:center;
+  margin-bottom:15px;
+  font-size:20px;
+  letter-spacing:1px;
+}
+
+/* INPUTS */
 input,select{
   width:100%;
-  padding:12px;
-  margin:6px 0;
+  padding:13px;
+  margin:8px 0;
   border:none;
-  border-radius:10px;
-  background:#1f1f1f;
+  border-radius:12px;
+  background:#151515;
   color:#fff;
+  outline:none;
+  transition:0.2s;
+  border:1px solid rgba(255,255,255,0.05);
 }
 
+input:focus,select:focus{
+  border-color:#ff4d6d;
+  box-shadow:0 0 0 2px rgba(255,77,109,0.2);
+}
+
+/* CHECKBOX AREA */
+.lang-box{
+  display:flex;
+  gap:15px;
+  margin:10px 0;
+  font-size:14px;
+}
+
+/* BUTTON */
 button{
   width:100%;
-  padding:12px;
+  padding:13px;
   margin-top:10px;
   border:none;
-  border-radius:10px;
-  background:linear-gradient(45deg,#ff4d6d,#ff006e);
+  border-radius:12px;
+  background:linear-gradient(135deg,#ff4d6d,#ff006e);
   color:#fff;
+  font-weight:600;
   cursor:pointer;
+  transition:0.2s;
+  box-shadow:0 10px 25px rgba(255,0,110,0.25);
 }
 
-.lang-box{
-  text-align:left;
-  margin:10px 0;
+button:hover{
+  transform:translateY(-2px);
+  box-shadow:0 15px 35px rgba(255,0,110,0.35);
 }
 
+button:active{
+  transform:scale(0.98);
+}
+
+/* POPUP */
 #popup{
   position:fixed;
   inset:0;
@@ -65,8 +104,16 @@ button{
 
 .popup-box{
   background:#111;
-  padding:30px;
-  border-radius:15px;
+  padding:25px 35px;
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.1);
+  box-shadow:0 20px 60px rgba(0,0,0,0.6);
+  font-size:15px;
+}
+
+/* SMALL UX TOUCH */
+::placeholder{
+  color:#888;
 }
 </style>
 </head>

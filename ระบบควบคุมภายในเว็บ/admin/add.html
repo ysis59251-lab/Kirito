@@ -163,8 +163,10 @@ button{
 <script>
 const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4rUyNII99HR6-OvHnEq_493fyiOiatj1GYjGqlZkws/exec";
 
-/* INPUT */
-const btn = document.getElementById("sendBtn");
+/* =========================
+   INPUT ELEMENTS
+========================= */
+const btn = document.querySelector("button");
 
 const animeInput   = document.getElementById("anime");
 const nameInput    = document.getElementById("name");
@@ -177,94 +179,85 @@ const coverInput   = document.getElementById("cover");
 const popup = document.getElementById("popup");
 const text  = document.getElementById("popupText");
 
-/* POPUP */
-function show(msg){
-  popup.style.display = "flex";
-  text.innerText = msg;
-
-  setTimeout(() => {
-    popup.style.display = "none";
-  }, 1500);
+/* =========================
+   LANG CHECKBOX FIX (สำคัญ)
+========================= */
+function getLangs(){
+  return document.querySelectorAll('.lang-box input:checked');
 }
 
-/* CLEAR */
+/* =========================
+   INPUT TOOLS
+========================= */
 function clearInput(){
   videoInput.value = "";
 }
 
-/* PASTE */
 async function pasteText(){
   try {
     const clip = await navigator.clipboard.readText();
     videoInput.value = clip;
-  } catch (e) {
-    show("❌ clipboard ใช้ไม่ได้");
+  } catch (err) {
+    alert("เบราว์เซอร์ไม่อนุญาตให้ดึงคลิปบอร์ด");
   }
 }
 
-/* 🔥 FIX: retry function */
-async function sendRequest(url, retry = 3){
-  for(let i = 0; i < retry; i++){
-    try {
-      const res = await fetch(url, { method: "GET" });
-      const text = await res.text();
-
-      console.log("Response:", text);
-
-      if(res.ok) return true;
-
-    } catch (err) {
-      console.log("retry...", i + 1);
-    }
-
-    await new Promise(r => setTimeout(r, 500));
-  }
-
-  return false;
-}
-
-/* SEND */
+/* =========================
+   MAIN SEND FUNCTION
+========================= */
 async function send(){
 
-  const langs = document.querySelectorAll('.lang-box input:checked');
-
   btn.disabled = true;
-  show("⏳ กำลังส่ง...");
+  popup.style.display = "flex";
+  text.innerText = "⏳ กำลังส่ง...";
 
   try{
 
-    let successCount = 0;
+    const langs = getLangs();
 
-    for(const lang of langs){
+    for(let lang of langs){
 
-      const url =
-        API +
-        "?anime=" + encodeURIComponent(animeInput.value) +
-        "&name=" + encodeURIComponent(nameInput.value) +
-        "&episode=" + encodeURIComponent(episodeInput.value) +
-        "&title=" + encodeURIComponent(lang.value) +
-        "&video_url=" + encodeURIComponent(videoInput.value) +
-        "&status=" + encodeURIComponent(statusInput.value) +
-        "&desc=" + encodeURIComponent(descInput.value) +
-        "&cover=" + encodeURIComponent(coverInput.value);
+      const url = API + 
+      "?anime=" + encodeURIComponent(animeInput.value) +
+      "&name=" + encodeURIComponent(nameInput.value) +
+      "&episode=" + episodeInput.value +
+      "&title=" + encodeURIComponent(lang.value) +
+      "&video_url=" + encodeURIComponent(videoInput.value) +
+      "&status=" + encodeURIComponent(statusInput.value) +
+      "&desc=" + encodeURIComponent(descInput.value) +
+      "&cover=" + encodeURIComponent(coverInput.value);
 
-      const ok = await sendRequest(url);
+      await new Promise(resolve=>{
+        const img = new Image();
+        img.src = url;
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
 
-      if(ok) successCount++;
     }
 
-    if(successCount > 0){
-      show("✅ ส่งสำเร็จ " + successCount + "/" + langs.length);
-    } else {
-      show("❌ ส่งไม่สำเร็จเลย");
-    }
+    text.innerText = "✅ ส่งแล้ว!";
 
-  }catch(err){
-    console.log(err);
-    show("❌ error ระบบ");
+  }catch(e){
+    text.innerText = "❌ ส่งไม่สำเร็จ";
   }
 
-  btn.disabled = false;
+  setTimeout(()=>{
+    popup.style.display = "none";
+    btn.disabled = false;
+  },1500);
+}
+
+/* =========================
+   POPUP SYSTEM
+========================= */
+function show(msg){
+  popup.style.display = "flex";
+  text.innerText = msg;
+
+  setTimeout(()=>{
+    popup.style.display = "none";
+  },1500);
 }
 </script>
 

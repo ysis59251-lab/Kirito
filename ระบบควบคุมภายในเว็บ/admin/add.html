@@ -190,8 +190,7 @@ function clearInput(){
   <input id="desc" placeholder="เรื่องย่อ">
   <input id="cover" placeholder="ลิงก์รูป">
 
-  <button onclick="send()">🚀 เพิ่มตอน</button>
-</div>
+<button id="sendBtn" onclick="send()"> เพิ่มตอน</button>
 
 <div id="popup">
   <div class="popup-box">
@@ -199,14 +198,10 @@ function clearInput(){
   </div>
 </div>
 
-<script>
 const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4rUyNII99HR6-OvHnEq_493fyiOiatj1GYjGqlZkws/exec";
 
-
-/* =========================
-   INPUT ELEMENTS
-========================= */
-const btn = document.querySelector("button");
+/* INPUT */
+const btn = document.getElementById("sendBtn");
 
 const animeInput   = document.getElementById("anime");
 const nameInput    = document.getElementById("name");
@@ -219,63 +214,73 @@ const coverInput   = document.getElementById("cover");
 const popup = document.getElementById("popup");
 const text  = document.getElementById("popupText");
 
-const langs = document.querySelectorAll('.lang-box input:checked');
 
-
-/* =========================
-   INPUT TOOLS
-========================= */
+/* CLEAR */
 function clearInput(){
-  document.getElementById("video_url").value = "";
+  videoInput.value = "";
 }
 
+
+/* PASTE */
 async function pasteText(){
   try {
-    const text = await navigator.clipboard.readText();
-    document.getElementById("video_url").value = text;
-  } catch (err) {
-    alert("เบราว์เซอร์ไม่อนุญาตให้ดึงคลิปบอร์ด");
+    const clip = await navigator.clipboard.readText();
+    videoInput.value = clip;
+  } catch (e) {
+    show("เบราว์เซอร์ไม่อนุญาต clipboard");
   }
 }
 
 
-/* =========================
-   MAIN SEND FUNCTION
-========================= */
+/* POPUP */
+function show(msg){
+  popup.style.display = "flex";
+  text.innerText = msg;
+
+  setTimeout(()=>{
+    popup.style.display = "none";
+  },1500);
+}
+
+
+/* SEND */
 async function send(){
 
-  // ล็อคปุ่ม
-  btn.disabled = true;
+  const langs = document.querySelectorAll('.lang-box input:checked');
 
+  if(!animeInput.value || !nameInput.value || !episodeInput.value){
+    show("⚠️ กรอกข้อมูลให้ครบ");
+    return;
+  }
+
+  if(langs.length === 0){
+    show("⚠️ เลือกภาษา");
+    return;
+  }
+
+  btn.disabled = true;
   popup.style.display = "flex";
   text.innerText = "⏳ กำลังส่ง...";
 
   try{
 
-    for(let lang of langs){
+    for(const lang of langs){
 
-      const url = API + 
-      "?anime=" + encodeURIComponent(animeInput.value) +
-      "&name=" + encodeURIComponent(nameInput.value) +
-      "&episode=" + episodeInput.value +
-      "&title=" + encodeURIComponent(lang.value) +
-      "&video_url=" + encodeURIComponent(videoInput.value) +
-      "&status=" + encodeURIComponent(statusInput.value) +
-      "&desc=" + encodeURIComponent(descInput.value) +
-      "&cover=" + encodeURIComponent(coverInput.value);
+      const url = `${API}?anime=${encodeURIComponent(animeInput.value)}
+      &name=${encodeURIComponent(nameInput.value)}
+      &episode=${episodeInput.value}
+      &title=${encodeURIComponent(lang.value)}
+      &video_url=${encodeURIComponent(videoInput.value)}
+      &status=${encodeURIComponent(statusInput.value)}
+      &desc=${encodeURIComponent(descInput.value)}
+      &cover=${encodeURIComponent(coverInput.value)}`;
 
-      await new Promise(resolve=>{
-        const img = new Image();
-        img.src = url;
-        img.onload = resolve;
-        img.onerror = resolve;
-      });
-
+      await fetch(url, { method: "GET" });
     }
 
-    text.innerText = "✅ ส่งแล้ว!";
+    text.innerText = "✅ ส่งสำเร็จ";
 
-  }catch(e){
+  }catch(err){
     text.innerText = "❌ ส่งไม่สำเร็จ";
   }
 
@@ -284,23 +289,6 @@ async function send(){
     btn.disabled = false;
   },1500);
 }
-
-
-/* =========================
-   POPUP SYSTEM
-========================= */
-function show(msg){
-  const popup = document.getElementById("popup");
-  const text = document.getElementById("popupText");
-
-  popup.style.display = "flex";
-  text.innerText = msg;
-
-  setTimeout(()=>{
-    popup.style.display = "none";
-  },1500);
-}
-</script>
 
 </body>
 </html>

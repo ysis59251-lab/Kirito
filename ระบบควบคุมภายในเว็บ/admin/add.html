@@ -29,8 +29,6 @@ body{
   box-shadow:0 0 30px rgba(0,0,0,0.5);
 }
 
-h2{margin-bottom:15px;}
-
 input,select{
   width:100%;
   padding:12px;
@@ -52,15 +50,29 @@ button{
   cursor:pointer;
 }
 
-.status{
-  margin-top:10px;
-  font-size:14px;
-}
-
 .lang-box{
   text-align:left;
   margin:10px 0;
 }
+
+/* POPUP */
+#popup{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:999;
+}
+
+.popup-box{
+  background:#111;
+  padding:30px;
+  border-radius:15px;
+  text-align:center;
+}
+
 </style>
 </head>
 
@@ -72,7 +84,7 @@ button{
   <input id="anime" placeholder="ชื่อ id (Naruto)">
   <input id="name" placeholder="ชื่อเรื่อง">
 
-  <!-- เลือกตอน -->
+  <!-- ตอน -->
   <select id="episode">
     <option value="">เลือกตอน</option>
     <script>
@@ -82,7 +94,7 @@ button{
     </script>
   </select>
 
-  <!-- เลือกภาษา -->
+  <!-- ภาษา -->
   <div class="lang-box">
     <label><input type="checkbox" value="พากย์ไทย"> พากย์ไทย</label>
     <label><input type="checkbox" value="ซับไทย"> ซับไทย</label>
@@ -94,8 +106,13 @@ button{
   <input id="cover" placeholder="ลิงก์รูป">
 
   <button onclick="send()">🚀 เพิ่มตอน</button>
+</div>
 
-  <div class="status" id="statusText"></div>
+<!-- POPUP -->
+<div id="popup">
+  <div class="popup-box">
+    <div id="popupText">⏳ กำลังส่ง...</div>
+  </div>
 </div>
 
 <script>
@@ -103,20 +120,27 @@ const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4r
 
 async function send(){
 
-  const statusText = document.getElementById("statusText");
+  const popup = document.getElementById("popup");
+  const text = document.getElementById("popupText");
   const langs = document.querySelectorAll('.lang-box input:checked');
 
+  if(!anime.value || !name.value){
+    show("⚠️ กรอกชื่อก่อน");
+    return;
+  }
+
   if(!episode.value){
-    statusText.innerText = "⚠️ เลือกตอน";
+    show("⚠️ เลือกตอน");
     return;
   }
 
   if(langs.length === 0){
-    statusText.innerText = "⚠️ เลือกภาษา";
+    show("⚠️ เลือกภาษา");
     return;
   }
 
-  statusText.innerText = "⏳ กำลังส่ง...";
+  popup.style.display = "flex";
+  text.innerText = "⏳ กำลังส่ง...";
 
   for(let lang of langs){
 
@@ -133,7 +157,22 @@ async function send(){
     await fetch(url);
   }
 
-  statusText.innerText = "✅ เพิ่มสำเร็จ!";
+  text.innerText = "✅ ส่งแล้ว!";
+
+  setTimeout(()=>{
+    popup.style.display = "none";
+  },1500);
+}
+
+function show(msg){
+  const popup = document.getElementById("popup");
+  const text = document.getElementById("popupText");
+  popup.style.display = "flex";
+  text.innerText = msg;
+
+  setTimeout(()=>{
+    popup.style.display = "none";
+  },1500);
 }
 </script>
 

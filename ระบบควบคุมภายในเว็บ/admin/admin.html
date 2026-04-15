@@ -6,6 +6,19 @@
 <title>Anime Admin Dashboard</title>
 
 <style>
+
+.btn-box{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  max-width:200px;
+  margin:20px auto;
+}
+
+.btn-box button{
+  width:100%;
+}
+
 *{box-sizing:border-box;}
 
 body{
@@ -184,13 +197,10 @@ a button{
 
 <header>🔥 Anime Admin Dashboard</header>
 
-<a href="add.html">
-  <button>ลงวิดิโอ</button>
-</a>
-
-<a href="wo.html">
-  <button>ลงรูป</button>
-</a>
+<div class="btn-box">
+  <a href="add.html"><button>ลงวิดิโอ</button></a>
+  <a href="wo.html"><button>ลงรูป</button></a>
+</div>
 
 <!-- 🔝 ปุ่มแจ้งปัญหาขวาบน -->
 <div class="topbar">

@@ -124,11 +124,6 @@ async function send(){
   const text = document.getElementById("popupText");
   const langs = document.querySelectorAll('.lang-box input:checked');
 
-  if(!anime.value || !name.value){
-    show("⚠️ กรอกชื่อก่อน");
-    return;
-  }
-
   if(!episode.value){
     show("⚠️ เลือกตอน");
     return;

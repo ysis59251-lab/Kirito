@@ -127,17 +127,7 @@ async function send(){
 
   const langs = document.querySelectorAll('.lang-box input:checked');
 
-  if(!animeInput.value || !nameInput.value){
-    return show("⚠️ กรอกชื่อก่อน");
-  }
-
-  if(!episodeInput.value){
-    return show("⚠️ เลือกตอน");
-  }
-
-  if(langs.length === 0){
-    return show("⚠️ เลือกภาษา");
-  }
+  
 
   // 🔒 ล็อคปุ่ม
   btn.disabled = true;

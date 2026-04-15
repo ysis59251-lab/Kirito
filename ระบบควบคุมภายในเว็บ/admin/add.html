@@ -149,29 +149,32 @@ async function send(){
 
     for(let lang of langs){
 
-      const url = API + 
-      "?anime=" + encodeURIComponent(animeInput.value) +
-      "&name=" + encodeURIComponent(nameInput.value) +
-      "&episode=" + episodeInput.value +
-      "&title=" + encodeURIComponent(lang.value) +
-      "&video_url=" + encodeURIComponent(videoInput.value) +
-      "&status=" + encodeURIComponent(statusInput.value) +
-      "&desc=" + encodeURIComponent(descInput.value) +
-      "&cover=" + encodeURIComponent(coverInput.value);
+  const url = API + 
+  "?anime=" + encodeURIComponent(animeInput.value) +
+  "&name=" + encodeURIComponent(nameInput.value) +
+  "&episode=" + episodeInput.value +
+  "&title=" + encodeURIComponent(lang.value) +
+  "&video_url=" + encodeURIComponent(videoInput.value) +
+  "&status=" + encodeURIComponent(statusInput.value) +
+  "&desc=" + encodeURIComponent(descInput.value) +
+  "&cover=" + encodeURIComponent(coverInput.value);
 
-      await new Promise(resolve=>{
-  const img = new Image();
-  img.src = url;
-  img.onload = resolve;
-  img.onerror = resolve;
-});
+  await new Promise(resolve=>{
+    const img = new Image();
+    img.src = url;
+    img.onload = resolve;
+    img.onerror = resolve;
+  });
 
-    text.innerText = "✅ ส่งแล้ว!";
+} // ✅ ต้องมีตัวนี้ปิด loop
 
-    // 🧹 ล้างค่า
-    document.querySelectorAll("input").forEach(i=>i.value="");
-    document.querySelectorAll("input[type=checkbox]").forEach(i=>i.checked=false);
-    episodeInput.value = "";
+// ✅ ค่อยมาอยู่ตรงนี้
+text.innerText = "✅ ส่งแล้ว!";
+
+// 🧹 ล้างค่า
+document.querySelectorAll("input").forEach(i=>i.value="");
+document.querySelectorAll("input[type=checkbox]").forEach(i=>i.checked=false);
+episodeInput.value = "";
 
   }catch(e){
     text.innerText = "❌ ส่งไม่สำเร็จ";

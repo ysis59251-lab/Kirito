@@ -94,6 +94,7 @@ button{
   </div>
 
 <input id="video_url" placeholder="ลิงก์วิดีโอ">
+<button onclick="pasteText()">วาง</button>
 <button onclick="clearInput()">ล้าง</button>
 
 <script>
@@ -117,24 +118,49 @@ function clearInput(){
 <script>
 const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4rUyNII99HR6-OvHnEq_493fyiOiatj1GYjGqlZkws/exec";
 
+
+/* =========================
+   INPUT ELEMENTS
+========================= */
+const btn = document.querySelector("button");
+
+const animeInput   = document.getElementById("anime");
+const nameInput    = document.getElementById("name");
+const episodeInput = document.getElementById("episode");
+const videoInput   = document.getElementById("video_url");
+const statusInput  = document.getElementById("status");
+const descInput    = document.getElementById("desc");
+const coverInput   = document.getElementById("cover");
+
+const popup = document.getElementById("popup");
+const text  = document.getElementById("popupText");
+
+const langs = document.querySelectorAll('.lang-box input:checked');
+
+
+/* =========================
+   INPUT TOOLS
+========================= */
+function clearInput(){
+  document.getElementById("video_url").value = "";
+}
+
+async function pasteText(){
+  try {
+    const text = await navigator.clipboard.readText();
+    document.getElementById("video_url").value = text;
+  } catch (err) {
+    alert("เบราว์เซอร์ไม่อนุญาตให้ดึงคลิปบอร์ด");
+  }
+}
+
+
+/* =========================
+   MAIN SEND FUNCTION
+========================= */
 async function send(){
 
-  const btn = document.querySelector("button");
-
-  const animeInput = document.getElementById("anime");
-  const nameInput = document.getElementById("name");
-  const episodeInput = document.getElementById("episode");
-  const videoInput = document.getElementById("video_url");
-  const statusInput = document.getElementById("status");
-  const descInput = document.getElementById("desc");
-  const coverInput = document.getElementById("cover");
-
-  const popup = document.getElementById("popup");
-  const text = document.getElementById("popupText");
-
-  const langs = document.querySelectorAll('.lang-box input:checked');
-
-  // 🔒 ล็อคปุ่ม
+  // ล็อคปุ่ม
   btn.disabled = true;
 
   popup.style.display = "flex";
@@ -175,6 +201,10 @@ async function send(){
   },1500);
 }
 
+
+/* =========================
+   POPUP SYSTEM
+========================= */
 function show(msg){
   const popup = document.getElementById("popup");
   const text = document.getElementById("popupText");

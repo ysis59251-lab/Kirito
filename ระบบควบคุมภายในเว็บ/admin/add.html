@@ -6,9 +6,7 @@
 <title>เพิ่มอนิเมะ</title>
 
 <style>
-*{
-  box-sizing:border-box;
-}
+*{box-sizing:border-box;}
 
 body{
   margin:0;
@@ -21,7 +19,6 @@ body{
   font-family:system-ui;
 }
 
-/* CARD */
 .box{
   width:95%;
   max-width:400px;
@@ -30,20 +27,11 @@ body{
   border-radius:20px;
   padding:20px;
   box-shadow:0 0 30px rgba(0,0,0,0.5);
-  animation:fadeIn .6s ease;
 }
 
-@keyframes fadeIn{
-  from{opacity:0;transform:translateY(20px)}
-  to{opacity:1;transform:translateY(0)}
-}
+h2{margin-bottom:15px;}
 
-h2{
-  margin-bottom:15px;
-}
-
-/* INPUT */
-input{
+input,select{
   width:100%;
   padding:12px;
   margin:6px 0;
@@ -51,16 +39,8 @@ input{
   border-radius:10px;
   background:#1f1f1f;
   color:#fff;
-  outline:none;
-  transition:.2s;
 }
 
-input:focus{
-  background:#2a2a2a;
-  transform:scale(1.02);
-}
-
-/* BUTTON */
 button{
   width:100%;
   padding:12px;
@@ -69,21 +49,17 @@ button{
   border-radius:10px;
   background:linear-gradient(45deg,#ff4d6d,#ff006e);
   color:#fff;
-  font-size:16px;
   cursor:pointer;
-  transition:.3s;
 }
 
-button:hover{
-  transform:scale(1.05);
-  box-shadow:0 0 15px #ff4d6d;
-}
-
-/* STATUS */
 .status{
   margin-top:10px;
   font-size:14px;
-  opacity:0.8;
+}
+
+.lang-box{
+  text-align:left;
+  margin:10px 0;
 }
 </style>
 </head>
@@ -94,13 +70,28 @@ button:hover{
   <h2>🔥 เพิ่มอนิเมะ</h2>
 
   <input id="anime" placeholder="ชื่อ id (Naruto)">
-  <input id="name" placeholder="ชื่อเรื่อง (Naruto Shippuden)">
-  <input id="episode" placeholder="ตอน (1)">
-  <input id="title" placeholder="ภาษา">
-  <input id="video_url" placeholder="ลิงก์วิดีโอ m3u8">
-  <input id="status" placeholder="สถานะ (กำลังฉาย)">
+  <input id="name" placeholder="ชื่อเรื่อง">
+
+  <!-- เลือกตอน -->
+  <select id="episode">
+    <option value="">เลือกตอน</option>
+    <script>
+      for(let i=1;i<=30;i++){
+        document.write(`<option value="${i}">ตอนที่ ${i}</option>`);
+      }
+    </script>
+  </select>
+
+  <!-- เลือกภาษา -->
+  <div class="lang-box">
+    <label><input type="checkbox" value="พากย์ไทย"> พากย์ไทย</label>
+    <label><input type="checkbox" value="ซับไทย"> ซับไทย</label>
+  </div>
+
+  <input id="video_url" placeholder="ลิงก์วิดีโอ">
+  <input id="status" placeholder="สถานะ">
   <input id="desc" placeholder="คำอธิบาย">
-  <input id="cover" placeholder="ลิงก์รูปปก">
+  <input id="cover" placeholder="ลิงก์รูป">
 
   <button onclick="send()">🚀 เพิ่มตอน</button>
 
@@ -110,48 +101,44 @@ button:hover{
 <script>
 const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4rUyNII99HR6-OvHnEq_493fyiOiatj1GYjGqlZkws/exec";
 
-function send(){
+async function send(){
 
   const statusText = document.getElementById("statusText");
+  const langs = document.querySelectorAll('.lang-box input:checked');
 
-  // เช็คก่อนส่ง
   if(!anime.value || !name.value){
-    statusText.innerText = "⚠️ กรุณากรอกข้อมูลให้ครบ";
+    statusText.innerText = "⚠️ กรอกชื่อก่อน";
     return;
   }
 
-  // แสดงสถานะกำลังส่ง
+  if(!episode.value){
+    statusText.innerText = "⚠️ เลือกตอน";
+    return;
+  }
+
+  if(langs.length === 0){
+    statusText.innerText = "⚠️ เลือกภาษา";
+    return;
+  }
+
   statusText.innerText = "⏳ กำลังส่ง...";
-  
-  const url = API + 
-  "?anime=" + encodeURIComponent(anime.value) +
-  "&name=" + encodeURIComponent(name.value) +
-  "&episode=" + encodeURIComponent(episode.value) +
-  "&title=" + encodeURIComponent(title.value) +
-  "&video_url=" + encodeURIComponent(video_url.value) +
-  "&status=" + encodeURIComponent(status.value) +
-  "&desc=" + encodeURIComponent(desc.value) +
-  "&cover=" + encodeURIComponent(cover.value);
 
-  // ยิงแบบไม่เปิดหน้าใหม่
-  fetch(url)
-  .then(res => res.text())
-  .then(res => {
+  for(let lang of langs){
 
-    if(res.includes("OK")){
-      statusText.innerText = "✅ เพิ่มสำเร็จ!";
-      
-      // ล้าง input
-      document.querySelectorAll("input").forEach(i=>i.value="");
-    } else {
-      statusText.innerText = "❌ มีปัญหา: " + res;
-    }
+    const url = API + 
+    "?anime=" + encodeURIComponent(anime.value) +
+    "&name=" + encodeURIComponent(name.value) +
+    "&episode=" + episode.value +
+    "&title=" + encodeURIComponent(lang.value) +
+    "&video_url=" + encodeURIComponent(video_url.value) +
+    "&status=" + encodeURIComponent(status.value) +
+    "&desc=" + encodeURIComponent(desc.value) +
+    "&cover=" + encodeURIComponent(cover.value);
 
-  })
-  .catch(err=>{
-    statusText.innerText = "❌ ส่งไม่สำเร็จ (เน็ตหรือ API)";
-    console.log(err);
-  });
+    await fetch(url);
+  }
+
+  statusText.innerText = "✅ เพิ่มสำเร็จ!";
 }
 </script>
 

@@ -163,6 +163,7 @@ button{
 <script>
 const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4rUyNII99HR6-OvHnEq_493fyiOiatj1GYjGqlZkws/exec";
 
+/* INPUT */
 const btn = document.getElementById("sendBtn");
 
 const animeInput   = document.getElementById("anime");
@@ -176,47 +177,53 @@ const coverInput   = document.getElementById("cover");
 const popup = document.getElementById("popup");
 const text  = document.getElementById("popupText");
 
-function show(msg){
-  popup.style.display = "flex";
-  text.innerText = msg;
-  setTimeout(()=> popup.style.display="none",1500);
+/* CLEAR */
+function clearInput(){
+  videoInput.value = "";
 }
 
-/* =========================
-   RETRY FUNCTION
-========================= */
-async function fetchWithRetry(url, retries = 3, delay = 800){
-
-  for(let i = 0; i < retries; i++){
-    try{
-      const res = await fetch(url);
-
-      if(res.ok){
-        return true; // สำเร็จ
-      }
-
-      throw new Error("Response not OK");
-
-    }catch(err){
-
-      if(i < retries - 1){
-        await new Promise(r => setTimeout(r, delay * (i + 1)));
-      }else{
-        throw err;
-      }
-    }
+/* PASTE */
+async function pasteText(){
+  try {
+    const clip = await navigator.clipboard.readText();
+    videoInput.value = clip;
+  } catch (e) {
+    show("เบราว์เซอร์ไม่อนุญาต clipboard");
   }
 }
 
+/* POPUP */
+function show(msg){
+  popup.style.display = "flex";
+  text.innerText = msg;
+
+  setTimeout(()=>{
+    popup.style.display = "none";
+  },1500);
+}
+
+/* SEND */
 async function send(){
 
   const langs = document.querySelectorAll('.lang-box input:checked');
+
+  // ❗คุณยังมี validate อยู่ ถ้าไม่ต้องการ ลบ 2 if นี้ได้เลย
+  if(!animeInput.value || !nameInput.value || !episodeInput.value){
+    show("⚠️ กรอกข้อมูลให้ครบ");
+    return;
+  }
+
+  if(langs.length === 0){
+    show("⚠️ เลือกภาษา");
+    return;
+  }
 
   btn.disabled = true;
   popup.style.display = "flex";
   text.innerText = "⏳ กำลังส่ง...";
 
   try{
+
     for(const lang of langs){
 
       const url =
@@ -230,13 +237,13 @@ async function send(){
         "&desc=" + encodeURIComponent(descInput.value) +
         "&cover=" + encodeURIComponent(coverInput.value);
 
-      await fetchWithRetry(url, 3, 800);
+      await fetch(url);
     }
 
     show("✅ ส่งสำเร็จ");
 
-  }catch(e){
-    show("❌ ส่งไม่สำเร็จ (ลองครบแล้ว)");
+  }catch(err){
+    show("❌ ส่งไม่สำเร็จ");
   }
 
   btn.disabled = false;

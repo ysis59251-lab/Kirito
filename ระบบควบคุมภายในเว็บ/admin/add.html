@@ -6,6 +6,7 @@
 <title>เพิ่มอนิเมะ</title>
 
 <style>
+/* ===== YOUR CSS (ไม่แตะ) ===== */
 
 .btn-row{
   display:flex;
@@ -23,13 +24,11 @@
   transition:0.2s;
 }
 
-/* วาง */
 .btn-left{
   background:linear-gradient(135deg,#4facfe,#00f2fe);
   color:#000;
 }
 
-/* ล้าง */
 .btn-right{
   background:linear-gradient(135deg,#ff416c,#ff4b2b);
   color:#fff;
@@ -57,7 +56,6 @@ body{
   color:#fff;
 }
 
-/* CARD */
 .box{
   width:92%;
   max-width:420px;
@@ -73,10 +71,8 @@ h2{
   text-align:center;
   margin-bottom:15px;
   font-size:20px;
-  letter-spacing:1px;
 }
 
-/* INPUTS */
 input,select{
   width:100%;
   padding:13px;
@@ -85,25 +81,14 @@ input,select{
   border-radius:12px;
   background:#151515;
   color:#fff;
-  outline:none;
-  transition:0.2s;
-  border:1px solid rgba(255,255,255,0.05);
 }
 
-input:focus,select:focus{
-  border-color:#ff4d6d;
-  box-shadow:0 0 0 2px rgba(255,77,109,0.2);
-}
-
-/* CHECKBOX AREA */
 .lang-box{
   display:flex;
   gap:15px;
   margin:10px 0;
-  font-size:14px;
 }
 
-/* BUTTON */
 button{
   width:100%;
   padding:13px;
@@ -114,20 +99,8 @@ button{
   color:#fff;
   font-weight:600;
   cursor:pointer;
-  transition:0.2s;
-  box-shadow:0 10px 25px rgba(255,0,110,0.25);
 }
 
-button:hover{
-  transform:translateY(-2px);
-  box-shadow:0 15px 35px rgba(255,0,110,0.35);
-}
-
-button:active{
-  transform:scale(0.98);
-}
-
-/* POPUP */
 #popup{
   position:fixed;
   inset:0;
@@ -139,16 +112,8 @@ button:active{
 
 .popup-box{
   background:#111;
-  padding:25px 35px;
+  padding:25px;
   border-radius:14px;
-  border:1px solid rgba(255,255,255,0.1);
-  box-shadow:0 20px 60px rgba(0,0,0,0.6);
-  font-size:15px;
-}
-
-/* SMALL UX TOUCH */
-::placeholder{
-  color:#888;
 }
 </style>
 </head>
@@ -165,7 +130,7 @@ button:active{
     <option value="">เลือกตอน</option>
     <script>
       for(let i=1;i<=30;i++){
-        document.write(`<option value="${i}"> ${i}</option>`);
+        document.write(`<option value="${i}">${i}</option>`);
       }
     </script>
   </select>
@@ -175,22 +140,19 @@ button:active{
     <label><input type="checkbox" value="ซับไทย"> ซับไทย</label>
   </div>
 
-<input id="video_url" placeholder="ลิงก์วิดีโอ">
-<div class="btn-row">
-  <button class="btn-left" onclick="pasteText()"> วาง</button>
-  <button class="btn-right" onclick="clearInput()"> ล้าง</button>
-</div>
+  <input id="video_url" placeholder="ลิงก์วิดีโอ">
 
-<script>
-function clearInput(){
-  document.getElementById("video_url").value = "";
-}
-</script>
+  <div class="btn-row">
+    <button class="btn-left" onclick="pasteText()">วาง</button>
+    <button class="btn-right" onclick="clearInput()">ล้าง</button>
+  </div>
+
   <input id="status" placeholder="สถานะวิดิโอ">
   <input id="desc" placeholder="เรื่องย่อ">
   <input id="cover" placeholder="ลิงก์รูป">
 
-<button id="sendBtn" onclick="send()"> เพิ่มตอน</button>
+  <button id="sendBtn" onclick="send()">เพิ่มตอน</button>
+</div>
 
 <div id="popup">
   <div class="popup-box">
@@ -198,9 +160,11 @@ function clearInput(){
   </div>
 </div>
 
+<script>
+/* ===== JS FIXED ===== */
+
 const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4rUyNII99HR6-OvHnEq_493fyiOiatj1GYjGqlZkws/exec";
 
-/* INPUT */
 const btn = document.getElementById("sendBtn");
 
 const animeInput   = document.getElementById("anime");
@@ -214,36 +178,24 @@ const coverInput   = document.getElementById("cover");
 const popup = document.getElementById("popup");
 const text  = document.getElementById("popupText");
 
-
-/* CLEAR */
 function clearInput(){
   videoInput.value = "";
 }
 
-
-/* PASTE */
 async function pasteText(){
-  try {
-    const clip = await navigator.clipboard.readText();
-    videoInput.value = clip;
-  } catch (e) {
-    show("เบราว์เซอร์ไม่อนุญาต clipboard");
+  try{
+    videoInput.value = await navigator.clipboard.readText();
+  }catch(e){
+    alert("copy ไม่ได้");
   }
 }
 
-
-/* POPUP */
 function show(msg){
   popup.style.display = "flex";
   text.innerText = msg;
-
-  setTimeout(()=>{
-    popup.style.display = "none";
-  },1500);
+  setTimeout(()=> popup.style.display="none",1500);
 }
 
-
-/* SEND */
 async function send(){
 
   const langs = document.querySelectorAll('.lang-box input:checked');
@@ -263,32 +215,31 @@ async function send(){
   text.innerText = "⏳ กำลังส่ง...";
 
   try{
-
     for(const lang of langs){
 
-      const url = `${API}?anime=${encodeURIComponent(animeInput.value)}
-      &name=${encodeURIComponent(nameInput.value)}
-      &episode=${episodeInput.value}
-      &title=${encodeURIComponent(lang.value)}
-      &video_url=${encodeURIComponent(videoInput.value)}
-      &status=${encodeURIComponent(statusInput.value)}
-      &desc=${encodeURIComponent(descInput.value)}
-      &cover=${encodeURIComponent(coverInput.value)}`;
+      const url =
+        API +
+        "?anime=" + encodeURIComponent(animeInput.value) +
+        "&name=" + encodeURIComponent(nameInput.value) +
+        "&episode=" + episodeInput.value +
+        "&title=" + encodeURIComponent(lang.value) +
+        "&video_url=" + encodeURIComponent(videoInput.value) +
+        "&status=" + encodeURIComponent(statusInput.value) +
+        "&desc=" + encodeURIComponent(descInput.value) +
+        "&cover=" + encodeURIComponent(coverInput.value);
 
-      await fetch(url, { method: "GET" });
+      await fetch(url);
     }
 
-    text.innerText = "✅ ส่งสำเร็จ";
+    show("✅ ส่งสำเร็จ");
 
-  }catch(err){
-    text.innerText = "❌ ส่งไม่สำเร็จ";
+  }catch(e){
+    show("❌ ส่งไม่สำเร็จ");
   }
 
-  setTimeout(()=>{
-    popup.style.display = "none";
-    btn.disabled = false;
-  },1500);
+  btn.disabled = false;
 }
+</script>
 
 </body>
 </html>

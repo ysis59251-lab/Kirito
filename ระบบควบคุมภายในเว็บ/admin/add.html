@@ -26,7 +26,6 @@ body{
   backdrop-filter:blur(15px);
   border-radius:20px;
   padding:20px;
-  box-shadow:0 0 30px rgba(0,0,0,0.5);
 }
 
 input,select{
@@ -55,7 +54,6 @@ button{
   margin:10px 0;
 }
 
-/* POPUP */
 #popup{
   position:fixed;
   inset:0;
@@ -63,16 +61,13 @@ button{
   display:none;
   justify-content:center;
   align-items:center;
-  z-index:999;
 }
 
 .popup-box{
   background:#111;
   padding:30px;
   border-radius:15px;
-  text-align:center;
 }
-
 </style>
 </head>
 
@@ -84,7 +79,6 @@ button{
   <input id="anime" placeholder="ชื่อ id (Naruto)">
   <input id="name" placeholder="ชื่อเรื่อง">
 
-  <!-- ตอน -->
   <select id="episode">
     <option value="">เลือกตอน</option>
     <script>
@@ -94,7 +88,6 @@ button{
     </script>
   </select>
 
-  <!-- ภาษา -->
   <div class="lang-box">
     <label><input type="checkbox" value="พากย์ไทย"> พากย์ไทย</label>
     <label><input type="checkbox" value="ซับไทย"> ซับไทย</label>
@@ -108,10 +101,9 @@ button{
   <button onclick="send()">🚀 เพิ่มตอน</button>
 </div>
 
-<!-- POPUP -->
 <div id="popup">
   <div class="popup-box">
-    <div id="popupText">⏳ กำลังส่ง...</div>
+    <div id="popupText">⏳</div>
   </div>
 </div>
 
@@ -120,11 +112,27 @@ const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4r
 
 async function send(){
 
+  // 👉 ดึงค่าชัวร์ 100%
+  const animeInput = document.getElementById("anime");
+  const nameInput = document.getElementById("name");
+  const episodeInput = document.getElementById("episode");
+  const videoInput = document.getElementById("video_url");
+  const statusInput = document.getElementById("status");
+  const descInput = document.getElementById("desc");
+  const coverInput = document.getElementById("cover");
+
   const popup = document.getElementById("popup");
   const text = document.getElementById("popupText");
+
   const langs = document.querySelectorAll('.lang-box input:checked');
 
-  if(!episode.value){
+  // ✅ เช็คครบจริง
+  if(!animeInput.value || !nameInput.value){
+    show("⚠️ กรอกชื่อก่อน");
+    return;
+  }
+
+  if(!episodeInput.value){
     show("⚠️ เลือกตอน");
     return;
   }
@@ -140,14 +148,14 @@ async function send(){
   for(let lang of langs){
 
     const url = API + 
-    "?anime=" + encodeURIComponent(anime.value) +
-    "&name=" + encodeURIComponent(name.value) +
-    "&episode=" + episode.value +
+    "?anime=" + encodeURIComponent(animeInput.value) +
+    "&name=" + encodeURIComponent(nameInput.value) +
+    "&episode=" + episodeInput.value +
     "&title=" + encodeURIComponent(lang.value) +
-    "&video_url=" + encodeURIComponent(video_url.value) +
-    "&status=" + encodeURIComponent(status.value) +
-    "&desc=" + encodeURIComponent(desc.value) +
-    "&cover=" + encodeURIComponent(cover.value);
+    "&video_url=" + encodeURIComponent(videoInput.value) +
+    "&status=" + encodeURIComponent(statusInput.value) +
+    "&desc=" + encodeURIComponent(descInput.value) +
+    "&cover=" + encodeURIComponent(coverInput.value);
 
     await fetch(url);
   }
@@ -162,6 +170,7 @@ async function send(){
 function show(msg){
   const popup = document.getElementById("popup");
   const text = document.getElementById("popupText");
+
   popup.style.display = "flex";
   text.innerText = msg;
 

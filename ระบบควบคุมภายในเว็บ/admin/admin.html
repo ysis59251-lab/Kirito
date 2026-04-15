@@ -6,108 +6,178 @@
 <title>Anime Admin Dashboard</title>
 
 <style>
+*{box-sizing:border-box;}
+
 body{
   margin:0;
-  background:#0f0f0f;
+  background:linear-gradient(135deg,#0a0a0a,#121226);
   color:#fff;
   font-family:system-ui;
 }
+
+/* HEADER */
 header{
-  padding:15px;
-  background:#111;
-  font-size:20px;
+  padding:18px;
+  font-size:22px;
   font-weight:bold;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid rgba(255,255,255,0.1);
 }
+
+/* CONTAINER */
 .container{
   padding:20px;
 }
+
+/* CARD */
 .card{
-  background:#1b1b1b;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(12px);
+  border-radius:16px;
   padding:15px;
-  border-radius:10px;
   margin-bottom:20px;
+  box-shadow:0 0 20px rgba(0,0,0,0.5);
+  transition:0.3s;
 }
+
+.card:hover{
+  transform:translateY(-3px);
+}
+
+/* BUTTON */
 button{
-  padding:6px 10px;
+  padding:6px 12px;
   border:none;
   cursor:pointer;
-  border-radius:5px;
-  margin-left:5px;
+  border-radius:8px;
   color:#fff;
+  transition:0.3s;
 }
+
+button:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 10px #ff4d6d;
+}
+
+/* INPUT */
 input{
-  padding:8px;
+  padding:10px;
   width:100%;
   max-width:400px;
-  border-radius:6px;
+  border-radius:10px;
   border:none;
+  background:#1c1c1c;
+  color:#fff;
+  outline:none;
+  transition:0.3s;
 }
+
+input:focus{
+  background:#262626;
+  box-shadow:0 0 10px #ff006e;
+}
+
+/* ANIME LIST */
 .anime-item{
   display:flex;
   justify-content:space-between;
-  background:#222;
-  padding:8px;
-  margin-bottom:5px;
-  border-radius:6px;
+  align-items:center;
+  background:#1a1a1a;
+  padding:10px;
+  margin-bottom:6px;
+  border-radius:10px;
+  transition:0.2s;
 }
 
-/* ===== Top Right Inbox Button ===== */
+.anime-item:hover{
+  background:#242424;
+  transform:scale(1.02);
+}
+
+/* TOPBAR */
 .topbar{
   position:fixed;
   top:15px;
   right:20px;
   z-index:999;
 }
+
 .inbox-btn{
-  background:#222;
+  background:linear-gradient(45deg,#ff4d6d,#ff006e);
   padding:10px 15px;
   border-radius:30px;
   cursor:pointer;
   position:relative;
+  box-shadow:0 0 10px #ff006e;
 }
+
 .inbox-badge{
   position:absolute;
   top:-5px;
   right:-5px;
-  background:red;
+  background:#ff3c3c;
   color:#fff;
   border-radius:50%;
   padding:3px 7px;
   font-size:12px;
 }
 
-/* ===== Slide Panel ===== */
+/* PANEL */
 .inbox-panel{
   position:fixed;
   top:0;
-  right:-350px;
+  right:-380px;
   width:350px;
   height:100%;
-  background:#111;
+  background:#0d0d0d;
   padding:20px;
   overflow-y:auto;
-  transition:0.3s;
+  transition:0.4s;
   z-index:998;
+  box-shadow:-10px 0 30px rgba(0,0,0,0.8);
 }
+
 .inbox-panel.active{
   right:0;
 }
+
+/* MESSAGE */
 .message-item{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  background:#222;
-  padding:8px;
-  margin-bottom:6px;
-  border-radius:6px;
+  background:#1a1a1a;
+  padding:10px;
+  margin-bottom:8px;
+  border-radius:10px;
+  transition:0.2s;
 }
+
+.message-item:hover{
+  background:#242424;
+}
+
 .message-actions{
   display:flex;
   gap:5px;
 }
+
+/* BUTTON COLORS */
 .btn-view{ background:#2196f3; }
 .btn-delete{ background:#ff3c3c; }
 .btn-ban{ background:#9c27b0; }
+
+/* ADD BUTTON */
+a button{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:linear-gradient(45deg,#00c6ff,#0072ff);
+  padding:12px 18px;
+  border-radius:30px;
+  box-shadow:0 0 15px #0072ff;
+}
 </style>
 </head>
 <body>

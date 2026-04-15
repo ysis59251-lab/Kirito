@@ -176,22 +176,36 @@ const coverInput   = document.getElementById("cover");
 const popup = document.getElementById("popup");
 const text  = document.getElementById("popupText");
 
-function clearInput(){
-  videoInput.value = "";
-}
-
-async function pasteText(){
-  try{
-    videoInput.value = await navigator.clipboard.readText();
-  }catch(e){
-    alert("copy ไม่ได้");
-  }
-}
-
 function show(msg){
   popup.style.display = "flex";
   text.innerText = msg;
   setTimeout(()=> popup.style.display="none",1500);
+}
+
+/* =========================
+   RETRY FUNCTION
+========================= */
+async function fetchWithRetry(url, retries = 3, delay = 800){
+
+  for(let i = 0; i < retries; i++){
+    try{
+      const res = await fetch(url);
+
+      if(res.ok){
+        return true; // สำเร็จ
+      }
+
+      throw new Error("Response not OK");
+
+    }catch(err){
+
+      if(i < retries - 1){
+        await new Promise(r => setTimeout(r, delay * (i + 1)));
+      }else{
+        throw err;
+      }
+    }
+  }
 }
 
 async function send(){
@@ -216,13 +230,13 @@ async function send(){
         "&desc=" + encodeURIComponent(descInput.value) +
         "&cover=" + encodeURIComponent(coverInput.value);
 
-      await fetch(url);
+      await fetchWithRetry(url, 3, 800);
     }
 
     show("✅ ส่งสำเร็จ");
 
   }catch(e){
-    show("❌ ส่งไม่สำเร็จ");
+    show("❌ ส่งไม่สำเร็จ (ลองครบแล้ว)");
   }
 
   btn.disabled = false;

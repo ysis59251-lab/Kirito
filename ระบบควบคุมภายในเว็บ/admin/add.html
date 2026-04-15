@@ -93,9 +93,16 @@ button{
     <label><input type="checkbox" value="ซับไทย"> ซับไทย</label>
   </div>
 
-  <input id="video_url" placeholder="ลิงก์วิดีโอ">
-  <input id="status" placeholder="สถานะ">
-  <input id="desc" placeholder="คำอธิบาย">
+<input id="video_url" placeholder="ลิงก์วิดีโอ">
+<button onclick="clearInput()">ล้าง</button>
+
+<script>
+function clearInput(){
+  document.getElementById("video_url").value = "";
+}
+</script>
+  <input id="status" placeholder="สถานะวิดิโอ">
+  <input id="desc" placeholder="เรื่องย่อ">
   <input id="cover" placeholder="ลิงก์รูป">
 
   <button onclick="send()">🚀 เพิ่มตอน</button>

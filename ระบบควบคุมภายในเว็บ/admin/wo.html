@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เพิ่มรูปอนิเมะ</title>
+
+<style>
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background:linear-gradient(135deg,#0f0f0f,#1a1a2e);
+  font-family:system-ui;
+  color:#fff;
+}
+
+/* CARD */
+.box{
+  width:95%;
+  max-width:420px;
+  background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(15px);
+  border-radius:20px;
+  padding:25px;
+  box-shadow:0 0 30px rgba(0,0,0,0.5);
+}
+
+/* INPUT */
+input{
+  width:100%;
+  padding:12px;
+  margin:8px 0;
+  border:none;
+  border-radius:10px;
+  background:#1f1f1f;
+  color:#fff;
+}
+
+/* BUTTON */
+button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(45deg,#00c6ff,#0072ff);
+  color:#fff;
+  font-size:16px;
+  cursor:pointer;
+}
+
+/* POPUP */
+#popup{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.popup-box{
+  background:#111;
+  padding:30px;
+  border-radius:15px;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>🖼️ เพิ่มรูปอนิเมะ</h2>
+
+  <input id="id" placeholder="ID (เช่น 241)">
+  <input id="title" placeholder="ชื่อเรื่อง">
+  <input id="image" placeholder="ลิงก์รูป">
+  <input id="year" placeholder="ปี (2024)">
+  <input id="link" placeholder="ลิงก์หน้าเว็บ (folder-name/241.html)">
+
+  <button onclick="send()">🚀 เพิ่มข้อมูล</button>
+</div>
+
+<!-- POPUP -->
+<div id="popup">
+  <div class="popup-box">
+    <div id="popupText">⏳</div>
+  </div>
+</div>
+
+<script>
+const API = "ใส่ลิงก์ Apps Script ของนายตรงนี้";
+
+async function send(){
+
+  const popup = document.getElementById("popup");
+  const text = document.getElementById("popupText");
+
+  const id = document.getElementById("id").value;
+  const title = document.getElementById("title").value;
+  const image = document.getElementById("image").value;
+  const year = document.getElementById("year").value;
+  const link = document.getElementById("link").value;
+
+  if(!id || !title || !image){
+    return show("⚠️ กรอกข้อมูลให้ครบ");
+  }
+
+  popup.style.display = "flex";
+  text.innerText = "⏳ กำลังส่ง...";
+
+  const url = API +
+    "?id=" + encodeURIComponent(id) +
+    "&title=" + encodeURIComponent(title) +
+    "&image=" + encodeURIComponent(image) +
+    "&year=" + encodeURIComponent(year) +
+    "&show=FALSE" +
+    "&link=" + encodeURIComponent(link);
+
+  try{
+
+    // 🔥 ใช้วิธีนี้ กัน CORS 100%
+    await new Promise(resolve=>{
+      const img = new Image();
+      img.src = url;
+      img.onload = resolve;
+      img.onerror = resolve;
+    });
+
+    text.innerText = "✅ เพิ่มสำเร็จ!";
+
+    document.querySelectorAll("input").forEach(i=>i.value="");
+
+  }catch(e){
+    text.innerText = "❌ ส่งไม่สำเร็จ";
+  }
+
+  setTimeout(()=>{
+    popup.style.display = "none";
+  },1500);
+}
+
+function show(msg){
+  const popup = document.getElementById("popup");
+  const text = document.getElementById("popupText");
+
+  popup.style.display = "flex";
+  text.innerText = msg;
+
+  setTimeout(()=>{
+    popup.style.display = "none";
+  },1500);
+}
+</script>
+
+</body>
+</html>

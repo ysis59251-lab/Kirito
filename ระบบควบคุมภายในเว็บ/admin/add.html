@@ -158,11 +158,6 @@ async function send(){
 
     text.innerText = "✅ ส่งแล้ว!";
 
-    // 🧹 ล้างค่า
-    document.querySelectorAll("input").forEach(i=>i.value="");
-    document.querySelectorAll("input[type=checkbox]").forEach(i=>i.checked=false);
-    episodeInput.value = "";
-
   }catch(e){
     text.innerText = "❌ ส่งไม่สำเร็จ";
   }

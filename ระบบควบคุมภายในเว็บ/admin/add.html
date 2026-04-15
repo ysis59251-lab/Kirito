@@ -159,7 +159,7 @@ async function send(){
       "&desc=" + encodeURIComponent(descInput.value) +
       "&cover=" + encodeURIComponent(coverInput.value);
 
-      await fetch(url);
+      await fetch(url, {mode:"no-cors"});
     }
 
     text.innerText = "✅ ส่งแล้ว!";

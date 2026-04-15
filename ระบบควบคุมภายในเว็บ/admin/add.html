@@ -93,10 +93,10 @@ button:hover{
 <div class="box">
   <h2>🔥 เพิ่มอนิเมะ</h2>
 
-  <input id="anime" placeholder="ชื่อเรื่อง (Naruto)">
-  <input id="name" placeholder="ชื่อแสดง (Naruto Shippuden)">
+  <input id="anime" placeholder="ชื่อ id (Naruto)">
+  <input id="name" placeholder="ชื่อเรื่อง (Naruto Shippuden)">
   <input id="episode" placeholder="ตอน (1)">
-  <input id="title" placeholder="ชื่อตอน">
+  <input id="title" placeholder="ภาษา">
   <input id="video_url" placeholder="ลิงก์วิดีโอ m3u8">
   <input id="status" placeholder="สถานะ (กำลังฉาย)">
   <input id="desc" placeholder="คำอธิบาย">
@@ -112,6 +112,17 @@ const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4r
 
 function send(){
 
+  const statusText = document.getElementById("statusText");
+
+  // เช็คก่อนส่ง
+  if(!anime.value || !name.value){
+    statusText.innerText = "⚠️ กรุณากรอกข้อมูลให้ครบ";
+    return;
+  }
+
+  // แสดงสถานะกำลังส่ง
+  statusText.innerText = "⏳ กำลังส่ง...";
+  
   const url = API + 
   "?anime=" + encodeURIComponent(anime.value) +
   "&name=" + encodeURIComponent(name.value) +
@@ -122,9 +133,25 @@ function send(){
   "&desc=" + encodeURIComponent(desc.value) +
   "&cover=" + encodeURIComponent(cover.value);
 
-  window.open(url);
+  // ยิงแบบไม่เปิดหน้าใหม่
+  fetch(url)
+  .then(res => res.text())
+  .then(res => {
 
-  document.getElementById("statusText").innerText = "✅ ส่งแล้ว!";
+    if(res.includes("OK")){
+      statusText.innerText = "✅ เพิ่มสำเร็จ!";
+      
+      // ล้าง input
+      document.querySelectorAll("input").forEach(i=>i.value="");
+    } else {
+      statusText.innerText = "❌ มีปัญหา: " + res;
+    }
+
+  })
+  .catch(err=>{
+    statusText.innerText = "❌ ส่งไม่สำเร็จ (เน็ตหรือ API)";
+    console.log(err);
+  });
 }
 </script>
 

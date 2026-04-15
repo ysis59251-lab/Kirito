@@ -106,11 +106,6 @@ async function send(){
   const statusText = document.getElementById("statusText");
   const langs = document.querySelectorAll('.lang-box input:checked');
 
-  if(!anime.value || !name.value){
-    statusText.innerText = "⚠️ กรอกชื่อก่อน";
-    return;
-  }
-
   if(!episode.value){
     statusText.innerText = "⚠️ เลือกตอน";
     return;

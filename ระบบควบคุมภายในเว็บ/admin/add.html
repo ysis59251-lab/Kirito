@@ -112,7 +112,8 @@ const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4r
 
 async function send(){
 
-  // 👉 ดึงค่าชัวร์ 100%
+  const btn = document.querySelector("button");
+
   const animeInput = document.getElementById("anime");
   const nameInput = document.getElementById("name");
   const episodeInput = document.getElementById("episode");
@@ -126,44 +127,55 @@ async function send(){
 
   const langs = document.querySelectorAll('.lang-box input:checked');
 
-  // ✅ เช็คครบจริง
   if(!animeInput.value || !nameInput.value){
-    show("⚠️ กรอกชื่อก่อน");
-    return;
+    return show("⚠️ กรอกชื่อก่อน");
   }
 
   if(!episodeInput.value){
-    show("⚠️ เลือกตอน");
-    return;
+    return show("⚠️ เลือกตอน");
   }
 
   if(langs.length === 0){
-    show("⚠️ เลือกภาษา");
-    return;
+    return show("⚠️ เลือกภาษา");
   }
+
+  // 🔒 ล็อคปุ่ม
+  btn.disabled = true;
 
   popup.style.display = "flex";
   text.innerText = "⏳ กำลังส่ง...";
 
-  for(let lang of langs){
+  try{
 
-    const url = API + 
-    "?anime=" + encodeURIComponent(animeInput.value) +
-    "&name=" + encodeURIComponent(nameInput.value) +
-    "&episode=" + episodeInput.value +
-    "&title=" + encodeURIComponent(lang.value) +
-    "&video_url=" + encodeURIComponent(videoInput.value) +
-    "&status=" + encodeURIComponent(statusInput.value) +
-    "&desc=" + encodeURIComponent(descInput.value) +
-    "&cover=" + encodeURIComponent(coverInput.value);
+    for(let lang of langs){
 
-    await fetch(url);
+      const url = API + 
+      "?anime=" + encodeURIComponent(animeInput.value) +
+      "&name=" + encodeURIComponent(nameInput.value) +
+      "&episode=" + episodeInput.value +
+      "&title=" + encodeURIComponent(lang.value) +
+      "&video_url=" + encodeURIComponent(videoInput.value) +
+      "&status=" + encodeURIComponent(statusInput.value) +
+      "&desc=" + encodeURIComponent(descInput.value) +
+      "&cover=" + encodeURIComponent(coverInput.value);
+
+      await fetch(url);
+    }
+
+    text.innerText = "✅ ส่งแล้ว!";
+
+    // 🧹 ล้างค่า
+    document.querySelectorAll("input").forEach(i=>i.value="");
+    document.querySelectorAll("input[type=checkbox]").forEach(i=>i.checked=false);
+    episodeInput.value = "";
+
+  }catch(e){
+    text.innerText = "❌ ส่งไม่สำเร็จ";
   }
-
-  text.innerText = "✅ ส่งแล้ว!";
 
   setTimeout(()=>{
     popup.style.display = "none";
+    btn.disabled = false; // 🔓 ปลดล็อค
   },1500);
 }
 

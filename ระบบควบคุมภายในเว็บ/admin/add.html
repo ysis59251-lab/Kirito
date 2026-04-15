@@ -108,40 +108,38 @@ button:hover{
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/AKfycbwFYxU0PfE8j8AHlCtNXAMk8_-FlFF2qTXcWUhU9i6OdItaH5sft1ioGkcsL6CZcppi/exec";
+const API = "https://script.google.com/macros/s/AKfycbxLAfWn4DKj82kK3zZhuB4BT87ndz9iFrbH8Z4Bbd5YdltcBeOC9QEXSOmrWZZPXHHN/exec";
 
 function send(){
 
   const statusText = document.getElementById("statusText");
 
-  const data = {
-    anime: anime.value,
-    name: name.value,
-    episode: episode.value,
-    title: title.value,
-    video_url: video_url.value,
-    status: status.value,
-    desc: desc.value,
-    cover: cover.value
-  };
+  const formData = new FormData();
+
+  formData.append("anime", anime.value);
+  formData.append("name", name.value);
+  formData.append("episode", episode.value);
+  formData.append("title", title.value);
+  formData.append("video_url", video_url.value);
+  formData.append("status", status.value);
+  formData.append("desc", desc.value);
+  formData.append("cover", cover.value);
 
   statusText.innerText = "⏳ กำลังส่ง...";
 
   fetch(API,{
     method:"POST",
-    headers:{
-      "Content-Type":"application/json"
-    },
-    body: JSON.stringify(data)
+    body: formData
   })
   .then(res => res.text())
-  .then(()=>{
-    statusText.innerText = "✅ เพิ่มสำเร็จ!";
-    
+  .then(res=>{
+    statusText.innerText = "✅ เพิ่มสำเร็จ! ("+res+")";
+
     document.querySelectorAll("input").forEach(i=>i.value="");
   })
-  .catch(()=>{
+  .catch(err=>{
     statusText.innerText = "❌ ส่งไม่สำเร็จ";
+    console.log(err);
   });
 }
 </script>

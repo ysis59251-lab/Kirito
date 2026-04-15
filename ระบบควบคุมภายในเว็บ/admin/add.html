@@ -200,16 +200,6 @@ async function send(){
 
   const langs = document.querySelectorAll('.lang-box input:checked');
 
-  if(!animeInput.value || !nameInput.value || !episodeInput.value){
-    show("⚠️ กรอกข้อมูลให้ครบ");
-    return;
-  }
-
-  if(langs.length === 0){
-    show("⚠️ เลือกภาษา");
-    return;
-  }
-
   btn.disabled = true;
   popup.style.display = "flex";
   text.innerText = "⏳ กำลังส่ง...";

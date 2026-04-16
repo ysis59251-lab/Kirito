@@ -241,12 +241,102 @@ body {
   button { width: 100%; padding: 14px 0; }
   .desc { font-size: 15px; }
 }
+
+/* =========================
+   BACK BUTTON (TOP LEFT)
+========================= */
+.back-btn{
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  transform: none;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(6px);
+
+  color: #fff;
+  font-size: 16px;
+
+  cursor: pointer;
+  z-index: 999;
+
+  box-shadow:
+    0 4px 12px rgba(0,0,0,0.4),
+    inset 0 0 0 1px rgba(255,255,255,0.08);
+
+  transition: 0.2s ease;
+}
+
+.back-btn:hover{
+  transform: scale(1.05);
+  background: rgba(0,0,0,0.7);
+}
+
+.back-btn:active{
+  transform: scale(0.92);
+}
+
+.header{
+  position: relative;
+}
+
+/* =========================
+   LOADER
+========================= */
+.loader{
+  position: absolute;
+  inset: 0;
+  display: none; /* ซ่อนไว้ก่อน */
+
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0,0,0,0.75);
+  z-index: 5;
+}
+
+/* วงหมุน */
+.spinner{
+  width: 60px;
+  height: 60px;
+
+  border: 5px solid rgba(255,255,255,0.2);
+  border-top: 5px solid #ff3b3b;
+  border-radius: 50%;
+
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin{
+  to{ transform: rotate(360deg); }
+}
+
+/* ตัวเลข */
+.count{
+  margin-top: 10px;
+  font-size: 16px;
+  font-weight: bold;
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="header">🎬 AnimeFume</div>
+
+<button class="back-btn" onclick="goHome()">❮</button>
 
 <div class="container">
 <h2 id="animeName"></h2>
@@ -261,6 +351,10 @@ body {
 <div class="player">
   <div class="video-box">
     <iframe id="video" allowfullscreen></iframe>
+<div class="loader" id="loader">
+  <div class="spinner"></div>
+  <div class="count" id="count">0%</div>
+</div>
   </div>
 </div>
 
@@ -285,18 +379,56 @@ body {
 const SHEET_ID="1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
 const API=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-const currentAnime = "Dark Beginning"; // 👈 ต้องตรงกับคอลัมน์ anime ในชีต
+const currentAnime = "New Order";
 
 let episodes=[];
 let currentIndex=0;
 let watched=JSON.parse(localStorage.getItem("watchedEpisodes")||"[]");
 
+/* =========================
+   LOADER SYSTEM
+========================= */
+let percent = 0;
+let loaderTimer;
+
+function startLoading(){
+  const loader = document.getElementById("loader");
+  const count = document.getElementById("count");
+
+  loader.style.display = "flex";
+  percent = 0;
+
+  clearInterval(loaderTimer);
+
+  loaderTimer = setInterval(()=>{
+    if(percent < 95){
+      percent++;
+      count.innerText = percent + "%";
+    }
+  }, 30);
+}
+
+function stopLoading(){
+  const loader = document.getElementById("loader");
+  const count = document.getElementById("count");
+
+  clearInterval(loaderTimer);
+
+  count.innerText = "100%";
+
+  setTimeout(()=>{
+    loader.style.display = "none";
+  }, 300);
+}
+
+/* =========================
+   FETCH DATA
+========================= */
 fetch(API)
 .then(res=>res.text())
 .then(text=>{
   const json=JSON.parse(text.substring(47).slice(0,-2));
 
-  // 🔥 ดึง + กรองเรื่อง
   episodes=json.table.rows
     .map(r=>({
       anime:r.c[0]?.v,
@@ -309,24 +441,19 @@ fetch(API)
     }))
     .filter(e=>e.anime === currentAnime);
 
-  // ❗ กัน error ถ้าไม่มีข้อมูล
   if(episodes.length === 0){
     document.getElementById("animeName").innerText = "ไม่พบข้อมูล";
     return;
   }
 
-  // 🔥 หา info จริง (ไม่ใช้ index 0 มั่วๆ)
   const info = episodes.find(e => e.cover || e.desc) || episodes[0];
 
-  // 🏷️ ชื่อเรื่อง
   document.getElementById("animeName").innerText = info.name || "";
 
-  // 📖 เรื่องย่อ
   document.getElementById("desc").innerHTML =
     `<b>📖 เรื่องย่อ</b><br><br>` +
     (info.desc || "").replace(/\n/g,"<br><br>");
 
-  // 🖼️ รูปปก (คงที่)
   document.getElementById("coverImg").src = info.cover || "";
 
   renderEpisodes();
@@ -340,6 +467,9 @@ fetch(API)
   play(episodes[currentIndex].url);
 });
 
+/* =========================
+   RENDER EP
+========================= */
 function renderEpisodes(){
   const box=document.getElementById("episodeList");
   box.innerHTML="";
@@ -348,6 +478,7 @@ function renderEpisodes(){
     const div=document.createElement("div");
     div.className="ep";
     div.innerText=`ตอนที่ ${e.ep}`;
+
     if(watched.includes(e.url)) div.classList.add("watched");
 
     div.onclick=()=>play(e.url);
@@ -357,15 +488,28 @@ function renderEpisodes(){
   highlight();
 }
 
+/* =========================
+   PLAY VIDEO
+========================= */
 function play(url){
+  startLoading(); // 🔥 เริ่มโหลด
+
   const video=document.getElementById("video");
 
   if(url.includes("drive.google.com")){
-    const id=url.match(/\/d\/(.+?)\//)[1];
-    url=`https://drive.google.com/file/d/${id}/preview`;
+    const match = url.match(/\/d\/(.+?)\//);
+    if(match){
+      url=`https://drive.google.com/file/d/${match[1]}/preview`;
+    }
   }
 
   video.src=url;
+
+  // 🔥 หยุดโหลดเมื่อ iframe โหลด
+  video.onload = stopLoading;
+
+  // 🔥 กันค้าง (สำคัญ)
+  setTimeout(stopLoading, 3000);
 
   currentIndex=episodes.findIndex(e=>e.url===url || url.includes(e.url));
 
@@ -384,6 +528,9 @@ function play(url){
     "🎬 กำลังดู: ตอนที่ "+episodes[currentIndex].ep+" • "+episodes[currentIndex].title;
 }
 
+/* =========================
+   CONTROL
+========================= */
 function nextEp(){
   if(currentIndex<episodes.length-1){
     currentIndex++;
@@ -404,6 +551,9 @@ function highlight(){
   });
 }
 
+/* =========================
+   MODAL
+========================= */
 function openModal(){
   document.getElementById("modal").style.display="block";
 }
@@ -413,6 +563,13 @@ function closeModal(){
 }
 
 document.getElementById("modal").onclick=closeModal;
+
+/* =========================
+   BACK
+========================= */
+function goHome(){
+  window.history.back();
+}
 </script>
 
 

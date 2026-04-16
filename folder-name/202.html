@@ -241,12 +241,74 @@ body {
   button { width: 100%; padding: 14px 0; }
   .desc { font-size: 15px; }
 }
+
+/* =========================
+   BACK BUTTON (FLOAT iOS)
+========================= */
+.back-btn{
+  position: fixed;
+  top: 15px;
+  left: 15px;
+
+  width: 42px;
+  height: 42px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: none;
+  border-radius: 50%;
+
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(10px);
+
+  color: #fff;
+  font-size: 18px;
+
+  cursor: pointer;
+  z-index: 999;
+
+  box-shadow:
+    0 6px 18px rgba(0,0,0,0.45),
+    inset 0 0 0 1px rgba(255,255,255,0.08);
+
+  transition: 0.25s ease;
+
+  animation: fadeSlide 0.4s ease;
+}
+
+.back-btn:hover{
+  transform: translateY(-2px) scale(1.05);
+  background: rgba(0,0,0,0.75);
+  box-shadow:
+    0 10px 25px rgba(0,0,0,0.6),
+    0 0 12px rgba(255,255,255,0.15);
+}
+
+.back-btn:active{
+  transform: scale(0.92);
+}
+
+@keyframes fadeSlide{
+  from{
+    opacity:0;
+    transform: translateX(-10px);
+  }
+  to{
+    opacity:1;
+    transform: none;
+  }
+}
+
 </style>
 </head>
 
 <body>
 
 <div class="header">🎬 AnimeFume</div>
+
+<button class="back-btn" onclick="goHome()">❮</button>
 
 <div class="container">
 <h2 id="animeName"></h2>
@@ -413,6 +475,11 @@ function closeModal(){
 }
 
 document.getElementById("modal").onclick=closeModal;
+
+function goHome(){
+  window.history.back();
+}
+
 </script>
 
 

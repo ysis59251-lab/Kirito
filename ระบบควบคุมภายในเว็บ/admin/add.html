@@ -158,83 +158,101 @@ button{
 <script>
 const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4rUyNII99HR6-OvHnEq_493fyiOiatj1GYjGqlZkws/exec";
 
-const btn = document.getElementById("sendBtn");
+/* =========================
+   INPUT ELEMENTS
+========================= */
+const btn = document.querySelector("button");
 
-const animeInput = document.getElementById("anime");
-const nameInput = document.getElementById("name");
+const animeInput   = document.getElementById("anime");
+const nameInput    = document.getElementById("name");
 const episodeInput = document.getElementById("episode");
-const videoInput = document.getElementById("video_url");
-const statusInput = document.getElementById("status");
-const descInput = document.getElementById("desc");
-const coverInput = document.getElementById("cover");
+const videoInput   = document.getElementById("video_url");
+const statusInput  = document.getElementById("status");
+const descInput    = document.getElementById("desc");
+const coverInput   = document.getElementById("cover");
 
 const popup = document.getElementById("popup");
-const text = document.getElementById("popupText");
+const text  = document.getElementById("popupText");
 
-/* POPUP */
-function show(msg){
-  popup.style.display = "flex";
-  text.innerText = msg;
+/* =========================
+   LANG CHECKBOX FIX (สำคัญ)
+========================= */
+function getLangs(){
+  return document.querySelectorAll('.lang-box input:checked');
 }
 
-/* GET LAST EP */
-async function getLastEpisode(anime, name){
-  const res = await fetch(
-    API + "?mode=getLastEpisode&anime=" + encodeURIComponent(anime) +
-    "&name=" + encodeURIComponent(name)
-  );
-
-  const data = await res.json();
-  return Number(data.lastEpisode || 0);
+/* =========================
+   INPUT TOOLS
+========================= */
+function clearInput(){
+  videoInput.value = "";
 }
 
-/* SEND */
+async function pasteText(){
+  try {
+    const clip = await navigator.clipboard.readText();
+    videoInput.value = clip;
+  } catch (err) {
+    alert("เบราว์เซอร์ไม่อนุญาตให้ดึงคลิปบอร์ด");
+  }
+}
+
+/* =========================
+   MAIN SEND FUNCTION
+========================= */
 async function send(){
 
-  const anime = animeInput.value.trim();
-  const name = nameInput.value.trim();
-
-  if(!anime || !name) return;
-
   btn.disabled = true;
-  show("⏳ เช็คตอน...");
-
-  let lastEp = await getLastEpisode(anime, name);
-  let ep = lastEp + 1;
-
-  const langs = document.querySelectorAll('.lang-box input:checked');
+  popup.style.display = "flex";
+  text.innerText = "⏳ กำลังส่ง...";
 
   try{
 
-    show("⏳ กำลังส่ง...");
+    const langs = getLangs();
 
     for(let lang of langs){
 
-      const url = API +
-      "?anime=" + encodeURIComponent(anime) +
-      "&name=" + encodeURIComponent(name) +
-      "&episode=" + ep +
+      const url = API + 
+      "?anime=" + encodeURIComponent(animeInput.value) +
+      "&name=" + encodeURIComponent(nameInput.value) +
+      "&episode=" + episodeInput.value +
       "&title=" + encodeURIComponent(lang.value) +
       "&video_url=" + encodeURIComponent(videoInput.value) +
       "&status=" + encodeURIComponent(statusInput.value) +
       "&desc=" + encodeURIComponent(descInput.value) +
       "&cover=" + encodeURIComponent(coverInput.value);
 
-      await fetch(url);
+      await new Promise(resolve=>{
+        const img = new Image();
+        img.src = url;
+        img.onload = resolve;
+        img.onerror = resolve;
+      });
+
     }
 
-    episodeInput.value = ep + 1;
-
-    show("✅ ตอนที่ " + ep);
+    text.innerText = "✅ ส่งแล้ว!";
 
   }catch(e){
-    show("❌ error");
+    text.innerText = "❌ ส่งไม่สำเร็จ";
   }
 
   setTimeout(()=>{
     popup.style.display = "none";
     btn.disabled = false;
-  },1000);
+  },1500);
+}
+
+/* =========================
+   POPUP SYSTEM
+========================= */
+function show(msg){
+  popup.style.display = "flex";
+  text.innerText = msg;
+
+  setTimeout(()=>{
+    popup.style.display = "none";
+  },1500);
 }
 </script>
 

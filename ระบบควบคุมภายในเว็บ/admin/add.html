@@ -158,7 +158,9 @@ button{
 <script>
 const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4rUyNII99HR6-OvHnEq_493fyiOiatj1GYjGqlZkws/exec";
 
-/* INPUT */
+/* =========================
+   INPUT ELEMENTS
+========================= */
 const btn = document.getElementById("sendBtn");
 
 const animeInput   = document.getElementById("anime");
@@ -169,9 +171,13 @@ const statusInput  = document.getElementById("status");
 const descInput    = document.getElementById("desc");
 const coverInput   = document.getElementById("cover");
 
-/* 🔥 เก็บตอนแยกแต่ละอนิเมะ */
+const popup = document.getElementById("popup");
+const text  = document.getElementById("popupText");
+
+/* =========================
+   EPISODE SYSTEM (แยกตามอนิเมะ)
+========================= */
 let episodeMap = {};
-let currentAnime = "";
 const maxEpisode = 30;
 
 /* สร้าง dropdown */
@@ -182,39 +188,59 @@ for(let i=1;i<=maxEpisode;i++){
   episodeInput.appendChild(opt);
 }
 
-/* 👉 เปลี่ยนอนิเมะ = สร้าง context ใหม่ */
+/* =========================
+   เปลี่ยนอนิเมะ = เริ่ม context ใหม่
+========================= */
 animeInput.addEventListener("input", ()=>{
   const anime = animeInput.value.trim();
 
   if(!anime) return;
 
-  currentAnime = anime;
-
-  // ถ้ายังไม่มีค่า ให้เริ่ม 1
-  if(!episodeMap[currentAnime]){
-    episodeMap[currentAnime] = 1;
+  if(!episodeMap[anime]){
+    episodeMap[anime] = 1;
   }
 
   episodeInput.value = "";
 });
 
-/* 👉 เลือกตอนเริ่มเอง */
+/* =========================
+   เลือกตอนเริ่มเอง
+========================= */
 episodeInput.addEventListener("change", ()=>{
   const anime = animeInput.value.trim();
   if(!anime) return;
 
-  episodeMap[anime] = parseInt(episodeInput.value);
+  episodeMap[anime] = parseInt(episodeInput.value) || 1;
 });
 
-/* SEND */
+/* =========================
+   clipboard
+========================= */
+function clearInput(){
+  videoInput.value = "";
+}
+
+async function pasteText(){
+  try {
+    const clip = await navigator.clipboard.readText();
+    videoInput.value = clip;
+  } catch (err) {
+    alert("เบราว์เซอร์ไม่อนุญาตคลิปบอร์ด");
+  }
+}
+
+/* =========================
+   SEND FUNCTION (AUTO NEXT EPISODE)
+========================= */
 async function send(){
 
   const anime = animeInput.value.trim();
   if(!anime) return;
 
   btn.disabled = true;
+  popup.style.display = "flex";
+  text.innerText = "⏳ กำลังส่ง...";
 
-  // 👉 ดึง episode ของอนิเมะนี้
   if(!episodeMap[anime]){
     episodeMap[anime] = 1;
   }
@@ -245,17 +271,32 @@ async function send(){
       });
     }
 
-    // 👉 เพิ่มตอนเฉพาะเรื่องนี้
+    // 🔥 ไปตอนถัดไป (เฉพาะเรื่องนี้)
     episodeMap[anime] = ep + 1;
-
-    // 👉 sync UI
     episodeInput.value = episodeMap[anime];
 
+    text.innerText = "✅ ส่งแล้ว! ตอนถัดไป: " + episodeMap[anime];
+
   }catch(e){
-    console.log("error");
+    text.innerText = "❌ ส่งไม่สำเร็จ";
   }
 
-  btn.disabled = false;
+  setTimeout(()=>{
+    popup.style.display = "none";
+    btn.disabled = false;
+  },1200);
+}
+
+/* =========================
+   POPUP
+========================= */
+function show(msg){
+  popup.style.display = "flex";
+  text.innerText = msg;
+
+  setTimeout(()=>{
+    popup.style.display = "none";
+  },1500);
 }
 </script>
 

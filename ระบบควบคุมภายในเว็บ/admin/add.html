@@ -158,29 +158,23 @@ button{
 <script>
 const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4rUyNII99HR6-OvHnEq_493fyiOiatj1GYjGqlZkws/exec";
 
-/* =========================
-   ELEMENTS
-========================= */
+/* INPUT */
 const btn = document.getElementById("sendBtn");
 
 const animeInput   = document.getElementById("anime");
-const nameInput     = document.getElementById("name");
-const episodeInput  = document.getElementById("episode");
-const videoInput    = document.getElementById("video_url");
-const statusInput   = document.getElementById("status");
-const descInput     = document.getElementById("desc");
-const coverInput    = document.getElementById("cover");
+const nameInput    = document.getElementById("name");
+const episodeInput = document.getElementById("episode");
+const videoInput   = document.getElementById("video_url");
+const statusInput  = document.getElementById("status");
+const descInput    = document.getElementById("desc");
+const coverInput   = document.getElementById("cover");
 
-const popup = document.getElementById("popup");
-const text  = document.getElementById("popupText");
-
-/* =========================
-   AUTO EPISODE SYSTEM
-========================= */
-let currentEpisode = 1;
+/* 🔥 เก็บตอนแยกแต่ละอนิเมะ */
+let episodeMap = {};
+let currentAnime = "";
 const maxEpisode = 30;
 
-// สร้างตอน
+/* สร้าง dropdown */
 for(let i=1;i<=maxEpisode;i++){
   const opt = document.createElement("option");
   opt.value = i;
@@ -188,49 +182,55 @@ for(let i=1;i<=maxEpisode;i++){
   episodeInput.appendChild(opt);
 }
 
-/* =========================
-   RESET WHEN CHANGE ANIME
-========================= */
+/* 👉 เปลี่ยนอนิเมะ = สร้าง context ใหม่ */
 animeInput.addEventListener("input", ()=>{
-  currentEpisode = 1;
+  const anime = animeInput.value.trim();
+
+  if(!anime) return;
+
+  currentAnime = anime;
+
+  // ถ้ายังไม่มีค่า ให้เริ่ม 1
+  if(!episodeMap[currentAnime]){
+    episodeMap[currentAnime] = 1;
+  }
+
   episodeInput.value = "";
 });
 
-/* =========================
-   CLIPBOARD
-========================= */
-function clearInput(){
-  videoInput.value = "";
-}
+/* 👉 เลือกตอนเริ่มเอง */
+episodeInput.addEventListener("change", ()=>{
+  const anime = animeInput.value.trim();
+  if(!anime) return;
 
-async function pasteText(){
-  try {
-    const clip = await navigator.clipboard.readText();
-    videoInput.value = clip;
-  } catch (err) {
-    alert("เบราว์เซอร์ไม่อนุญาตคลิปบอร์ด");
-  }
-}
+  episodeMap[anime] = parseInt(episodeInput.value);
+});
 
-/* =========================
-   SEND SYSTEM (AUTO NEXT)
-========================= */
+/* SEND */
 async function send(){
 
+  const anime = animeInput.value.trim();
+  if(!anime) return;
+
   btn.disabled = true;
-  popup.style.display = "flex";
-  text.innerText = "⏳ กำลังส่ง...";
+
+  // 👉 ดึง episode ของอนิเมะนี้
+  if(!episodeMap[anime]){
+    episodeMap[anime] = 1;
+  }
+
+  let ep = episodeMap[anime];
+
+  const langs = document.querySelectorAll('.lang-box input:checked');
 
   try{
-
-    const langs = document.querySelectorAll('.lang-box input:checked');
 
     for(let lang of langs){
 
       const url = API + 
-      "?anime=" + encodeURIComponent(animeInput.value) +
+      "?anime=" + encodeURIComponent(anime) +
       "&name=" + encodeURIComponent(nameInput.value) +
-      "&episode=" + currentEpisode +
+      "&episode=" + ep +
       "&title=" + encodeURIComponent(lang.value) +
       "&video_url=" + encodeURIComponent(videoInput.value) +
       "&status=" + encodeURIComponent(statusInput.value) +
@@ -245,38 +245,17 @@ async function send(){
       });
     }
 
-    text.innerText = "✅ ส่งแล้ว!";
+    // 👉 เพิ่มตอนเฉพาะเรื่องนี้
+    episodeMap[anime] = ep + 1;
 
-    // 🔥 AUTO NEXT EPISODE
-    currentEpisode++;
-
-    if(currentEpisode <= maxEpisode){
-      episodeInput.value = currentEpisode;
-    }else{
-      currentEpisode = 1;
-      episodeInput.value = "";
-    }
+    // 👉 sync UI
+    episodeInput.value = episodeMap[anime];
 
   }catch(e){
-    text.innerText = "❌ ส่งไม่สำเร็จ";
+    console.log("error");
   }
 
-  setTimeout(()=>{
-    popup.style.display = "none";
-    btn.disabled = false;
-  },1200);
-}
-
-/* =========================
-   POPUP
-========================= */
-function show(msg){
-  popup.style.display = "flex";
-  text.innerText = msg;
-
-  setTimeout(()=>{
-    popup.style.display = "none";
-  },1500);
+  btn.disabled = false;
 }
 </script>
 

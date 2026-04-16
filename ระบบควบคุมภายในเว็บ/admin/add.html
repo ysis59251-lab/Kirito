@@ -128,11 +128,6 @@ button{
 
   <select id="episode">
     <option value="">เลือกตอน</option>
-    <script>
-      for(let i=1;i<=30;i++){
-        document.write(`<option value="${i}">${i}</option>`);
-      }
-    </script>
   </select>
 
   <div class="lang-box">
@@ -164,30 +159,45 @@ button{
 const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4rUyNII99HR6-OvHnEq_493fyiOiatj1GYjGqlZkws/exec";
 
 /* =========================
-   INPUT ELEMENTS
+   ELEMENTS
 ========================= */
-const btn = document.querySelector("button");
+const btn = document.getElementById("sendBtn");
 
 const animeInput   = document.getElementById("anime");
-const nameInput    = document.getElementById("name");
-const episodeInput = document.getElementById("episode");
-const videoInput   = document.getElementById("video_url");
-const statusInput  = document.getElementById("status");
-const descInput    = document.getElementById("desc");
-const coverInput   = document.getElementById("cover");
+const nameInput     = document.getElementById("name");
+const episodeInput  = document.getElementById("episode");
+const videoInput    = document.getElementById("video_url");
+const statusInput   = document.getElementById("status");
+const descInput     = document.getElementById("desc");
+const coverInput    = document.getElementById("cover");
 
 const popup = document.getElementById("popup");
 const text  = document.getElementById("popupText");
 
 /* =========================
-   LANG CHECKBOX FIX (สำคัญ)
+   AUTO EPISODE SYSTEM
 ========================= */
-function getLangs(){
-  return document.querySelectorAll('.lang-box input:checked');
+let currentEpisode = 1;
+const maxEpisode = 30;
+
+// สร้างตอน
+for(let i=1;i<=maxEpisode;i++){
+  const opt = document.createElement("option");
+  opt.value = i;
+  opt.textContent = i;
+  episodeInput.appendChild(opt);
 }
 
 /* =========================
-   INPUT TOOLS
+   RESET WHEN CHANGE ANIME
+========================= */
+animeInput.addEventListener("input", ()=>{
+  currentEpisode = 1;
+  episodeInput.value = "";
+});
+
+/* =========================
+   CLIPBOARD
 ========================= */
 function clearInput(){
   videoInput.value = "";
@@ -198,12 +208,12 @@ async function pasteText(){
     const clip = await navigator.clipboard.readText();
     videoInput.value = clip;
   } catch (err) {
-    alert("เบราว์เซอร์ไม่อนุญาตให้ดึงคลิปบอร์ด");
+    alert("เบราว์เซอร์ไม่อนุญาตคลิปบอร์ด");
   }
 }
 
 /* =========================
-   MAIN SEND FUNCTION
+   SEND SYSTEM (AUTO NEXT)
 ========================= */
 async function send(){
 
@@ -213,14 +223,14 @@ async function send(){
 
   try{
 
-    const langs = getLangs();
+    const langs = document.querySelectorAll('.lang-box input:checked');
 
     for(let lang of langs){
 
       const url = API + 
       "?anime=" + encodeURIComponent(animeInput.value) +
       "&name=" + encodeURIComponent(nameInput.value) +
-      "&episode=" + episodeInput.value +
+      "&episode=" + currentEpisode +
       "&title=" + encodeURIComponent(lang.value) +
       "&video_url=" + encodeURIComponent(videoInput.value) +
       "&status=" + encodeURIComponent(statusInput.value) +
@@ -233,10 +243,19 @@ async function send(){
         img.onload = resolve;
         img.onerror = resolve;
       });
-
     }
 
     text.innerText = "✅ ส่งแล้ว!";
+
+    // 🔥 AUTO NEXT EPISODE
+    currentEpisode++;
+
+    if(currentEpisode <= maxEpisode){
+      episodeInput.value = currentEpisode;
+    }else{
+      currentEpisode = 1;
+      episodeInput.value = "";
+    }
 
   }catch(e){
     text.innerText = "❌ ส่งไม่สำเร็จ";
@@ -245,11 +264,11 @@ async function send(){
   setTimeout(()=>{
     popup.style.display = "none";
     btn.disabled = false;
-  },1500);
+  },1200);
 }
 
 /* =========================
-   POPUP SYSTEM
+   POPUP
 ========================= */
 function show(msg){
   popup.style.display = "flex";

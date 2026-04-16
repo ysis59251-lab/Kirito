@@ -126,9 +126,19 @@ button{
   <input id="anime" placeholder="ชื่อ id (Naruto)">
   <input id="name" placeholder="ชื่อเรื่อง">
 
-  <select id="episode">
-    <option value="">เลือกตอน</option>
-  </select>
+<select id="episode">
+  <option value="">เลือกตอน</option>
+  <script>
+    for(let i=1;i<=30;i++){
+      document.write(`<option value="${i}">${i}</option>`);
+    }
+  </script>
+</select>
+
+<div style="display:flex;gap:10px;margin-top:8px;">
+  <button type="button" onclick="changeEp(-1)">◀ ตอนก่อน</button>
+  <button type="button" onclick="changeEp(1)">ตอนถัดไป ▶</button>
+</div>
 
   <div class="lang-box">
     <label><input type="checkbox" value="พากย์ไทย"> พากย์ไทย</label>
@@ -161,7 +171,7 @@ const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4r
 /* =========================
    INPUT ELEMENTS
 ========================= */
-const btn = document.querySelector("button");
+const btn = document.querySelector("#sendBtn"); // 🔥 fix ไม่ไปจับปุ่มตัวแรกมั่ว
 
 const animeInput   = document.getElementById("anime");
 const nameInput    = document.getElementById("name");
@@ -175,14 +185,14 @@ const popup = document.getElementById("popup");
 const text  = document.getElementById("popupText");
 
 /* =========================
-   LANG CHECKBOX FIX (สำคัญ)
+   LANG CHECKBOX
 ========================= */
 function getLangs(){
   return document.querySelectorAll('.lang-box input:checked');
 }
 
 /* =========================
-   INPUT TOOLS
+   TOOLS
 ========================= */
 function clearInput(){
   videoInput.value = "";
@@ -193,14 +203,36 @@ async function pasteText(){
     const clip = await navigator.clipboard.readText();
     videoInput.value = clip;
   } catch (err) {
-    alert("เบราว์เซอร์ไม่อนุญาตให้ดึงคลิปบอร์ด");
+    alert("เบราว์เซอร์ไม่อนุญาต clipboard");
   }
 }
 
 /* =========================
-   MAIN SEND FUNCTION
+   CHANGE EPISODE (◀ ▶)
+========================= */
+function changeEp(step){
+
+  let val = parseInt(episodeInput.value);
+
+  // ถ้ายังไม่เลือก ให้เริ่มที่ 1
+  if(isNaN(val)) val = 1;
+
+  val += step;
+
+  if(val < 1) val = 1;
+  if(val > 30) val = 30;
+
+  episodeInput.value = val;
+}
+
+/* =========================
+   SEND
 ========================= */
 async function send(){
+
+  if(!animeInput.value || !nameInput.value){
+    return show("⚠️ กรอกข้อมูลให้ครบ");
+  }
 
   btn.disabled = true;
   popup.style.display = "flex";
@@ -232,6 +264,7 @@ async function send(){
     }
 
     text.innerText = "✅ ส่งแล้ว!";
+    clearInput(); // 🔥 ล้างลิงก์หลังส่ง
 
   }catch(e){
     text.innerText = "❌ ส่งไม่สำเร็จ";
@@ -240,11 +273,11 @@ async function send(){
   setTimeout(()=>{
     popup.style.display = "none";
     btn.disabled = false;
-  },1500);
+  },1200);
 }
 
 /* =========================
-   POPUP SYSTEM
+   POPUP
 ========================= */
 function show(msg){
   popup.style.display = "flex";
@@ -252,7 +285,7 @@ function show(msg){
 
   setTimeout(()=>{
     popup.style.display = "none";
-  },1500);
+  },1200);
 }
 </script>
 

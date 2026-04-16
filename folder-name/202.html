@@ -243,13 +243,13 @@ body {
 }
 
 /* =========================
-   BACK BUTTON (IN HEADER)
+   BACK BUTTON (TOP LEFT)
 ========================= */
 .back-btn{
   position: fixed;
-  top: 50%;
-  left: 12px;
-  transform: translateY(-50%);
+  top: 12px;     /* 👈 ชิดบน */
+  left: 12px;    /* 👈 ชิดซ้าย */
+  transform: none; /* ❌ เอา translate ออก */
 
   width: 38px;
   height: 38px;
@@ -268,7 +268,7 @@ body {
   font-size: 16px;
 
   cursor: pointer;
-  z-index: 2;
+  z-index: 999;
 
   box-shadow:
     0 4px 12px rgba(0,0,0,0.4),
@@ -278,12 +278,12 @@ body {
 }
 
 .back-btn:hover{
-  transform: translateY(-50%) scale(1.05);
+  transform: scale(1.05);
   background: rgba(0,0,0,0.7);
 }
 
 .back-btn:active{
-  transform: translateY(-50%) scale(0.92);
+  transform: scale(0.92);
 }
 
 .header{

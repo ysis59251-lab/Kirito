@@ -230,10 +230,6 @@ function changeEp(step){
 ========================= */
 async function send(){
 
-  if(!animeInput.value || !nameInput.value){
-    return show("⚠️ กรอกข้อมูลให้ครบ");
-  }
-
   btn.disabled = true;
   popup.style.display = "flex";
   text.innerText = "⏳ กำลังส่ง...";

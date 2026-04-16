@@ -158,113 +158,61 @@ button{
 <script>
 const API = "https://script.google.com/macros/s/AKfycbwLBavKOeoTwDw0pTg0NRojLA4rUyNII99HR6-OvHnEq_493fyiOiatj1GYjGqlZkws/exec";
 
-/* =========================
-   INPUT ELEMENTS
-========================= */
 const btn = document.getElementById("sendBtn");
 
-const animeInput   = document.getElementById("anime");
-const nameInput    = document.getElementById("name");
+const animeInput = document.getElementById("anime");
+const nameInput = document.getElementById("name");
 const episodeInput = document.getElementById("episode");
-const videoInput   = document.getElementById("video_url");
-const statusInput  = document.getElementById("status");
-const descInput    = document.getElementById("desc");
-const coverInput   = document.getElementById("cover");
+const videoInput = document.getElementById("video_url");
+const statusInput = document.getElementById("status");
+const descInput = document.getElementById("desc");
+const coverInput = document.getElementById("cover");
 
 const popup = document.getElementById("popup");
-const text  = document.getElementById("popupText");
+const text = document.getElementById("popupText");
 
-/* =========================
-   EPISODE SYSTEM (แยกตาม anime+name)
-========================= */
-let episodeMap = {};
-const maxEpisode = 30;
-
-/* dropdown */
-for(let i=1;i<=maxEpisode;i++){
-  const opt = document.createElement("option");
-  opt.value = i;
-  opt.textContent = i;
-  episodeInput.appendChild(opt);
+/* POPUP */
+function show(msg){
+  popup.style.display = "flex";
+  text.innerText = msg;
 }
 
-/* key = anime + name */
-function getKey(){
-  return animeInput.value.trim() + "|" + nameInput.value.trim();
+/* GET LAST EP */
+async function getLastEpisode(anime, name){
+  const res = await fetch(
+    API + "?mode=getLastEpisode&anime=" + encodeURIComponent(anime) +
+    "&name=" + encodeURIComponent(name)
+  );
+
+  const data = await res.json();
+  return Number(data.lastEpisode || 0);
 }
 
-/* =========================
-   RESET WHEN CHANGE anime OR name
-========================= */
-function handleChange(){
-  const key = getKey();
-
-  if(!key || key === "|") return;
-
-  // ถ้ายังไม่มี → เริ่ม 1
-  if(!episodeMap[key]){
-    episodeMap[key] = 1;
-  }
-
-  episodeInput.value = "";
-}
-
-animeInput.addEventListener("input", handleChange);
-nameInput.addEventListener("input", handleChange);
-
-/* =========================
-   เลือกตอนเอง
-========================= */
-episodeInput.addEventListener("change", ()=>{
-  const key = getKey();
-  if(!key || key === "|") return;
-
-  episodeMap[key] = parseInt(episodeInput.value) || 1;
-});
-
-/* =========================
-   clipboard tools
-========================= */
-function clearInput(){
-  videoInput.value = "";
-}
-
-async function pasteText(){
-  try {
-    const clip = await navigator.clipboard.readText();
-    videoInput.value = clip;
-  } catch (err) {
-    alert("คลิปบอร์ดไม่อนุญาต");
-  }
-}
-
-/* =========================
-   SEND (AUTO NEXT EPISODE)
-========================= */
+/* SEND */
 async function send(){
 
-  const key = getKey();
-  if(!key || key === "|") return;
+  const anime = animeInput.value.trim();
+  const name = nameInput.value.trim();
+
+  if(!anime || !name) return;
 
   btn.disabled = true;
-  popup.style.display = "flex";
-  text.innerText = "⏳ กำลังส่ง...";
+  show("⏳ เช็คตอน...");
 
-  if(!episodeMap[key]){
-    episodeMap[key] = 1;
-  }
-
-  let ep = episodeMap[key];
+  let lastEp = await getLastEpisode(anime, name);
+  let ep = lastEp + 1;
 
   const langs = document.querySelectorAll('.lang-box input:checked');
 
   try{
 
+    show("⏳ กำลังส่ง...");
+
     for(let lang of langs){
 
-      const url = API + 
-      "?anime=" + encodeURIComponent(animeInput.value) +
-      "&name=" + encodeURIComponent(nameInput.value) +
+      const url = API +
+      "?anime=" + encodeURIComponent(anime) +
+      "&name=" + encodeURIComponent(name) +
       "&episode=" + ep +
       "&title=" + encodeURIComponent(lang.value) +
       "&video_url=" + encodeURIComponent(videoInput.value) +
@@ -272,40 +220,21 @@ async function send(){
       "&desc=" + encodeURIComponent(descInput.value) +
       "&cover=" + encodeURIComponent(coverInput.value);
 
-      await new Promise(resolve=>{
-        const img = new Image();
-        img.src = url;
-        img.onload = resolve;
-        img.onerror = resolve;
-      });
+      await fetch(url);
     }
 
-    // 🔥 ไปตอนถัดไปเฉพาะ key นี้
-    episodeMap[key] = ep + 1;
-    episodeInput.value = episodeMap[key];
+    episodeInput.value = ep + 1;
 
-    text.innerText = `✅ ส่งแล้ว! ตอนถัดไป: ${episodeMap[key]}`;
+    show("✅ ตอนที่ " + ep);
 
   }catch(e){
-    text.innerText = "❌ ส่งไม่สำเร็จ";
+    show("❌ error");
   }
 
   setTimeout(()=>{
     popup.style.display = "none";
     btn.disabled = false;
-  },1200);
-}
-
-/* =========================
-   POPUP
-========================= */
-function show(msg){
-  popup.style.display = "flex";
-  text.innerText = msg;
-
-  setTimeout(()=>{
-    popup.style.display = "none";
-  },1500);
+  },1000);
 }
 </script>
 

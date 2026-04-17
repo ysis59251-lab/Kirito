@@ -6,6 +6,7 @@
 <title>Anime Admin Dashboard</title>
 
 <style>
+
 *{box-sizing:border-box;}
 
 body{
@@ -15,23 +16,52 @@ body{
   font-family:system-ui;
 }
 
+/* HEADER */
 header{
   padding:18px;
   font-size:22px;
   font-weight:bold;
   background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(10px);
   border-bottom:1px solid rgba(255,255,255,0.1);
 }
 
-.container{ padding:20px; }
+/* CONTAINER */
+.container{
+  padding:20px;
+}
 
+/* CARD */
 .card{
   background:rgba(255,255,255,0.05);
+  backdrop-filter:blur(12px);
   border-radius:16px;
   padding:15px;
   margin-bottom:20px;
+  box-shadow:0 0 20px rgba(0,0,0,0.5);
+  transition:0.3s;
 }
 
+.card:hover{
+  transform:translateY(-3px);
+}
+
+/* BUTTON */
+button{
+  padding:6px 12px;
+  border:none;
+  cursor:pointer;
+  border-radius:8px;
+  color:#fff;
+  transition:0.3s;
+}
+
+button:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 10px #ff4d6d;
+}
+
+/* INPUT */
 input{
   padding:10px;
   width:100%;
@@ -40,48 +70,47 @@ input{
   border:none;
   background:#1c1c1c;
   color:#fff;
+  outline:none;
+  transition:0.3s;
 }
 
+input:focus{
+  background:#262626;
+  box-shadow:0 0 10px #ff006e;
+}
+
+/* ANIME LIST */
 .anime-item{
   display:flex;
   justify-content:space-between;
-  gap:10px;
   align-items:center;
   background:#1a1a1a;
   padding:10px;
-  margin-bottom:8px;
+  margin-bottom:6px;
   border-radius:10px;
+  transition:0.2s;
 }
 
-video{
-  border-radius:10px;
-  margin-top:5px;
+.anime-item:hover{
+  background:#242424;
+  transform:scale(1.02);
 }
 
-button{
-  border:none;
-  padding:6px 10px;
-  border-radius:8px;
-  color:#fff;
-  cursor:pointer;
-}
-
-.btn-close{background:#ff9800;}
-.btn-open{background:#4caf50;}
-.btn-del{background:#ff3c3c;}
-
+/* TOPBAR */
 .topbar{
   position:fixed;
   top:15px;
   right:20px;
+  z-index:999;
 }
 
 .inbox-btn{
-  background:#ff006e;
+  background:linear-gradient(45deg,#ff4d6d,#ff006e);
   padding:10px 15px;
   border-radius:30px;
   cursor:pointer;
   position:relative;
+  box-shadow:0 0 10px #ff006e;
 }
 
 .inbox-badge{
@@ -89,11 +118,13 @@ button{
   top:-5px;
   right:-5px;
   background:#ff3c3c;
+  color:#fff;
   border-radius:50%;
   padding:3px 7px;
   font-size:12px;
 }
 
+/* PANEL */
 .inbox-panel{
   position:fixed;
   top:0;
@@ -104,23 +135,69 @@ button{
   padding:20px;
   overflow-y:auto;
   transition:0.4s;
+  z-index:998;
+  box-shadow:-10px 0 30px rgba(0,0,0,0.8);
 }
 
-.inbox-panel.active{ right:0; }
+.inbox-panel.active{
+  right:0;
+}
 
+/* MESSAGE */
 .message-item{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
   background:#1a1a1a;
   padding:10px;
   margin-bottom:8px;
   border-radius:10px;
+  transition:0.2s;
+}
+
+.message-item:hover{
+  background:#242424;
+}
+
+.message-actions{
+  display:flex;
+  gap:5px;
+}
+
+/* BUTTON COLORS */
+.btn-view{ background:#2196f3; }
+.btn-delete{ background:#ff3c3c; }
+.btn-ban{ background:#9c27b0; }
+
+/* ADD BUTTON */
+.btn-box{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+  z-index:999;
+}
+
+.btn-box button{
+  background:linear-gradient(45deg,#00c6ff,#0072ff);
+  padding:12px 18px;
+  border-radius:30px;
+  box-shadow:0 0 15px #0072ff;
 }
 </style>
 </head>
-
 <body>
 
 <header>🔥 Anime Admin Dashboard</header>
 
+<div class="btn-box">
+  <a href="add.html"><button>ลงวิดิโอ</button></a>
+  <a href="wo.html"><button>ลงรูป</button></a>
+</div>
+
+<!-- 🔝 ปุ่มแจ้งปัญหาขวาบน -->
 <div class="topbar">
   <div class="inbox-btn" onclick="toggleReportPanel()">
     🚨
@@ -128,8 +205,9 @@ button{
   </div>
 </div>
 
+<!-- Slide Panel แจ้งปัญหา -->
 <div id="reportPanel" class="inbox-panel">
-  <h3>🚨 แจ้งปัญหา</h3>
+  <h3>🚨 แจ้งปัญหาจากผู้ชม</h3>
   <div id="reportList"></div>
 </div>
 
@@ -140,28 +218,24 @@ button{
 </div>
 
 <div class="card">
-  <input id="searchInput" placeholder="ค้นหา..." oninput="searchAnime()">
+  <h3>🔎 ค้นหาอนิเมะ</h3>
+  <input type="text" id="searchInput" placeholder="พิมพ์ชื่อเรื่อง..." oninput="searchAnime()">
 </div>
 
 <div class="card">
-  <h3>🎬 รายการ</h3>
+  <h3>🎬 รายการอนิเมะ</h3>
   <div id="animeList"></div>
 </div>
 
 <div class="card">
-  <h3>🚫 รายการที่ถูกปิด</h3>
-  <div id="hiddenList"></div>
-</div>
-
-<div class="card">
-  <h3>🏆 TOP 5</h3>
+  <h3>🏆 อันดับยอดฮิต</h3>
   <div id="ranking"></div>
 </div>
 
 </div>
 
 <audio id="notifySound">
-<source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
 </audio>
 
 <script type="module">
@@ -170,107 +244,148 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebas
 import { getDatabase, ref, set, onValue, remove, update, onDisconnect } 
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-/* FIREBASE */
+/* ================= FIREBASE ================= */
+
 const app = initializeApp({
-  apiKey: "AIzaSyC...",
+  apiKey: "AIzaSyC1S1BToUhVmWqyeTWbHlPdI8hY0aGKNDg",
   authDomain: "darkframe300.firebaseapp.com",
   databaseURL: "https://darkframe300-default-rtdb.firebaseio.com"
 });
 
 const db = getDatabase(app);
 
-/* ONLINE */
+/* ================= ONLINE ================= */
+
 const uid = "admin_"+Math.random();
 const onlineRef = ref(db,"onlineUsers/"+uid);
 set(onlineRef,true);
 onDisconnect(onlineRef).remove();
 
 onValue(ref(db,"onlineUsers"),s=>{
-  onlineCount.innerText = s.exists()?Object.keys(s.val()).length:0;
+  document.getElementById("onlineCount").innerText =
+    s.exists()?Object.keys(s.val()).length:0;
 });
 
-/* DATA */
+/* ================= LOAD FROM SHEET ================= */
+
+const SHEET_URL = "https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1";
+
 let allAnime = [];
 
-onValue(ref(db,"anime"),snap=>{
-  allAnime=[];
-  if(!snap.exists()) return;
+async function loadSheet(){
+  try{
+    const res = await fetch(SHEET_URL);
+    const data = await res.json();
 
-  snap.forEach(c=>{
-    const d=c.val();
-    allAnime.push({
-      id:c.key,
-      title:d.title||"",
-      video:d.video||"",
-      status:d.status||"active",
-      views:d.views||0
-    });
-  });
+    allAnime = data.map((row,i)=>({
+      id: row.id || ("anime_"+i),
+      title: row.title || "ไม่มีชื่อ",
+      video: row.video || row.link || "",
+      views: parseInt(row.views)||0
+    }));
 
+    renderAnime(allAnime);
+    renderRanking(allAnime);
+
+  }catch(err){
+    animeList.innerHTML="โหลดชีตไม่สำเร็จ";
+  }
+}
+
+/* ================= HIDDEN FROM FIREBASE ================= */
+
+let hiddenMap = {};
+
+onValue(ref(db,"hiddenAnime"),snap=>{
+  hiddenMap = snap.val() || {};
   renderAnime(allAnime);
-  renderRanking(allAnime);
 });
 
-/* RENDER */
+/* ================= RENDER ================= */
+
 function renderAnime(list){
   animeList.innerHTML="";
+  if(!document.getElementById("hiddenList")){
+    const div=document.createElement("div");
+    div.className="card";
+    div.innerHTML=`<h3>🚫 รายการที่ถูกปิด</h3><div id="hiddenList"></div>`;
+    document.querySelector(".container").appendChild(div);
+  }
+
   hiddenList.innerHTML="";
 
   list.forEach(a=>{
+    const isHidden = hiddenMap[a.id];
+
     const div=document.createElement("div");
     div.className="anime-item";
 
     div.innerHTML=`
     <div>
       <b>${a.title}</b><br>
-      ${a.video?`<video src="${a.video}" width="200" controls></video>`:""}
+      ${a.video ? `<video src="${a.video}" width="200" controls></video>`:""}
     </div>
     <div>
-      <button class="btn-close">ปิด</button>
-      <button class="btn-open">เปิด</button>
+      ${!isHidden ? `<button class="btn-close">ปิด</button>` : `<button class="btn-open">เปิด</button>`}
       <button class="btn-del">ลบ</button>
     </div>
     `;
 
-    div.querySelector(".btn-close").onclick=()=>{
-      update(ref(db,"anime/"+a.id),{status:"disabled"});
-    };
+    /* ปิด */
+    div.querySelector(".btn-close")?.addEventListener("click",()=>{
+      update(ref(db,"hiddenAnime/"+a.id),true);
+    });
 
-    div.querySelector(".btn-open").onclick=()=>{
-      update(ref(db,"anime/"+a.id),{status:"active"});
-    };
+    /* เปิด */
+    div.querySelector(".btn-open")?.addEventListener("click",()=>{
+      remove(ref(db,"hiddenAnime/"+a.id));
+    });
 
+    /* ลบ */
     div.querySelector(".btn-del").onclick=()=>{
-      if(confirm("ลบ?")) remove(ref(db,"anime/"+a.id));
+      if(confirm("ลบ?")){
+        remove(ref(db,"hiddenAnime/"+a.id));
+      }
     };
 
-    (a.status==="disabled"?hiddenList:animeList).appendChild(div);
+    (isHidden ? hiddenList : animeList).appendChild(div);
   });
 }
 
-/* SEARCH */
-window.searchAnime=()=>{
-  const k=searchInput.value.toLowerCase();
+/* ================= SEARCH ================= */
+
+window.searchAnime = ()=>{
+  const k = document.getElementById("searchInput").value.toLowerCase();
   renderAnime(allAnime.filter(a=>a.title.toLowerCase().includes(k)));
 };
 
-/* RANK */
+/* ================= RANK ================= */
+
 function renderRanking(arr){
   ranking.innerHTML="";
   [...arr].sort((a,b)=>b.views-a.views).slice(0,5)
   .forEach((a,i)=>{
-    ranking.innerHTML+=`<div class="anime-item">#${i+1} ${a.title}</div>`;
+    ranking.innerHTML+=`
+    <div class="anime-item">
+      #${i+1} ${a.title} (${a.views})
+    </div>`;
   });
 }
 
-/* REPORT */
-window.toggleReportPanel=()=>{
-  reportPanel.classList.toggle("active");
+/* ================= REPORT ================= */
+
+window.toggleReportPanel = ()=>{
+  document.getElementById("reportPanel").classList.toggle("active");
 };
 
 onValue(ref(db,"reports"),snap=>{
   reportList.innerHTML="";
   let unread=0;
+
+  if(!snap.exists()){
+    reportUnread.innerText=0;
+    return;
+  }
 
   snap.forEach(c=>{
     const d=c.val();
@@ -285,6 +400,11 @@ onValue(ref(db,"reports"),snap=>{
   reportUnread.innerText=unread;
 });
 
+/* ================= START ================= */
+
+loadSheet();
+
 </script>
+
 </body>
 </html>

@@ -327,7 +327,7 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 /* ================= FIREBASE ================= */
-const adminApp = initializeApp({
+const app = initializeApp({
   apiKey: "AIzaSyC1S1BToUhVmWqyeTWbHlPdI8hY0aGKNDg",
   authDomain: "darkframe300.firebaseapp.com",
   databaseURL: "https://darkframe300-default-rtdb.firebaseio.com",
@@ -335,7 +335,7 @@ const adminApp = initializeApp({
   appId: "1:296568248360:web:7867a60675ce32e3d6bd1d"
 });
 
-const adminDb = getDatabase(adminApp);
+const db = getDatabase(app);
 
 /* ================= ELEMENTS ================= */
 const adminBox = document.getElementById("adminAnimeList");
@@ -345,12 +345,12 @@ const badge = document.getElementById("reportUnread");
 
 /* ================= STATE ================= */
 let cards = [];
+let filteredCards = [];
 let currentPage = 0;
 const perPage = 40;
-let searchMode = false;
 
-/* ================= ADMIN SYSTEM ================= */
-onValue(ref(adminDb, "anime"), (snap) => {
+/* ================= ADMIN ================= */
+onValue(ref(db, "anime"), (snap) => {
   adminBox.innerHTML = "";
 
   if (!snap.exists()) {
@@ -358,7 +358,7 @@ onValue(ref(adminDb, "anime"), (snap) => {
     return;
   }
 
-  snap.forEach(c => {
+  snap.forEach((c) => {
     const d = c.val();
 
     const div = document.createElement("div");
@@ -373,11 +373,11 @@ onValue(ref(adminDb, "anime"), (snap) => {
     `;
 
     div.querySelector(".btn-disable").onclick = () =>
-      update(ref(adminDb, "anime/" + c.key), { status: "disabled" });
+      update(ref(db, "anime/" + c.key), { status: "disabled" });
 
     div.querySelector(".btn-delete").onclick = () => {
       if (confirm("ลบ?")) {
-        remove(ref(adminDb, "anime/" + c.key));
+        remove(ref(db, "anime/" + c.key));
       }
     };
 
@@ -387,91 +387,86 @@ onValue(ref(adminDb, "anime"), (snap) => {
 
 /* ================= LOAD SHEET ================= */
 async function loadFromSheet() {
-  const res = await fetch("https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1");
-  const data = await res.json();
+  try {
+    const res = await fetch("https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1");
+    const data = await res.json();
 
-  readerBox.innerHTML = "";
+    readerBox.innerHTML = "";
 
-  data.forEach(row => {
-    const a = document.createElement("a");
-    a.className = "anime-card";
-    a.href = row.link || "#";
+    data.forEach((row) => {
+      const a = document.createElement("a");
+      a.className = "anime-card";
+      a.href = row.link || "#";
 
-    a.innerHTML = `
-      <img src="${row.image || 'https://via.placeholder.com/300'}">
-      <div>${row.title || ""}</div>
-    `;
+      a.innerHTML = `
+        <img src="${row.image || 'https://via.placeholder.com/300'}">
+        <div>${row.title || ""}</div>
+      `;
 
-    readerBox.appendChild(a);
-  });
+      readerBox.appendChild(a);
+    });
 
-  cards = [...document.querySelectorAll(".anime-card")];
-  currentPage = 0;
-  searchMode = false;
-  renderPage();
+    cards = [...document.querySelectorAll(".anime-card")];
+    filteredCards = [...cards];
+
+    currentPage = 0;
+    render();
+  } catch (e) {
+    console.error("Sheet error:", e);
+    readerBox.innerHTML = "โหลดข้อมูลไม่สำเร็จ";
+  }
 }
 
-/* ================= PAGINATION ================= */
-function renderPage() {
-  const list = searchMode ? getVisibleCards() : cards;
-
+/* ================= RENDER PAGINATION ================= */
+function render() {
   const start = currentPage * perPage;
   const end = start + perPage;
 
-  list.forEach(c => c.style.display = "none");
-  list.slice(start, end).forEach(c => c.style.display = "inline-block");
+  cards.forEach(c => c.style.display = "none");
+  filteredCards.slice(start, end).forEach(c => {
+    c.style.display = "block";
+  });
 }
 
-function getVisibleCards() {
-  return cards.filter(c => c.style.display !== "none");
-}
+/* ================= SEARCH (FIXED) ================= */
+window.searchAnime = function () {
+  const q = document.getElementById("searchInput").value.toLowerCase();
 
+  if (!q) {
+    filteredCards = [...cards];
+  } else {
+    filteredCards = cards.filter(c =>
+      c.innerText.toLowerCase().includes(q)
+    );
+  }
+
+  currentPage = 0;
+  render();
+};
+
+/* ================= PAGINATION ================= */
 window.nextPage = function () {
-  const list = searchMode ? getVisibleCards() : cards;
-  const max = Math.ceil(list.length / perPage) - 1;
-
+  const max = Math.ceil(filteredCards.length / perPage) - 1;
   if (currentPage < max) {
     currentPage++;
-    renderPage();
+    render();
   }
 };
 
 window.prevPage = function () {
   if (currentPage > 0) {
     currentPage--;
-    renderPage();
+    render();
   }
-};
-
-/* ================= SEARCH (FIX ไม่พัง pagination) ================= */
-window.searchAnime = function () {
-  const q = document.getElementById("searchInput").value.toLowerCase();
-
-  if (!q) {
-    searchMode = false;
-    currentPage = 0;
-    renderPage();
-    return;
-  }
-
-  searchMode = true;
-
-  cards.forEach(c => {
-    const text = c.innerText.toLowerCase();
-    c.style.display = text.includes(q) ? "inline-block" : "none";
-  });
-
-  currentPage = 0;
-  renderPage();
 };
 
 /* ================= REPORT ================= */
-onValue(ref(adminDb, "reports"), (snap) => {
+onValue(ref(db, "reports"), (snap) => {
   reportList.innerHTML = "";
 
   let count = 0;
 
-  snap.forEach(r => {
+  snap.forEach((r) => {
     const d = r.val();
     count++;
 
@@ -484,7 +479,7 @@ onValue(ref(adminDb, "reports"), (snap) => {
     `;
 
     div.querySelector("button").onclick = () =>
-      remove(ref(adminDb, "reports/" + r.key));
+      remove(ref(db, "reports/" + r.key));
 
     reportList.appendChild(div);
   });
@@ -492,8 +487,8 @@ onValue(ref(adminDb, "reports"), (snap) => {
   badge.textContent = count;
 });
 
-/* ================= ONLINE ================= */
-runTransaction(ref(adminDb, "onlineCount"), (v) => (v || 0) + 1);
+/* ================= ONLINE COUNT ================= */
+runTransaction(ref(db, "onlineCount"), (v) => (v || 0) + 1);
 
 /* ================= START ================= */
 document.addEventListener("DOMContentLoaded", loadFromSheet);

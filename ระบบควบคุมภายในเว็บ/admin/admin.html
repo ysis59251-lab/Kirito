@@ -320,9 +320,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getDatabase,
   ref,
+  set,
   onValue,
   remove,
   update,
+  onDisconnect,
+  push,
   runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
@@ -337,6 +340,7 @@ const adminApp = initializeApp({
 
 const adminDb = getDatabase(adminApp);
 
+/* (กันพัง) reader config ต้องมีของจริง */
 const readerApp = initializeApp({
   apiKey: "AIzaSyCUxvXXXX",
   authDomain: "reader-4a13f.firebaseapp.com",
@@ -347,7 +351,7 @@ const readerApp = initializeApp({
 
 const readerDb = getDatabase(readerApp);
 
-/* ================= UI ================= */
+/* ================= UI FIX ================= */
 const adminBox = document.createElement("div");
 adminBox.id = "adminAnimeList";
 document.body.appendChild(adminBox);
@@ -356,13 +360,7 @@ const readerBox = document.createElement("div");
 readerBox.id = "readerAnimeList";
 document.querySelector(".container").appendChild(readerBox);
 
-/* ================= STATE ================= */
-let cards = [];
-let currentPage = 0;
-const perPage = 40;
-let searchMode = false;
-
-/* ================= ADMIN ================= */
+/* ================= ADMIN LIST ================= */
 onValue(ref(adminDb, "anime"), (snap) => {
   adminBox.innerHTML = "";
 
@@ -378,7 +376,9 @@ onValue(ref(adminDb, "anime"), (snap) => {
     div.className = "anime-item";
 
     div.innerHTML = `
-      <div>${d.title || "ไม่มีชื่อ"} (${d.status || "active"})</div>
+      <div>
+        ${d.title || "ไม่มีชื่อ"} (${d.status || "active"})
+      </div>
       <div>
         <button class="btn-disable">ปิด</button>
         <button class="btn-delete">ลบ</button>
@@ -398,7 +398,9 @@ onValue(ref(adminDb, "anime"), (snap) => {
   });
 });
 
-/* ================= LOAD SHEET ================= */
+/* ================= READER ================= */
+let cards = [];
+
 function loadFromSheet() {
   fetch("https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1")
     .then(r => r.json())
@@ -406,7 +408,7 @@ function loadFromSheet() {
 
       readerBox.innerHTML = "";
 
-      data.forEach((row) => {
+      data.forEach((row, i) => {
         const a = document.createElement("a");
         a.className = "anime-card";
         a.href = row.link || "#";
@@ -415,81 +417,44 @@ function loadFromSheet() {
           <div class="card-img">
             <img src="${row.image || 'https://via.placeholder.com/300'}">
           </div>
-          <div>${row.title || ""}</div>
+          <div style="text-align:center">${row.title || ""}</div>
         `;
 
         readerBox.appendChild(a);
       });
 
       cards = [...document.querySelectorAll(".anime-card")];
-      currentPage = 0;
-      searchMode = false;
       renderPage();
     });
 }
 
-/* ================= PAGINATION FIX ================= */
-function renderPage() {
-
-  const list = searchMode ? getVisibleCards() : cards;
-
-  const start = currentPage * perPage;
+/* pagination fix */
+function renderPage(page = 0) {
+  const perPage = 40;
+  const start = page * perPage;
   const end = start + perPage;
 
-  list.forEach(c => c.style.display = "none");
-  list.slice(start, end).forEach(c => c.style.display = "inline-block");
+  cards.forEach(c => c.style.display = "none");
+  cards.slice(start, end).forEach(c => c.style.display = "inline-block");
 }
 
-function getVisibleCards() {
-  return cards.filter(c => c.style.display !== "none");
-}
-
-/* ================= NEXT / PREV ================= */
-window.nextPage = function () {
-  const list = searchMode ? getVisibleCards() : cards;
-  const maxPage = Math.ceil(list.length / perPage) - 1;
-
-  if (currentPage < maxPage) {
-    currentPage++;
-    renderPage();
-  }
-};
-
-window.prevPage = function () {
-  if (currentPage > 0) {
-    currentPage--;
-    renderPage();
-  }
-};
-
-/* ================= SEARCH FIX ================= */
+/* ================= SEARCH ================= */
 window.searchAnime = function () {
   const q = document.getElementById("searchInput").value.toLowerCase();
-
-  if (!q) {
-    searchMode = false;
-    currentPage = 0;
-    renderPage();
-    return;
-  }
-
-  searchMode = true;
 
   cards.forEach(card => {
     const text = card.innerText.toLowerCase();
     card.style.display = text.includes(q) ? "inline-block" : "none";
   });
-
-  currentPage = 0;
-  renderPage();
 };
 
-/* ================= REPORT ================= */
+/* ================= REPORT PANEL ================= */
 window.toggleReportPanel = function () {
   document.getElementById("reportPanel")
     .classList.toggle("active");
 };
 
+/* fake report system (กัน error) */
 onValue(ref(adminDb, "reports"), (snap) => {
   const list = document.getElementById("reportList");
   const badge = document.getElementById("reportUnread");
@@ -519,7 +484,7 @@ onValue(ref(adminDb, "reports"), (snap) => {
   badge.textContent = count;
 });
 
-/* ================= ONLINE ================= */
+/* ================= ONLINE COUNT ================= */
 const onlineRef = ref(adminDb, "onlineCount");
 
 runTransaction(onlineRef, (val) => (val || 0) + 1);

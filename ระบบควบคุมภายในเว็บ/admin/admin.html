@@ -421,6 +421,73 @@ onValue(ref(adminDb, "reports"), (snap) => {
   badge.textContent = count;  
 });  
   
+/* ================= FIX SYSTEM ================= */
+
+// ✅ ปุ่มแจ้งเตือนใช้งานได้
+window.toggleReportPanel = function(){
+  const panel = document.getElementById("reportPanel");
+  if(panel) panel.classList.toggle("active");
+};
+
+// ✅ กัน error adminBox (ถ้าไม่มี element)
+if(!adminBox){
+  console.warn("adminAnimeList not found (skip admin system)");
+}
+
+// ✅ ระบบเสียงแจ้งเตือน
+let lastReportCount = 0;
+
+onValue(ref(adminDb, "reports"), (snap) => {
+  if(!reportList || !badge) return;
+
+  reportList.innerHTML = "";
+  let count = 0;
+
+  snap.forEach(r => {
+    const d = r.val();
+    count++;
+
+    const div = document.createElement("div");
+    div.className = "message-item";
+
+    div.innerHTML = `
+      <div>${d.message || "report"}</div>
+      <button class="btn-delete">ลบ</button>
+    `;
+
+    div.querySelector("button").onclick = () =>
+      remove(ref(adminDb, "reports/" + r.key));
+
+    reportList.appendChild(div);
+  });
+
+  badge.textContent = count;
+
+  // 🔥 เล่นเสียงเมื่อมีใหม่
+  if(count > lastReportCount){
+    const sound = document.getElementById("notifySound");
+    if(sound) sound.play().catch(()=>{});
+  }
+
+  lastReportCount = count;
+});
+
+// ✅ แสดงจำนวนคนออนไลน์
+onValue(ref(adminDb, "onlineCount"), (snap)=>{
+  const el = document.getElementById("onlineCount");
+  if(el) el.textContent = snap.val() || 0;
+});
+
+// ✅ เพิ่ม + ลด online อย่างถูกต้อง
+const onlineRef = ref(adminDb, "onlineCount");
+
+runTransaction(onlineRef, (v) => (v || 0) + 1);
+
+// ลดตอนออก (แก้ปัญหาค้าง)
+window.addEventListener("beforeunload", () => {
+  runTransaction(onlineRef, (v) => Math.max((v || 1) - 1, 0));
+});
+
 /* ================= ONLINE ================= */  
 runTransaction(ref(adminDb, "onlineCount"), (v) => (v || 0) + 1);  
   

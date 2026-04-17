@@ -291,9 +291,7 @@ import {
   runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* =========================
-FIREBASE ADMIN
-========================= */
+/* ================= FIREBASE ================= */
 const adminApp = initializeApp({
   apiKey: "AIzaSyC1S1BToUhVmWqyeTWbHlPdI8hY0aGKNDg",
   authDomain: "darkframe300.firebaseapp.com",
@@ -304,11 +302,9 @@ const adminApp = initializeApp({
 
 const adminDb = getDatabase(adminApp);
 
-/* =========================
-FIREBASE READER
-========================= */
+/* (กันพัง) reader config ต้องมีของจริง */
 const readerApp = initializeApp({
-  apiKey: "AIzaSyCUxv...",
+  apiKey: "AIzaSyCUxvXXXX",
   authDomain: "reader-4a13f.firebaseapp.com",
   databaseURL: "https://reader-4a13f-default-rtdb.firebaseio.com",
   projectId: "reader-4a13f",
@@ -317,19 +313,21 @@ const readerApp = initializeApp({
 
 const readerDb = getDatabase(readerApp);
 
+/* ================= UI FIX ================= */
+const adminBox = document.createElement("div");
+adminBox.id = "adminAnimeList";
+document.body.appendChild(adminBox);
 
-/* =========================================================
-====================== ADMIN SYSTEM ========================
-========================================================= */
+const readerBox = document.createElement("div");
+readerBox.id = "readerAnimeList";
+document.querySelector(".container").appendChild(readerBox);
 
+/* ================= ADMIN LIST ================= */
 onValue(ref(adminDb, "anime"), (snap) => {
-  const box = document.getElementById("adminAnimeList");
-  if (!box) return;
-
-  box.innerHTML = "";
+  adminBox.innerHTML = "";
 
   if (!snap.exists()) {
-    box.innerHTML = "ไม่มีข้อมูล";
+    adminBox.innerHTML = "ไม่มีข้อมูล";
     return;
   }
 
@@ -340,54 +338,51 @@ onValue(ref(adminDb, "anime"), (snap) => {
     div.className = "anime-item";
 
     div.innerHTML = `
-      ${d.title || "ไม่มีชื่อ"} (${d.status || "active"})
       <div>
-        <button style="background:#ff9800">ปิด</button>
-        <button style="background:#ff3c3c">ลบ</button>
+        ${d.title || "ไม่มีชื่อ"} (${d.status || "active"})
+      </div>
+      <div>
+        <button class="btn-disable">ปิด</button>
+        <button class="btn-delete">ลบ</button>
       </div>
     `;
 
-    div.children[1].children[0].onclick = () =>
+    div.querySelector(".btn-disable").onclick = () =>
       update(ref(adminDb, "anime/" + c.key), { status: "disabled" });
 
-    div.children[1].children[1].onclick = () => {
+    div.querySelector(".btn-delete").onclick = () => {
       if (confirm("ลบ?")) {
         remove(ref(adminDb, "anime/" + c.key));
       }
     };
 
-    box.appendChild(div);
+    adminBox.appendChild(div);
   });
 });
 
-
-/* =========================================================
-====================== READER SYSTEM =======================
-========================================================= */
-
+/* ================= READER ================= */
 let cards = [];
 
 function loadFromSheet() {
   fetch("https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1")
     .then(r => r.json())
     .then(data => {
-      const box = document.getElementById("readerAnimeList");
-      box.innerHTML = "";
+
+      readerBox.innerHTML = "";
 
       data.forEach((row, i) => {
         const a = document.createElement("a");
         a.className = "anime-card";
         a.href = row.link || "#";
-        a.dataset.id = row.id || "a_" + i;
 
         a.innerHTML = `
           <div class="card-img">
             <img src="${row.image || 'https://via.placeholder.com/300'}">
-            <div class="overlay">${row.title || ""}</div>
           </div>
+          <div style="text-align:center">${row.title || ""}</div>
         `;
 
-        box.appendChild(a);
+        readerBox.appendChild(a);
       });
 
       cards = [...document.querySelectorAll(".anime-card")];
@@ -395,20 +390,68 @@ function loadFromSheet() {
     });
 }
 
-/* pagination */
-function renderPage() {
+/* pagination fix */
+function renderPage(page = 0) {
   const perPage = 40;
-  const start = 0;
-  const end = perPage;
+  const start = page * perPage;
+  const end = start + perPage;
 
   cards.forEach(c => c.style.display = "none");
-  cards.slice(start, end).forEach(c => c.style.display = "");
+  cards.slice(start, end).forEach(c => c.style.display = "inline-block");
 }
 
+/* ================= SEARCH ================= */
+window.searchAnime = function () {
+  const q = document.getElementById("searchInput").value.toLowerCase();
 
-/* =========================================================
-START
-========================================================= */
+  cards.forEach(card => {
+    const text = card.innerText.toLowerCase();
+    card.style.display = text.includes(q) ? "inline-block" : "none";
+  });
+};
+
+/* ================= REPORT PANEL ================= */
+window.toggleReportPanel = function () {
+  document.getElementById("reportPanel")
+    .classList.toggle("active");
+};
+
+/* fake report system (กัน error) */
+onValue(ref(adminDb, "reports"), (snap) => {
+  const list = document.getElementById("reportList");
+  const badge = document.getElementById("reportUnread");
+
+  list.innerHTML = "";
+
+  let count = 0;
+
+  snap.forEach(r => {
+    const d = r.val();
+    count++;
+
+    const div = document.createElement("div");
+    div.className = "message-item";
+
+    div.innerHTML = `
+      <div>${d.message || "report"}</div>
+      <button class="btn-delete">ลบ</button>
+    `;
+
+    div.querySelector("button").onclick = () =>
+      remove(ref(adminDb, "reports/" + r.key));
+
+    list.appendChild(div);
+  });
+
+  badge.textContent = count;
+});
+
+/* ================= ONLINE COUNT ================= */
+const onlineRef = ref(adminDb, "onlineCount");
+
+runTransaction(onlineRef, (val) => (val || 0) + 1);
+
+/* ================= START ================= */
 document.addEventListener("DOMContentLoaded", () => {
   loadFromSheet();
 });

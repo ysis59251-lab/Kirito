@@ -320,12 +320,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getDatabase,
   ref,
-  set,
   onValue,
   remove,
   update,
-  onDisconnect,
-  push,
   runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
@@ -336,31 +333,23 @@ const adminApp = initializeApp({
   databaseURL: "https://darkframe300-default-rtdb.firebaseio.com",
   projectId: "darkframe300",
   appId: "1:296568248360:web:7867a60675ce32e3d6bd1d"
-}, "admin");
+});
 
 const adminDb = getDatabase(adminApp);
 
-/* (กันพัง) reader config ต้องมีของจริง */
-const readerApp = initializeApp({
-  apiKey: "AIzaSyCUxvXXXX",
-  authDomain: "reader-4a13f.firebaseapp.com",
-  databaseURL: "https://reader-4a13f-default-rtdb.firebaseio.com",
-  projectId: "reader-4a13f",
-  appId: "1:220776049054:web:53524fb1e90ba83a12ce8f"
-}, "reader");
+/* ================= ELEMENTS ================= */
+const adminBox = document.getElementById("adminAnimeList");
+const readerBox = document.getElementById("animeList");
+const reportList = document.getElementById("reportList");
+const badge = document.getElementById("reportUnread");
 
-const readerDb = getDatabase(readerApp);
+/* ================= STATE ================= */
+let cards = [];
+let currentPage = 0;
+const perPage = 40;
+let searchMode = false;
 
-/* ================= UI FIX ================= */
-const adminBox = document.createElement("div");
-adminBox.id = "adminAnimeList";
-document.body.appendChild(adminBox);
-
-const readerBox = document.createElement("div");
-readerBox.id = "readerAnimeList";
-document.querySelector(".container").appendChild(readerBox);
-
-/* ================= ADMIN LIST ================= */
+/* ================= ADMIN SYSTEM ================= */
 onValue(ref(adminDb, "anime"), (snap) => {
   adminBox.innerHTML = "";
 
@@ -376,9 +365,7 @@ onValue(ref(adminDb, "anime"), (snap) => {
     div.className = "anime-item";
 
     div.innerHTML = `
-      <div>
-        ${d.title || "ไม่มีชื่อ"} (${d.status || "active"})
-      </div>
+      <div>${d.title || "ไม่มีชื่อ"} (${d.status || "active"})</div>
       <div>
         <button class="btn-disable">ปิด</button>
         <button class="btn-delete">ลบ</button>
@@ -398,68 +385,89 @@ onValue(ref(adminDb, "anime"), (snap) => {
   });
 });
 
-/* ================= READER ================= */
-let cards = [];
+/* ================= LOAD SHEET ================= */
+async function loadFromSheet() {
+  const res = await fetch("https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1");
+  const data = await res.json();
 
-function loadFromSheet() {
-  fetch("https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1")
-    .then(r => r.json())
-    .then(data => {
+  readerBox.innerHTML = "";
 
-      readerBox.innerHTML = "";
+  data.forEach(row => {
+    const a = document.createElement("a");
+    a.className = "anime-card";
+    a.href = row.link || "#";
 
-      data.forEach((row, i) => {
-        const a = document.createElement("a");
-        a.className = "anime-card";
-        a.href = row.link || "#";
+    a.innerHTML = `
+      <img src="${row.image || 'https://via.placeholder.com/300'}">
+      <div>${row.title || ""}</div>
+    `;
 
-        a.innerHTML = `
-          <div class="card-img">
-            <img src="${row.image || 'https://via.placeholder.com/300'}">
-          </div>
-          <div style="text-align:center">${row.title || ""}</div>
-        `;
+    readerBox.appendChild(a);
+  });
 
-        readerBox.appendChild(a);
-      });
-
-      cards = [...document.querySelectorAll(".anime-card")];
-      renderPage();
-    });
+  cards = [...document.querySelectorAll(".anime-card")];
+  currentPage = 0;
+  searchMode = false;
+  renderPage();
 }
 
-/* pagination fix */
-function renderPage(page = 0) {
-  const perPage = 40;
-  const start = page * perPage;
+/* ================= PAGINATION ================= */
+function renderPage() {
+  const list = searchMode ? getVisibleCards() : cards;
+
+  const start = currentPage * perPage;
   const end = start + perPage;
 
-  cards.forEach(c => c.style.display = "none");
-  cards.slice(start, end).forEach(c => c.style.display = "inline-block");
+  list.forEach(c => c.style.display = "none");
+  list.slice(start, end).forEach(c => c.style.display = "inline-block");
 }
 
-/* ================= SEARCH ================= */
+function getVisibleCards() {
+  return cards.filter(c => c.style.display !== "none");
+}
+
+window.nextPage = function () {
+  const list = searchMode ? getVisibleCards() : cards;
+  const max = Math.ceil(list.length / perPage) - 1;
+
+  if (currentPage < max) {
+    currentPage++;
+    renderPage();
+  }
+};
+
+window.prevPage = function () {
+  if (currentPage > 0) {
+    currentPage--;
+    renderPage();
+  }
+};
+
+/* ================= SEARCH (FIX ไม่พัง pagination) ================= */
 window.searchAnime = function () {
   const q = document.getElementById("searchInput").value.toLowerCase();
 
-  cards.forEach(card => {
-    const text = card.innerText.toLowerCase();
-    card.style.display = text.includes(q) ? "inline-block" : "none";
+  if (!q) {
+    searchMode = false;
+    currentPage = 0;
+    renderPage();
+    return;
+  }
+
+  searchMode = true;
+
+  cards.forEach(c => {
+    const text = c.innerText.toLowerCase();
+    c.style.display = text.includes(q) ? "inline-block" : "none";
   });
+
+  currentPage = 0;
+  renderPage();
 };
 
-/* ================= REPORT PANEL ================= */
-window.toggleReportPanel = function () {
-  document.getElementById("reportPanel")
-    .classList.toggle("active");
-};
-
-/* fake report system (กัน error) */
+/* ================= REPORT ================= */
 onValue(ref(adminDb, "reports"), (snap) => {
-  const list = document.getElementById("reportList");
-  const badge = document.getElementById("reportUnread");
-
-  list.innerHTML = "";
+  reportList.innerHTML = "";
 
   let count = 0;
 
@@ -478,21 +486,17 @@ onValue(ref(adminDb, "reports"), (snap) => {
     div.querySelector("button").onclick = () =>
       remove(ref(adminDb, "reports/" + r.key));
 
-    list.appendChild(div);
+    reportList.appendChild(div);
   });
 
   badge.textContent = count;
 });
 
-/* ================= ONLINE COUNT ================= */
-const onlineRef = ref(adminDb, "onlineCount");
-
-runTransaction(onlineRef, (val) => (val || 0) + 1);
+/* ================= ONLINE ================= */
+runTransaction(ref(adminDb, "onlineCount"), (v) => (v || 0) + 1);
 
 /* ================= START ================= */
-document.addEventListener("DOMContentLoaded", () => {
-  loadFromSheet();
-});
+document.addEventListener("DOMContentLoaded", loadFromSheet);
 </script>
 
 </body>

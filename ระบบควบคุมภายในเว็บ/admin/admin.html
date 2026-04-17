@@ -241,168 +241,211 @@ input:focus{
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, onValue, remove, update, onDisconnect } 
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { 
+  getDatabase, ref, set, onValue, remove, update, onDisconnect
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 /* ================= FIREBASE ================= */
 
-const app = initializeApp({
+const firebaseConfig = {
   apiKey: "AIzaSyC1S1BToUhVmWqyeTWbHlPdI8hY0aGKNDg",
   authDomain: "darkframe300.firebaseapp.com",
-  databaseURL: "https://darkframe300-default-rtdb.firebaseio.com"
-});
+  databaseURL: "https://darkframe300-default-rtdb.firebaseio.com",
+  projectId: "darkframe300",
+  appId: "1:296568248360:web:7867a60675ce32e3d6bd1d"
+};
 
+const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ================= ONLINE ================= */
+/* ================= ONLINE USERS ================= */
 
-const uid = "admin_"+Math.random();
-const onlineRef = ref(db,"onlineUsers/"+uid);
-set(onlineRef,true);
+const userId = "admin_" + Math.random().toString(36).slice(2);
+const onlineRef = ref(db, "onlineUsers/" + userId);
+
+set(onlineRef, true);
 onDisconnect(onlineRef).remove();
 
-onValue(ref(db,"onlineUsers"),s=>{
+onValue(ref(db, "onlineUsers"), (snap)=>{
   document.getElementById("onlineCount").innerText =
-    s.exists()?Object.keys(s.val()).length:0;
+    snap.exists() ? Object.keys(snap.val()).length : 0;
 });
 
-/* ================= LOAD FROM SHEET ================= */
-
-const SHEET_URL = "https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1";
+/* ================= ANIME ================= */
 
 let allAnime = [];
 
-async function loadSheet(){
-  try{
-    const res = await fetch(SHEET_URL);
-    const data = await res.json();
+onValue(ref(db, "anime"), (snap)=>{
+  const container = document.getElementById("animeList");
 
-    allAnime = data.map((row,i)=>({
-      id: row.id || ("anime_"+i),
-      title: row.title || "ไม่มีชื่อ",
-      video: row.video || row.link || "",
-      views: parseInt(row.views)||0
-    }));
-
-    renderAnime(allAnime);
-    renderRanking(allAnime);
-
-  }catch(err){
-    animeList.innerHTML="โหลดชีตไม่สำเร็จ";
+  if(!snap.exists()){
+    container.innerHTML = "ไม่มีข้อมูล";
+    return;
   }
-}
 
-/* ================= HIDDEN FROM FIREBASE ================= */
+  allAnime = [];
 
-let hiddenMap = {};
+  snap.forEach(child=>{
+    const data = child.val();
+    allAnime.push({
+      id: child.key,
+      title: data.title || "ไม่มีชื่อ",
+      status: data.status || "active",
+      views: data.views || 0
+    });
+  });
 
-onValue(ref(db,"hiddenAnime"),snap=>{
-  hiddenMap = snap.val() || {};
   renderAnime(allAnime);
+  renderRanking(allAnime);
 });
 
-/* ================= RENDER ================= */
+/* ===== render anime ===== */
 
 function renderAnime(list){
-  animeList.innerHTML="";
-  if(!document.getElementById("hiddenList")){
-    const div=document.createElement("div");
-    div.className="card";
-    div.innerHTML=`<h3>🚫 รายการที่ถูกปิด</h3><div id="hiddenList"></div>`;
-    document.querySelector(".container").appendChild(div);
-  }
+  const container = document.getElementById("animeList");
+  container.innerHTML = "";
 
-  hiddenList.innerHTML="";
+  list.forEach(data=>{
+    const div = document.createElement("div");
+    div.className = "anime-item";
 
-  list.forEach(a=>{
-    const isHidden = hiddenMap[a.id];
-
-    const div=document.createElement("div");
-    div.className="anime-item";
-
-    div.innerHTML=`
-    <div>
-      <b>${a.title}</b><br>
-      ${a.video ? `<video src="${a.video}" width="200" controls></video>`:""}
-    </div>
-    <div>
-      ${!isHidden ? `<button class="btn-close">ปิด</button>` : `<button class="btn-open">เปิด</button>`}
-      <button class="btn-del">ลบ</button>
-    </div>
+    div.innerHTML = `
+      ${data.title} (${data.status})
+      <div>
+        <button style="background:#ff9800">ปิด</button>
+        <button style="background:#ff3c3c">ลบ</button>
+      </div>
     `;
 
-    /* ปิด */
-    div.querySelector(".btn-close")?.addEventListener("click",()=>{
-      update(ref(db,"hiddenAnime/"+a.id),true);
-    });
+    div.children[1].children[0].onclick = ()=> disableAnime(data.id);
+    div.children[1].children[1].onclick = ()=> deleteAnime(data.id);
 
-    /* เปิด */
-    div.querySelector(".btn-open")?.addEventListener("click",()=>{
-      remove(ref(db,"hiddenAnime/"+a.id));
-    });
-
-    /* ลบ */
-    div.querySelector(".btn-del").onclick=()=>{
-      if(confirm("ลบ?")){
-        remove(ref(db,"hiddenAnime/"+a.id));
-      }
-    };
-
-    (isHidden ? hiddenList : animeList).appendChild(div);
+    container.appendChild(div);
   });
 }
 
-/* ================= SEARCH ================= */
+/* ===== search ===== */
 
-window.searchAnime = ()=>{
-  const k = document.getElementById("searchInput").value.toLowerCase();
-  renderAnime(allAnime.filter(a=>a.title.toLowerCase().includes(k)));
+window.searchAnime = function(){
+  const keyword = document.getElementById("searchInput").value.toLowerCase();
+  const filtered = allAnime.filter(a =>
+    a.title.toLowerCase().includes(keyword)
+  );
+  renderAnime(filtered);
 };
 
-/* ================= RANK ================= */
+/* ===== actions ===== */
+
+function disableAnime(id){
+  update(ref(db, "anime/"+id), {status:"disabled"});
+}
+
+function deleteAnime(id){
+  if(confirm("ลบเรื่องนี้?")){
+    remove(ref(db, "anime/"+id));
+  }
+}
+
+/* ================= RANKING ================= */
 
 function renderRanking(arr){
-  ranking.innerHTML="";
-  [...arr].sort((a,b)=>b.views-a.views).slice(0,5)
-  .forEach((a,i)=>{
-    ranking.innerHTML+=`
-    <div class="anime-item">
-      #${i+1} ${a.title} (${a.views})
-    </div>`;
+  const sorted = [...arr].sort((a,b)=> b.views - a.views);
+  const container = document.getElementById("ranking");
+
+  container.innerHTML="";
+
+  sorted.slice(0,5).forEach((anime,i)=>{
+    container.innerHTML += `
+      <div class="anime-item">
+        #${i+1} ${anime.title} (${anime.views} views)
+      </div>
+    `;
   });
 }
 
 /* ================= REPORT ================= */
 
-window.toggleReportPanel = ()=>{
+window.toggleReportPanel = function(){
   document.getElementById("reportPanel").classList.toggle("active");
 };
 
-onValue(ref(db,"reports"),snap=>{
-  reportList.innerHTML="";
-  let unread=0;
+let lastReportCount = 0;
 
-  if(!snap.exists()){
-    reportUnread.innerText=0;
+onValue(ref(db,"reports"),(snapshot)=>{
+
+  const container = document.getElementById("reportList");
+  const badge = document.getElementById("reportUnread");
+
+  container.innerHTML = "";
+
+  if(!snapshot.exists()){
+    container.innerHTML = "ไม่มีรายงาน";
+    badge.innerText = 0;
     return;
   }
 
-  snap.forEach(c=>{
-    const d=c.val();
-    if(!d.read) unread++;
+  let unread = 0;
+  let count = 0;
 
-    reportList.innerHTML+=`
-    <div class="message-item">
-      ${d.page||""} ${d.read?"✅":"🆕"}
-    </div>`;
+  const reports = [];
+
+  snapshot.forEach(child=>{
+    reports.push({
+      id: child.key,
+      ...child.val()
+    });
   });
 
-  reportUnread.innerText=unread;
+  reports.reverse();
+
+  reports.forEach(data=>{
+
+    count++;
+    if(!data.read) unread++;
+
+    const div = document.createElement("div");
+    div.className = "message-item";
+
+    div.innerHTML = `
+      <div>
+        <b>${data.page || "ไม่ทราบหน้า"}</b>
+        ${data.read ? "✅" : "🆕"}<br>
+        <small>${data.time ? new Date(data.time).toLocaleString() : "-"}</small>
+      </div>
+      <div class="message-actions">
+        <button class="btn-view">เปิด</button>
+        <button class="btn-delete">ลบ</button>
+      </div>
+    `;
+
+    div.querySelector(".btn-view").onclick = () => {
+      alert(
+        "หน้า: "+(data.page||"-")+
+        "\n\nรายละเอียด:\n"+(data.detail||"-")+
+        "\n\nเวลา: "+(data.time ? new Date(data.time).toLocaleString() : "-")
+      );
+
+      update(ref(db,"reports/"+data.id),{read:true});
+    };
+
+    div.querySelector(".btn-delete").onclick = () => {
+      if(confirm("ลบรายงานนี้?")){
+        remove(ref(db,"reports/"+data.id));
+      }
+    };
+
+    container.appendChild(div);
+  });
+
+  badge.innerText = unread;
+
+  if(count > lastReportCount){
+    const sound = document.getElementById("notifySound");
+    sound.play().catch(()=>{});
+  }
+
+  lastReportCount = count;
 });
-
-/* ================= START ================= */
-
-loadSheet();
 
 </script>
 

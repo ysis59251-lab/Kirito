@@ -1,7 +1,8 @@
 <!DOCTYPE html>  <html lang="th">  
 <head>  
 <meta charset="UTF-8">  
-<meta name="viewport" content="width=device-width, initial-scale=1.0">  
+<meta name="viewport" 
+content="width=device-width, initial-scale=1.0">  
 <title>Anime Admin Dashboard</title>
 
 <style>  
@@ -19,7 +20,7 @@
   box-sizing:border-box;
   margin:0;
   padding:0;
-  font-family: 'Segoe UI', system-ui;
+  font-family: system-ui;
 }
 
 body{
@@ -28,12 +29,12 @@ body{
   overflow-x:hidden;
 }
 
-/* glow background */
+/* glow */
 body::before{
   content:"";
   position:fixed;
-  width:700px;
-  height:700px;
+  width:600px;
+  height:600px;
   background:radial-gradient(circle,#ff006e33,transparent 70%);
   top:-200px;
   left:-200px;
@@ -41,47 +42,36 @@ body::before{
   z-index:-1;
 }
 
-body::after{
-  content:"";
-  position:fixed;
-  width:600px;
-  height:600px;
-  background:radial-gradient(circle,#00c6ff22,transparent 70%);
-  bottom:-200px;
-  right:-200px;
-  filter:blur(80px);
-  z-index:-1;
-}
-
 /* ================= HEADER ================= */
 header{
-  padding:18px;
+  padding:16px;
   font-size:20px;
   font-weight:700;
-  background:rgba(255,255,255,0.04);
+  background:rgba(20,20,40,0.6);
   backdrop-filter:blur(20px);
   border-bottom:1px solid var(--stroke);
+
   position:sticky;
   top:0;
-  z-index:10;
+  z-index:1000; /* กันทับ */
 }
 
 /* ================= CONTAINER ================= */
 .container{
-  padding:20px;
+  padding:16px;
+  padding-top:10px;
   display:flex;
   flex-direction:column;
-  gap:16px;
+  gap:14px;
 }
 
 /* ================= CARD ================= */
 .card{
   background:var(--card);
   border:1px solid var(--stroke);
-  backdrop-filter:blur(18px);
+  backdrop-filter:blur(15px);
   border-radius:16px;
-  padding:16px;
-  transition:0.3s;
+  padding:14px;
   position:relative;
   overflow:hidden;
 }
@@ -94,52 +84,16 @@ header{
   top:0;
   left:0;
   background:linear-gradient(90deg,var(--accent),var(--accent2));
-  opacity:0.6;
-}
-
-.card:hover{
-  transform:translateY(-3px);
-  box-shadow:0 10px 25px rgba(0,0,0,0.5);
 }
 
 /* ================= INPUT ================= */
 input{
   width:100%;
-  padding:12px;
+  padding:10px;
   border-radius:10px;
   border:1px solid var(--stroke);
   background:rgba(0,0,0,0.4);
   color:#fff;
-  outline:none;
-  transition:0.25s;
-}
-
-input:focus{
-  border-color:var(--accent);
-  box-shadow:0 0 12px rgba(255,0,110,0.5);
-}
-
-/* ================= BUTTON ================= */
-button{
-  border:none;
-  cursor:pointer;
-  padding:8px 12px;
-  border-radius:10px;
-  font-weight:600;
-  color:#fff;
-  transition:0.2s;
-}
-
-button:hover{
-  transform:scale(1.06);
-}
-
-.btn-delete{
-  background:#ff3c3c;
-}
-
-.btn-disable{
-  background:#ff9800;
 }
 
 /* ================= GRID ================= */
@@ -147,6 +101,8 @@ button:hover{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
   gap:12px;
+
+  align-items:start; /* 🔥 กันซ้อน */
 }
 
 /* ================= ANIME CARD ================= */
@@ -157,28 +113,59 @@ button:hover{
   background:#000;
   text-decoration:none;
   color:#fff;
+
+  isolation:isolate; /* 🔥 กัน layer ชน */
 }
 
 .anime-card img{
   width:100%;
   height:170px;
   object-fit:cover;
-  transition:0.35s;
+  display:block;
 }
 
-.anime-card:hover img{
-  transform:scale(1.12);
-  filter:brightness(0.5);
-}
-
-/* overlay */
+/* overlay text */
 .anime-card div{
   position:absolute;
   bottom:0;
   width:100%;
-  padding:8px;
+  padding:6px;
   font-size:12px;
+  line-height:1.3;
+
   background:linear-gradient(to top,rgba(0,0,0,0.85),transparent);
+
+  max-height:42px;     /* 🔥 กันล้น */
+  overflow:hidden;
+}
+
+/* ================= BUTTON ================= */
+button{
+  border:none;
+  padding:8px 12px;
+  border-radius:10px;
+  color:#fff;
+}
+
+.btn-delete{ background:#ff3c3c; }
+.btn-disable{ background:#ff9800; }
+
+/* ================= FLOAT BUTTON ================= */
+.btn-box{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+
+  z-index:999; /* 🔥 กันทับ */
+}
+
+.btn-box button{
+  background:linear-gradient(45deg,var(--accent2),#0072ff);
+  border-radius:30px;
+  padding:12px;
 }
 
 /* ================= TOPBAR ================= */
@@ -186,13 +173,13 @@ button:hover{
   position:fixed;
   top:15px;
   right:15px;
+  z-index:999;
 }
 
 .inbox-btn{
   background:linear-gradient(45deg,var(--accent),#ff4d6d);
   padding:12px;
   border-radius:50%;
-  box-shadow:0 0 15px rgba(255,0,110,0.6);
 }
 
 .inbox-badge{
@@ -214,37 +201,17 @@ button:hover{
   height:100%;
   background:rgba(10,10,20,0.95);
   backdrop-filter:blur(20px);
-  transition:0.35s;
+  transition:0.3s;
   padding:15px;
+  z-index:998;
 }
 
 .inbox-panel.active{
   right:0;
 }
 
-/* ================= FLOAT BUTTON ================= */
-.btn-box{
-  position:fixed;
-  bottom:20px;
-  right:20px;
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-.btn-box button{
-  background:linear-gradient(45deg,var(--accent2),#0072ff);
-  border-radius:30px;
-  padding:12px;
-  box-shadow:0 0 12px rgba(0,114,255,0.5);
-}
-
-/* ================= MOBILE OPT ================= */
+/* ================= MOBILE ================= */
 @media(max-width:500px){
-  header{
-    font-size:18px;
-  }
-
   .anime-card img{
     height:150px;
   }

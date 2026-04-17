@@ -278,9 +278,6 @@ button:hover{
 </audio>
 
 <script type="module">
-/* =========================
-FIREBASE IMPORT (ครั้งเดียวพอ)
-========================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getDatabase,
@@ -295,87 +292,55 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 /* =========================
-FIREBASE APP #1 (ADMIN)
+FIREBASE ADMIN
 ========================= */
-const adminConfig = {
+const adminApp = initializeApp({
   apiKey: "AIzaSyC1S1BToUhVmWqyeTWbHlPdI8hY0aGKNDg",
   authDomain: "darkframe300.firebaseapp.com",
   databaseURL: "https://darkframe300-default-rtdb.firebaseio.com",
   projectId: "darkframe300",
   appId: "1:296568248360:web:7867a60675ce32e3d6bd1d"
-};
+}, "admin");
 
-const adminApp = initializeApp(adminConfig, "admin");
 const adminDb = getDatabase(adminApp);
 
 /* =========================
-FIREBASE APP #2 (READER)
+FIREBASE READER
 ========================= */
-const readerConfig = {
+const readerApp = initializeApp({
   apiKey: "AIzaSyCUxv...",
   authDomain: "reader-4a13f.firebaseapp.com",
   databaseURL: "https://reader-4a13f-default-rtdb.firebaseio.com",
   projectId: "reader-4a13f",
   appId: "1:220776049054:web:53524fb1e90ba83a12ce8f"
-};
+}, "reader");
 
-const readerApp = initializeApp(readerConfig, "reader");
 const readerDb = getDatabase(readerApp);
 
+
 /* =========================================================
-===================== ADMIN SYSTEM =========================
+====================== ADMIN SYSTEM ========================
 ========================================================= */
 
-const userId = "admin_" + Math.random().toString(36).slice(2);
-const onlineRef = ref(adminDb, "onlineUsers/" + userId);
-
-set(onlineRef, true);
-onDisconnect(onlineRef).remove();
-
-/* online count */
-onValue(ref(adminDb, "onlineUsers"), (snap) => {
-  document.getElementById("onlineCount").innerText =
-    snap.exists() ? Object.keys(snap.val()).length : 0;
-});
-
-/* anime list */
-let allAnime = [];
-
 onValue(ref(adminDb, "anime"), (snap) => {
-  const container = document.getElementById("animeList");
-  if (!container) return;
+  const box = document.getElementById("adminAnimeList");
+  if (!box) return;
 
-  allAnime = [];
+  box.innerHTML = "";
 
   if (!snap.exists()) {
-    container.innerHTML = "ไม่มีข้อมูล";
+    box.innerHTML = "ไม่มีข้อมูล";
     return;
   }
 
-  snap.forEach(child => {
-    const d = child.val();
-    allAnime.push({
-      id: child.key,
-      title: d.title || "ไม่มีชื่อ",
-      status: d.status || "active",
-      views: d.views || 0
-    });
-  });
+  snap.forEach(c => {
+    const d = c.val();
 
-  renderAnime(allAnime);
-  renderRanking(allAnime);
-});
-
-function renderAnime(list) {
-  const container = document.getElementById("animeList");
-  container.innerHTML = "";
-
-  list.forEach(a => {
     const div = document.createElement("div");
     div.className = "anime-item";
 
     div.innerHTML = `
-      ${a.title} (${a.status})
+      ${d.title || "ไม่มีชื่อ"} (${d.status || "active"})
       <div>
         <button style="background:#ff9800">ปิด</button>
         <button style="background:#ff3c3c">ลบ</button>
@@ -383,138 +348,30 @@ function renderAnime(list) {
     `;
 
     div.children[1].children[0].onclick = () =>
-      update(ref(adminDb, "anime/" + a.id), { status: "disabled" });
+      update(ref(adminDb, "anime/" + c.key), { status: "disabled" });
 
     div.children[1].children[1].onclick = () => {
-      if (confirm("ลบเรื่องนี้?")) {
-        remove(ref(adminDb, "anime/" + a.id));
+      if (confirm("ลบ?")) {
+        remove(ref(adminDb, "anime/" + c.key));
       }
     };
 
-    container.appendChild(div);
+    box.appendChild(div);
   });
-}
-
-function renderRanking(arr) {
-  const sorted = [...arr].sort((a, b) => b.views - a.views);
-  const box = document.getElementById("ranking");
-  if (!box) return;
-
-  box.innerHTML = "";
-
-  sorted.slice(0, 5).forEach((a, i) => {
-    box.innerHTML += `
-      <div class="anime-item">
-        #${i + 1} ${a.title} (${a.views} views)
-      </div>
-    `;
-  });
-}
-
-/* reports */
-let lastReportCount = 0;
-
-onValue(ref(adminDb, "reports"), snap => {
-  const container = document.getElementById("reportList");
-  const badge = document.getElementById("reportUnread");
-
-  if (!container) return;
-
-  container.innerHTML = "";
-
-  if (!snap.exists()) {
-    badge.innerText = 0;
-    container.innerHTML = "ไม่มีรายงาน";
-    return;
-  }
-
-  let unread = 0;
-  let count = 0;
-  const reports = [];
-
-  snap.forEach(c => reports.push({ id: c.key, ...c.val() }));
-  reports.reverse();
-
-  reports.forEach(r => {
-    count++;
-    if (!r.read) unread++;
-
-    const div = document.createElement("div");
-    div.className = "message-item";
-
-    div.innerHTML = `
-      <div>
-        <b>${r.page || "-"}</b>
-        ${r.read ? "✅" : "🆕"}<br>
-        <small>${r.time ? new Date(r.time).toLocaleString() : "-"}</small>
-      </div>
-      <div>
-        <button class="btn-view">เปิด</button>
-        <button class="btn-delete">ลบ</button>
-      </div>
-    `;
-
-    div.querySelector(".btn-view").onclick = () => {
-      alert(`${r.page}\n\n${r.detail}\n\n${r.time}`);
-      update(ref(adminDb, "reports/" + r.id), { read: true });
-    };
-
-    div.querySelector(".btn-delete").onclick = () => {
-      if (confirm("ลบ?")) remove(ref(adminDb, "reports/" + r.id));
-    };
-
-    container.appendChild(div);
-  });
-
-  badge.innerText = unread;
-
-  if (count > lastReportCount) {
-    document.getElementById("notifySound")?.play();
-  }
-
-  lastReportCount = count;
 });
 
+
 /* =========================================================
-===================== READER SYSTEM ========================
+====================== READER SYSTEM =======================
 ========================================================= */
 
 let cards = [];
-let perPage = 40;
-let currentPage = 1;
-let savedSearch = "";
-let isChangingPage = false;
 
-/* online reader */
-function initOnline() {
-  const userRef = push(ref(readerDb, "onlineUsers"));
-  set(userRef, { time: Date.now(), page: location.pathname });
-  onDisconnect(userRef).remove();
-}
-
-/* views */
-function initViews() {
-  document.addEventListener("click", e => {
-    const card = e.target.closest(".anime-card");
-    if (!card) return;
-
-    const id = card.dataset.id;
-    const last = localStorage.getItem("view_" + id);
-    const now = Date.now();
-
-    if (last && now - last < 10000) return;
-
-    localStorage.setItem("view_" + id, now);
-    runTransaction(ref(readerDb, "animeViews/" + id), v => (v || 0) + 1);
-  });
-}
-
-/* load sheet */
 function loadFromSheet() {
   fetch("https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1")
     .then(r => r.json())
     .then(data => {
-      const box = document.getElementById("animeList");
+      const box = document.getElementById("readerAnimeList");
       box.innerHTML = "";
 
       data.forEach((row, i) => {
@@ -522,14 +379,11 @@ function loadFromSheet() {
         a.className = "anime-card";
         a.href = row.link || "#";
         a.dataset.id = row.id || "a_" + i;
-        a.dataset.title = (row.title || "").toLowerCase();
-        a.dataset.year = row.year || 0;
-        a.dataset.hidden = row.hidden === "TRUE" ? "1" : "0";
 
         a.innerHTML = `
           <div class="card-img">
             <img src="${row.image || 'https://via.placeholder.com/300'}">
-            <div class="overlay">${row.title}</div>
+            <div class="overlay">${row.title || ""}</div>
           </div>
         `;
 
@@ -538,25 +392,25 @@ function loadFromSheet() {
 
       cards = [...document.querySelectorAll(".anime-card")];
       renderPage();
-      initHot();
     });
 }
 
-/* pagination (สรุปให้สั้น) */
+/* pagination */
 function renderPage() {
-  const visible = cards.filter(c => c.dataset.hidden !== "1");
-  const start = (currentPage - 1) * perPage;
-  const end = start + perPage;
+  const perPage = 40;
+  const start = 0;
+  const end = perPage;
 
   cards.forEach(c => c.style.display = "none");
-  visible.slice(start, end).forEach(c => c.style.display = "");
+  cards.slice(start, end).forEach(c => c.style.display = "");
 }
 
-/* START */
+
+/* =========================================================
+START
+========================================================= */
 document.addEventListener("DOMContentLoaded", () => {
   loadFromSheet();
-  initOnline();
-  initViews();
 });
 </script>
 

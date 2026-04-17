@@ -6,31 +6,24 @@
 <title>Anime Admin Dashboard</title>
 
 <style>
-
-.card-img img{
-  width:100%;
-  max-width:180px;   /* 👈 ลดขนาดรูป */
-  height:110px;      /* 👈 คุมความสูง */
-  object-fit:cover;
-  border-radius:12px;
+/* =========================
+   RESET / BASE
+========================= */
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
 }
-
-/* ถ้าอยากให้การ์ดเล็กลงด้วย */
-.anime-card{
-  display:inline-block;
-  margin:10px;
-}
-
-*{box-sizing:border-box;}
 
 body{
-  margin:0;
+  font-family:system-ui;
   background:linear-gradient(135deg,#0a0a0a,#121226);
   color:#fff;
-  font-family:system-ui;
 }
 
-/* HEADER */
+/* =========================
+   HEADER
+========================= */
 header{
   padding:18px;
   font-size:22px;
@@ -40,12 +33,16 @@ header{
   border-bottom:1px solid rgba(255,255,255,0.1);
 }
 
-/* CONTAINER */
+/* =========================
+   LAYOUT
+========================= */
 .container{
   padding:20px;
 }
 
-/* CARD */
+/* =========================
+   CARD UI
+========================= */
 .card{
   background:rgba(255,255,255,0.05);
   backdrop-filter:blur(12px);
@@ -60,22 +57,9 @@ header{
   transform:translateY(-3px);
 }
 
-/* BUTTON */
-button{
-  padding:6px 12px;
-  border:none;
-  cursor:pointer;
-  border-radius:8px;
-  color:#fff;
-  transition:0.3s;
-}
-
-button:hover{
-  transform:scale(1.05);
-  box-shadow:0 0 10px #ff4d6d;
-}
-
-/* INPUT */
+/* =========================
+   INPUT
+========================= */
 input{
   padding:10px;
   width:100%;
@@ -93,7 +77,26 @@ input:focus{
   box-shadow:0 0 10px #ff006e;
 }
 
-/* ANIME LIST */
+/* =========================
+   BUTTON (GLOBAL)
+========================= */
+button{
+  padding:6px 12px;
+  border:none;
+  cursor:pointer;
+  border-radius:8px;
+  color:#fff;
+  transition:0.3s;
+}
+
+button:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 10px #ff4d6d;
+}
+
+/* =========================
+   ANIME LIST (ADMIN)
+========================= */
 .anime-item{
   display:flex;
   justify-content:space-between;
@@ -110,7 +113,27 @@ input:focus{
   transform:scale(1.02);
 }
 
-/* TOPBAR */
+/* =========================
+   ANIME CARD (READER)
+========================= */
+.anime-card{
+  display:inline-block;
+  margin:10px;
+  border-radius:12px;
+  overflow:hidden;
+}
+
+.card-img img{
+  width:100%;
+  max-width:180px;
+  height:110px;
+  object-fit:cover;
+  border-radius:12px;
+}
+
+/* =========================
+   TOP BAR (REPORT BUTTON)
+========================= */
 .topbar{
   position:fixed;
   top:15px;
@@ -138,7 +161,9 @@ input:focus{
   font-size:12px;
 }
 
-/* PANEL */
+/* =========================
+   SLIDE PANEL
+========================= */
 .inbox-panel{
   position:fixed;
   top:0;
@@ -157,7 +182,9 @@ input:focus{
   right:0;
 }
 
-/* MESSAGE */
+/* =========================
+   MESSAGE ITEM
+========================= */
 .message-item{
   display:flex;
   justify-content:space-between;
@@ -166,24 +193,22 @@ input:focus{
   padding:10px;
   margin-bottom:8px;
   border-radius:10px;
-  transition:0.2s;
 }
 
 .message-item:hover{
   background:#242424;
 }
 
-.message-actions{
-  display:flex;
-  gap:5px;
-}
-
-/* BUTTON COLORS */
+/* =========================
+   BUTTON COLORS
+========================= */
 .btn-view{ background:#2196f3; }
 .btn-delete{ background:#ff3c3c; }
 .btn-ban{ background:#9c27b0; }
 
-/* ADD BUTTON */
+/* =========================
+   FLOAT BUTTON BOX
+========================= */
 .btn-box{
   position:fixed;
   bottom:20px;

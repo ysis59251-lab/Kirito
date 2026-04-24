@@ -379,9 +379,7 @@ body {
 const SHEET_ID="1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
 const API=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-
-const currentAnime = "5";
-
+const currentAnime = "Dark Beginning";
 
 let episodes=[];
 let currentIndex=0;
@@ -431,7 +429,7 @@ fetch(API)
 .then(text=>{
   const json=JSON.parse(text.substring(47).slice(0,-2));
 
-    episodes = json.table.rows.map(r => {
+  episodes = json.table.rows.map(r => {
   const get = (i) => r.c[i] ? r.c[i].v : "";
 
   return {

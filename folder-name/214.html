@@ -379,7 +379,9 @@ body {
 const SHEET_ID="1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
 const API=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-const currentAnime = "2";
+
+const currentAnime = "5";
+
 
 let episodes=[];
 let currentIndex=0;
@@ -395,7 +397,7 @@ function startLoading(){
   const loader = document.getElementById("loader");
   const count = document.getElementById("count");
 
-  loader.style.display = "5";
+  loader.style.display = "flex";
   percent = 0;
 
   clearInterval(loaderTimer);

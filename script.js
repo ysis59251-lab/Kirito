@@ -1,35 +1,32 @@
-/* =========================
-FIREBASE IMPORT
-========================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getDatabase,
   ref,
-  onValue,
-  runTransaction,
   set,
+  onValue,
   onDisconnect,
-  push
+  push,
+  runTransaction
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 /* =========================
 FIREBASE CONFIG
 ========================= */
 const firebaseConfig = {
-  apiKey: "AIzaSyCUxv...",
-  authDomain: "reader-4a13f.firebaseapp.com",
-  databaseURL: "https://reader-4a13f-default-rtdb.firebaseio.com",
-  projectId: "reader-4a13f",
-  storageBucket: "reader-4a13f.firebasestorage.app",
-  messagingSenderId: "220776049054",
-  appId: "1:220776049054:web:53524fb1e90ba83a12ce8f"
+  apiKey: "AIzaSyAlhHlFFuDRtFmWEFzCfZc-m4vI3V2Nqeg",
+  authDomain: "mpmp-5864a.firebaseapp.com",
+  databaseURL: "https://mpmp-5864a-default-rtdb.firebaseio.com",
+  projectId: "mpmp-5864a",
+  storageBucket: "mpmp-5864a.firebasestorage.app",
+  messagingSenderId: "1071327366091",
+  appId: "1:1071327366091:web:239403c1df5da38662c44e"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
 /* =========================
-GLOBAL STATE
+STATE
 ========================= */
 let cards = [];
 let perPage = 40;
@@ -48,26 +45,25 @@ function saveState(){
 }
 
 /* =========================
-ONLINE USERS
+ONLINE USERS (FIXED)
 ========================= */
 function initOnline(){
-  try{
-    const userRef = push(ref(db,"onlineUsers"));
+  const sid = sessionStorage.getItem("sid") || crypto.randomUUID();
+  sessionStorage.setItem("sid", sid);
 
-    set(userRef,{
-      page: location.href,
-      time: Date.now()
-    });
+  const userRef = ref(db, "onlineUsers/" + sid);
 
-    onDisconnect(userRef).remove();
+  set(userRef, {
+    page: location.pathname,
+    time: Date.now()
+  });
 
-    window.addEventListener("beforeunload", () => {
-      set(userRef, null);
-    });
+  onDisconnect(userRef).remove();
 
-  }catch(e){
-    console.error(e);
-  }
+  onValue(ref(db, "onlineUsers"), (snap) => {
+    const el = document.getElementById("onlineCount");
+    if (el) el.textContent = snap.size || 0;
+  });
 }
 
 /* =========================
@@ -81,13 +77,12 @@ function initViews(){
     const id = card.dataset.id;
     if(!id) return;
 
-    const last = localStorage.getItem("view_"+id);
+    const last = localStorage.getItem("view_" + id);
     const now = Date.now();
     if(last && (now - last) < 10000) return;
 
-    localStorage.setItem("view_"+id, now);
-
-    runTransaction(ref(db,"animeViews/"+id), val => (val||0)+1);
+    localStorage.setItem("view_" + id, now);
+    runTransaction(ref(db,"animeViews/"+id), v => (v||0)+1);
   });
 }
 
@@ -110,28 +105,22 @@ function initHot(){
       views: data[c.dataset.id] || 0
     }));
 
-    arr.sort((a,b) => b.views - a.views);
+    arr.sort((a,b)=>b.views-a.views);
 
     slider.innerHTML = "";
 
-    arr.slice(0,10).forEach(item => {
-      const el = document.createElement("a");
-      el.href = item.link;
-      el.className = "anime-card hot-card";
-
-      el.innerHTML = `
+    arr.slice(0,10).forEach(item=>{
+      const a = document.createElement("a");
+      a.href = item.link;
+      a.className = "anime-card hot-card";
+      a.innerHTML = `
         <div class="card-img">
-          <img src="${item.image}" loading="lazy">
+          <img src="${item.image}">
           <div class="overlay">${item.title}</div>
         </div>
+        <div class="hot-badge">${item.views} views</div>
       `;
-
-      const badge = document.createElement("div");
-      badge.className = "hot-badge";
-      badge.innerText = `${item.views} views`;
-
-      el.appendChild(badge);
-      slider.appendChild(el);
+      slider.appendChild(a);
     });
   });
 }
@@ -140,34 +129,31 @@ function initHot(){
 LOAD SHEET
 ========================= */
 function loadFromSheet(){
-const url = "https://opensheet.elk.sh/1NEjGfASJ7xUMtw1gozP6PWXf3LGNEKZhKVAsPbAtRh0/Sheet1";
+const url = "https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1";
 
 fetch(url)
-.then(r => r.json())
-.then(data => {
+.then(r=>r.json())
+.then(data=>{
   const container = document.getElementById("animeList");
-  if(!container) return;
-
   container.innerHTML = "";
 
-  data.forEach(row => {
-    const card = document.createElement("a");
-    card.href = row.link || "#";
-    card.className = "anime-card";
+  data.forEach((row,i)=>{
+    const a = document.createElement("a");
+    a.href = row.link || "#";
+    a.className = "anime-card";
+    a.dataset.id = row.id || "a"+i;
+    a.dataset.year = row.year || "0";
+    a.dataset.title = (row.title||"").toLowerCase();
+    a.dataset.hidden = row.hidden?.toUpperCase()==="TRUE"?"1":"0";
 
-    card.dataset.id = row.id || row.title;
-    card.dataset.year = row.year || "0";
-    card.dataset.title = row.title || "";
-    card.dataset.hidden = row.hidden?.toUpperCase() === "TRUE" ? "1" : "0";
-
-    card.innerHTML = `
+    a.innerHTML = `
       <div class="card-img">
-        <img src="${row.image || ''}" loading="lazy">
-        <div class="overlay">${row.title || "ไม่มีชื่อ"}</div>
+        <img src="${row.image || "https://via.placeholder.com/300x400"}">
+        <div class="overlay">${row.title||""}</div>
       </div>
     `;
 
-    container.appendChild(card);
+    container.appendChild(a);
   });
 
   cards = [...document.querySelectorAll(".anime-card")];
@@ -177,9 +163,7 @@ fetch(url)
   initHot();
 
   const y = localStorage.getItem("scrollY");
-  if(y){
-    setTimeout(()=> window.scrollTo(0, parseInt(y)), 200);
-  }
+  if(y) setTimeout(()=>window.scrollTo(0,parseInt(y)),200);
 });
 }
 
@@ -192,7 +176,7 @@ function initSearch(){
 
   input.value = savedSearch;
 
-  input.addEventListener("input", () => {
+  input.addEventListener("input", ()=>{
     savedSearch = input.value.toLowerCase();
     currentPage = 1;
     isChangingPage = true;
@@ -201,112 +185,47 @@ function initSearch(){
 }
 
 /* =========================
-SORT YEAR
+SORT
 ========================= */
 function sortYear(){
-  cards.sort((a,b) =>
+  cards.sort((a,b)=>
     (parseInt(b.dataset.year)||0)-(parseInt(a.dataset.year)||0)
   );
-
-  const container = document.getElementById("animeList");
-  cards.forEach(c => container.appendChild(c));
 }
 
 /* =========================
-PAGINATION
+RENDER
 ========================= */
 function renderPage(){
-  const visible = cards.filter(c => {
+  const visible = cards.filter(c=>{
     const match = !savedSearch ||
-      (c.dataset.title || "").toLowerCase().includes(savedSearch);
-
+      c.dataset.title.includes(savedSearch);
     return match && c.dataset.hidden !== "1";
   });
 
-  const totalPages = Math.ceil(visible.length / perPage) || 1;
+  const total = Math.ceil(visible.length/perPage)||1;
 
-  const start = (currentPage - 1) * perPage;
-  const end = start + perPage;
+  const start = (currentPage-1)*perPage;
+  const end = start+perPage;
 
-  cards.forEach(c => c.style.display = "none");
-  visible.slice(start, end).forEach(c => c.style.display = "");
+  cards.forEach(c=>c.style.display="none");
+  visible.slice(start,end).forEach(c=>c.style.display="");
 
-  renderNumbers(totalPages);
-
-  if(isChangingPage){
-    window.scrollTo({top:0, behavior:"smooth"});
-  }
+  if(isChangingPage)
+    window.scrollTo({top:0,behavior:"smooth"});
 
   saveState();
-  isChangingPage = false;
+  isChangingPage=false;
 }
 
 /* =========================
-PAGE BUTTONS
+START
 ========================= */
-function renderNumbers(totalPages){
-  const box = document.getElementById("numberBox");
-  if(!box) return;
-
-  box.innerHTML = "";
-
-  const setSize = 5;
-  const setIndex = Math.floor((currentPage - 1)/setSize);
-
-  const start = setIndex*setSize + 1;
-  const end = Math.min(start+setSize-1, totalPages);
-
-  if(setIndex > 0){
-    const prev = document.createElement("div");
-    prev.className="num";
-    prev.textContent="<";
-    prev.onclick=()=>{
-      currentPage = start-1;
-      isChangingPage = true;
-      renderPage();
-    };
-    box.appendChild(prev);
-  }
-
-  for(let i=start;i<=end;i++){
-    const btn=document.createElement("div");
-    btn.className="num";
-    btn.textContent=i;
-    if(i===currentPage) btn.classList.add("active");
-
-    btn.onclick=()=>{
-      currentPage=i;
-      isChangingPage=true;
-      renderPage();
-    };
-
-    box.appendChild(btn);
-  }
-
-  if(end < totalPages){
-    const next=document.createElement("div");
-    next.className="num";
-    next.textContent=">";
-
-    next.onclick=()=>{
-      currentPage=end+1;
-      isChangingPage=true;
-      renderPage();
-    };
-
-    box.appendChild(next);
-  }
-}
-
-/* =========================
-START SYSTEM
-========================= */
-document.addEventListener("DOMContentLoaded", () => {
-
+document.addEventListener("DOMContentLoaded", ()=>{
   const lastTime = localStorage.getItem("lastTime");
   const now = Date.now();
 
-  if(lastTime && (now - lastTime) <= 30000){
+  if(lastTime && now-lastTime<=30000){
     currentPage = parseInt(localStorage.getItem("lastPage")||1);
     savedSearch = (localStorage.getItem("searchText")||"").toLowerCase();
   } else {

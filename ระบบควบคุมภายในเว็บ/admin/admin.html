@@ -21,10 +21,7 @@ body{
 }
 
 /* LAYOUT */
-.layout{
-  display:flex;
-  height:100vh;
-}
+.layout{ display:flex; height:100vh; }
 
 .sidebar{
   width:220px;
@@ -70,7 +67,7 @@ body{
   border-radius:10px;
 }
 
-/* ADMIN LIST */
+/* ADMIN */
 .admin-item{
   display:flex;
   justify-content:space-between;
@@ -80,16 +77,57 @@ body{
   border-radius:10px;
 }
 
-button{
+button{cursor:pointer;}
+.btn-delete{background:#ff3c3c;}
+.btn-disable{background:#ffaa00;}
+
+/* REPORT PANEL */
+#reportPanel{
+  position:fixed;
+  top:0;
+  right:-320px;
+  width:320px;
+  height:100%;
+  background:#111;
+  transition:.3s;
+  padding:15px;
+}
+
+#notifyBtn{
+  position:fixed;
+  top:15px;
+  right:15px;
+  background:#ff006e;
+  padding:10px;
+  border-radius:50%;
   cursor:pointer;
 }
 
-.btn-delete{background:#ff3c3c;}
-.btn-disable{background:#ffaa00;}
+#badge{
+  background:red;
+  padding:3px 6px;
+  border-radius:50%;
+  font-size:12px;
+}
 </style>
 </head>
 
 <body>
+
+<!-- 🔔 REPORT BUTTON -->
+<div id="notifyBtn" onclick="toggleReport()">
+  🚨 <span id="badge">0</span>
+</div>
+
+<!-- REPORT PANEL -->
+<div id="reportPanel">
+  <h3>🚨 แจ้งปัญหา</h3>
+  <div id="reportList"></div>
+</div>
+
+<audio id="sound">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
+</audio>
 
 <div class="layout">
 
@@ -97,42 +135,45 @@ button{
 <div class="sidebar">
   <button onclick="show('anime')">🎬 อนิเมะ</button>
   <button onclick="show('admin')">⚙️ จัดการ</button>
-  <button onclick="show('report')">🚨 รายงาน</button>
+  <button onclick="show('reportPage')">📋 รายงาน</button>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-  <!-- ANIME -->
-  <div id="anime" class="page">
-    <div class="card">
-      👥 ออนไลน์: <span id="onlineCount">0</span>
-    </div>
-
-    <div class="card">
-      <input id="search" placeholder="ค้นหา..." oninput="searchAnime()">
-    </div>
-
-    <div class="card">
-      <div id="animeList" class="grid"></div>
-    </div>
+<!-- ANIME -->
+<div id="anime" class="page">
+  <div class="card">
+    👥 ออนไลน์: <span id="onlineCount">0</span>
   </div>
 
-  <!-- ADMIN -->
-  <div id="admin" class="page" style="display:none">
-    <div class="card">
-      <h3>จัดการอนิเมะ</h3>
-      <div id="adminAnimeList"></div>
-    </div>
+  <div class="card">
+    <input id="search" placeholder="ค้นหา..." oninput="searchAnime()">
   </div>
 
-  <!-- REPORT -->
-  <div id="report" class="page" style="display:none">
-    <div class="card">
-      <h3>แจ้งปัญหา</h3>
-      <div id="reportList"></div>
-    </div>
+  <div class="card">
+    <div id="animeList" class="grid"></div>
+    <br>
+    <button onclick="prevPage()">⬅️</button>
+    <button onclick="nextPage()">➡️</button>
   </div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin" class="page" style="display:none">
+  <div class="card">
+    <h3>จัดการอนิเมะ</h3>
+    <div id="adminAnimeList"></div>
+  </div>
+</div>
+
+<!-- REPORT PAGE -->
+<div id="reportPage" class="page" style="display:none">
+  <div class="card">
+    <h3>แจ้งปัญหา</h3>
+    <div id="reportList"></div>
+  </div>
+</div>
 
 </div>
 </div>
@@ -147,7 +188,6 @@ const app = initializeApp({
   apiKey: "YOUR_KEY",
   databaseURL: "YOUR_DB"
 });
-
 const db = getDatabase(app);
 
 /* NAV */
@@ -156,8 +196,11 @@ window.show = (id)=>{
   document.getElementById(id).style.display="block";
 };
 
-/* LOAD ANIME (SHEET) */
+/* LOAD ANIME */
 let cards=[];
+let currentPage=0;
+const perPage=30;
+
 async function load(){
   const res = await fetch("https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1");
   const data = await res.json();
@@ -168,21 +211,46 @@ async function load(){
   data.forEach(r=>{
     const div=document.createElement("div");
     div.className="anime-card";
-
-    div.innerHTML=`
-      <img src="${r.image}">
-      <div>${r.title}</div>
-    `;
-
+    div.innerHTML=`<img src="${r.image}"><div>${r.title}</div>`;
     box.appendChild(div);
   });
 
   cards=[...document.querySelectorAll(".anime-card")];
+  renderPage();
 }
+
+/* PAGINATION */
+function renderPage(){
+  const start=currentPage*perPage;
+  const end=start+perPage;
+
+  cards.forEach(c=>c.style.display="none");
+  cards.slice(start,end).forEach(c=>c.style.display="block");
+}
+
+window.nextPage=()=>{
+  if((currentPage+1)*perPage < cards.length){
+    currentPage++;
+    renderPage();
+  }
+};
+
+window.prevPage=()=>{
+  if(currentPage>0){
+    currentPage--;
+    renderPage();
+  }
+};
 
 /* SEARCH */
 window.searchAnime=()=>{
   const q=document.getElementById("search").value.toLowerCase();
+
+  if(!q){
+    currentPage=0;
+    renderPage();
+    return;
+  }
 
   cards.forEach(c=>{
     c.style.display = c.innerText.toLowerCase().includes(q) ? "block":"none";
@@ -192,6 +260,8 @@ window.searchAnime=()=>{
 /* ADMIN */
 onValue(ref(db,"anime"),snap=>{
   const box=document.getElementById("adminAnimeList");
+  if(!box) return;
+
   box.innerHTML="";
 
   snap.forEach(c=>{
@@ -220,31 +290,54 @@ onValue(ref(db,"anime"),snap=>{
   });
 });
 
-/* REPORT */
+/* REPORT + SOUND */
+let lastCount=0;
+
 onValue(ref(db,"reports"),snap=>{
-  const box=document.getElementById("reportList");
-  box.innerHTML="";
+  const box=document.querySelectorAll("#reportList");
+  const badge=document.getElementById("badge");
+
+  let count=0;
+
+  box.forEach(b=>b.innerHTML="");
 
   snap.forEach(r=>{
     const d=r.val();
+    count++;
 
-    const div=document.createElement("div");
-    div.className="admin-item";
+    box.forEach(b=>{
+      const div=document.createElement("div");
+      div.className="admin-item";
 
-    div.innerHTML=`
-      <div>${d.message}</div>
-      <button class="btn-delete">ลบ</button>
-    `;
+      div.innerHTML=`
+        <div>${d.message}</div>
+        <button class="btn-delete">ลบ</button>
+      `;
 
-    div.querySelector("button").onclick=()=>{
-      remove(ref(db,"reports/"+r.key));
-    };
+      div.querySelector("button").onclick=()=>{
+        remove(ref(db,"reports/"+r.key));
+      };
 
-    box.appendChild(div);
+      b.appendChild(div);
+    });
   });
+
+  badge.textContent=count;
+
+  if(count>lastCount){
+    document.getElementById("sound").play().catch(()=>{});
+  }
+
+  lastCount=count;
 });
 
-/* ONLINE FIX */
+/* REPORT PANEL */
+window.toggleReport=()=>{
+  const p=document.getElementById("reportPanel");
+  p.style.right = p.style.right==="0px" ? "-320px":"0px";
+};
+
+/* ONLINE */
 const onlineRef = ref(db,"onlineCount");
 
 runTransaction(onlineRef,v=>(v||0)+1);

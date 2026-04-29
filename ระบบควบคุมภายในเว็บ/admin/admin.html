@@ -7,26 +7,42 @@
 
 <style>
 :root{
-  --bg:#0b0b14;
-  --card:#141428;
-  --accent:#00c6ff;
+  --bg1:#0a0a0f;
+  --bg2:#12122a;
+  --card:rgba(255,255,255,0.05);
+  --stroke:rgba(255,255,255,0.08);
+  --accent:#ff006e;
+  --accent2:#00c6ff;
 }
 
-/* BASE */
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui;}
+
 body{
-  margin:0;
-  font-family:system-ui;
-  background:var(--bg);
+  background:linear-gradient(160deg,#0a0a0f,#12122a);
   color:#fff;
 }
 
+/* HEADER */
+header{
+  padding:16px;
+  font-size:20px;
+  font-weight:700;
+  background:rgba(20,20,40,0.6);
+  backdrop-filter:blur(20px);
+  position:sticky;
+  top:0;
+  z-index:1000;
+}
+
 /* LAYOUT */
-.layout{ display:flex; height:100vh; }
+.layout{
+  display:flex;
+}
 
 .sidebar{
-  width:220px;
+  width:200px;
   background:#111122;
-  padding:20px;
+  padding:15px;
 }
 
 .sidebar button{
@@ -37,24 +53,24 @@ body{
   border-radius:8px;
   background:#1a1a33;
   color:#fff;
-  cursor:pointer;
 }
 
 .main{
   flex:1;
-  padding:20px;
-  overflow:auto;
+  padding:15px;
 }
 
+/* CARD */
 .card{
   background:var(--card);
-  padding:15px;
+  border:1px solid var(--stroke);
   border-radius:12px;
-  margin-bottom:15px;
+  padding:12px;
+  margin-bottom:12px;
 }
 
 /* GRID */
-.grid{
+#animeList{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
   gap:10px;
@@ -71,91 +87,44 @@ body{
 .admin-item{
   display:flex;
   justify-content:space-between;
-  margin-bottom:10px;
   background:#1a1a33;
   padding:10px;
-  border-radius:10px;
+  margin-bottom:8px;
+  border-radius:8px;
 }
 
 button{cursor:pointer;}
 .btn-delete{background:#ff3c3c;}
 .btn-disable{background:#ffaa00;}
-
-/* REPORT PANEL */
-#reportPanel{
-  position:fixed;
-  top:0;
-  right:-320px;
-  width:320px;
-  height:100%;
-  background:#111;
-  transition:.3s;
-  padding:15px;
-}
-
-#notifyBtn{
-  position:fixed;
-  top:15px;
-  right:15px;
-  background:#ff006e;
-  padding:10px;
-  border-radius:50%;
-  cursor:pointer;
-}
-
-#badge{
-  background:red;
-  padding:3px 6px;
-  border-radius:50%;
-  font-size:12px;
-}
 </style>
 </head>
 
 <body>
 
-<!-- 🔔 REPORT BUTTON -->
-<div id="notifyBtn" onclick="toggleReport()">
-  🚨 <span id="badge">0</span>
-</div>
-
-<!-- REPORT PANEL -->
-<div id="reportPanel">
-  <h3>🚨 แจ้งปัญหา</h3>
-  <div id="reportList"></div>
-</div>
-
-<audio id="sound">
-  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
-</audio>
+<header>🔥 Anime Dashboard</header>
 
 <div class="layout">
 
 <!-- SIDEBAR -->
 <div class="sidebar">
-  <button onclick="show('anime')">🎬 อนิเมะ</button>
-  <button onclick="show('admin')">⚙️ จัดการ</button>
-  <button onclick="show('reportPage')">📋 รายงาน</button>
+  <button onclick="showPage('home')">🎬 หน้าเว็บ</button>
+  <button onclick="showPage('admin')">⚙️ จัดการ</button>
+  <button onclick="showPage('report')">🚨 รายงาน</button>
 </div>
 
 <!-- MAIN -->
 <div class="main">
 
-<!-- ANIME -->
-<div id="anime" class="page">
+<!-- HOME -->
+<div id="home" class="page">
+  <div class="card">👥 ออนไลน์: <span id="onlineCount">0</span></div>
+
   <div class="card">
-    👥 ออนไลน์: <span id="onlineCount">0</span>
+    <input id="searchInput" placeholder="ค้นหา..." oninput="searchAnime()">
   </div>
 
   <div class="card">
-    <input id="search" placeholder="ค้นหา..." oninput="searchAnime()">
-  </div>
-
-  <div class="card">
-    <div id="animeList" class="grid"></div>
-    <br>
-    <button onclick="prevPage()">⬅️</button>
-    <button onclick="nextPage()">➡️</button>
+    <div id="animeList"></div>
   </div>
 </div>
 
@@ -167,8 +136,8 @@ button{cursor:pointer;}
   </div>
 </div>
 
-<!-- REPORT PAGE -->
-<div id="reportPage" class="page" style="display:none">
+<!-- REPORT -->
+<div id="report" class="page" style="display:none">
   <div class="card">
     <h3>แจ้งปัญหา</h3>
     <div id="reportList"></div>
@@ -185,22 +154,20 @@ from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 /* FIREBASE */
 const app = initializeApp({
-  apiKey: "YOUR_KEY",
-  databaseURL: "YOUR_DB"
+  apiKey: "AIzaSyC1S1BToUhVmWqyeTWbHlPdI8hY0aGKNDg",
+  databaseURL: "https://darkframe300-default-rtdb.firebaseio.com"
 });
+
 const db = getDatabase(app);
 
 /* NAV */
-window.show = (id)=>{
+window.showPage = (id)=>{
   document.querySelectorAll(".page").forEach(p=>p.style.display="none");
   document.getElementById(id).style.display="block";
 };
 
 /* LOAD ANIME */
 let cards=[];
-let currentPage=0;
-const perPage=30;
-
 async function load(){
   const res = await fetch("https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1");
   const data = await res.json();
@@ -211,53 +178,28 @@ async function load(){
   data.forEach(r=>{
     const div=document.createElement("div");
     div.className="anime-card";
-    div.innerHTML=`<img src="${r.image}"><div>${r.title}</div>`;
+
+    div.innerHTML=`
+      <img src="${r.image}">
+      <div>${r.title}</div>
+    `;
+
     box.appendChild(div);
   });
 
   cards=[...document.querySelectorAll(".anime-card")];
-  renderPage();
 }
-
-/* PAGINATION */
-function renderPage(){
-  const start=currentPage*perPage;
-  const end=start+perPage;
-
-  cards.forEach(c=>c.style.display="none");
-  cards.slice(start,end).forEach(c=>c.style.display="block");
-}
-
-window.nextPage=()=>{
-  if((currentPage+1)*perPage < cards.length){
-    currentPage++;
-    renderPage();
-  }
-};
-
-window.prevPage=()=>{
-  if(currentPage>0){
-    currentPage--;
-    renderPage();
-  }
-};
 
 /* SEARCH */
 window.searchAnime=()=>{
-  const q=document.getElementById("search").value.toLowerCase();
-
-  if(!q){
-    currentPage=0;
-    renderPage();
-    return;
-  }
+  const q=document.getElementById("searchInput").value.toLowerCase();
 
   cards.forEach(c=>{
     c.style.display = c.innerText.toLowerCase().includes(q) ? "block":"none";
   });
 };
 
-/* ADMIN */
+/* ADMIN SYSTEM */
 onValue(ref(db,"anime"),snap=>{
   const box=document.getElementById("adminAnimeList");
   if(!box) return;
@@ -271,7 +213,7 @@ onValue(ref(db,"anime"),snap=>{
     div.className="admin-item";
 
     div.innerHTML=`
-      <div>${d.title}</div>
+      <div>${d.title || "ไม่มีชื่อ"}</div>
       <div>
         <button class="btn-disable">ปิด</button>
         <button class="btn-delete">ลบ</button>
@@ -283,61 +225,40 @@ onValue(ref(db,"anime"),snap=>{
     };
 
     div.querySelector(".btn-delete").onclick=()=>{
-      remove(ref(db,"anime/"+c.key));
+      if(confirm("ลบ?")){
+        remove(ref(db,"anime/"+c.key));
+      }
     };
 
     box.appendChild(div);
   });
 });
 
-/* REPORT + SOUND */
-let lastCount=0;
-
+/* REPORT */
 onValue(ref(db,"reports"),snap=>{
-  const box=document.querySelectorAll("#reportList");
-  const badge=document.getElementById("badge");
-
-  let count=0;
-
-  box.forEach(b=>b.innerHTML="");
+  const box=document.getElementById("reportList");
+  box.innerHTML="";
 
   snap.forEach(r=>{
     const d=r.val();
-    count++;
 
-    box.forEach(b=>{
-      const div=document.createElement("div");
-      div.className="admin-item";
+    const div=document.createElement("div");
+    div.className="admin-item";
 
-      div.innerHTML=`
-        <div>${d.message}</div>
-        <button class="btn-delete">ลบ</button>
-      `;
+    div.innerHTML=`
+      <div>${d.message}</div>
+      <button class="btn-delete">ลบ</button>
+    `;
 
-      div.querySelector("button").onclick=()=>{
-        remove(ref(db,"reports/"+r.key));
-      };
+    div.querySelector("button").onclick=()=>{
+      remove(ref(db,"reports/"+r.key));
+    };
 
-      b.appendChild(div);
-    });
+    box.appendChild(div);
   });
-
-  badge.textContent=count;
-
-  if(count>lastCount){
-    document.getElementById("sound").play().catch(()=>{});
-  }
-
-  lastCount=count;
 });
 
-/* REPORT PANEL */
-window.toggleReport=()=>{
-  const p=document.getElementById("reportPanel");
-  p.style.right = p.style.right==="0px" ? "-320px":"0px";
-};
-
-/* ONLINE */
+/* ONLINE FIX */
 const onlineRef = ref(db,"onlineCount");
 
 runTransaction(onlineRef,v=>(v||0)+1);
@@ -352,7 +273,6 @@ onValue(onlineRef,snap=>{
 
 /* START */
 load();
-
 </script>
 
 </body>

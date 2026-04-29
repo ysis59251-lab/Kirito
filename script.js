@@ -55,12 +55,15 @@ document.querySelectorAll(".fab").forEach(fab => {
       case "toggle-nav":
         document.getElementById("bottomNav")?.classList.toggle("show");
         break;
+
       case "open-search":
         document.querySelector(".search")?.focus();
         break;
+
       case "open-hot":
         document.getElementById("hotSlider")?.scrollIntoView({behavior:"smooth"});
         break;
+
       default:
         document.getElementById("bottomNav")?.classList.toggle("show");
         break;

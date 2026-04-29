@@ -31,14 +31,14 @@ const db = getDatabase(app);
 /* =========================
 GLOBAL STATE
 ========================= */
-let cards = [];
+let cards = []; // 🔥 FIX สำคัญ (ของหายทำให้ระบบพัง)
 let perPage = 40;
 let currentPage = 1;
 let savedSearch = "";
 let isChangingPage = false;
 
 /* =========================
-STATE SAVE
+SAVE STATE
 ========================= */
 function saveState(){
   localStorage.setItem("scrollY", window.scrollY);
@@ -48,7 +48,59 @@ function saveState(){
 }
 
 /* =========================
-INIT UI
+FAB BUTTONS (SAFE SYSTEM)
+========================= */
+function initFAB(){
+  const fabs = document.querySelectorAll(".fab");
+  if(!fabs.length) return;
+
+  const bottomNav = document.getElementById("bottomNav");
+  const searchBox = document.querySelector(".search");
+  const hotSlider = document.getElementById("hotSlider");
+
+  fabs.forEach(fab => {
+    fab.addEventListener("click", () => {
+      const action = fab.dataset.action;
+
+      switch(action){
+
+        case "toggle-nav":
+          if(bottomNav){
+            bottomNav.classList.toggle("show");
+          }
+          break;
+
+        case "open-search":
+          if(searchBox){
+            searchBox.focus();
+          }
+          break;
+
+        case "open-hot":
+          if(hotSlider){
+            hotSlider.scrollIntoView({ behavior: "smooth" });
+          }
+          break;
+
+        default:
+          if(bottomNav){
+            bottomNav.classList.toggle("show");
+          }
+          break;
+      }
+    });
+  });
+}
+
+/* =========================
+AUTO START (IMPORTANT)
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  initFAB();
+});
+
+/* =========================
+MENU
 ========================= */
 function initMenu(){
   const btn = document.getElementById("menuBtn");
@@ -60,42 +112,32 @@ function initMenu(){
   };
 }
 
+/* =========================
+FOOTER
+========================= */
 function initFooter(){
   const el = document.getElementById("year");
   if(el) el.textContent = new Date().getFullYear();
-}
-
-function initFAB(){
-  document.querySelectorAll(".fab").forEach(fab => {
-    fab.addEventListener("click", () => {
-      const action = fab.dataset.action;
-
-      if(action === "toggle-nav")
-        document.getElementById("bottomNav")?.classList.toggle("show");
-
-      if(action === "open-search")
-        document.querySelector(".search")?.focus();
-
-      if(action === "open-hot")
-        document.getElementById("hotSlider")?.scrollIntoView({behavior:"smooth"});
-    });
-  });
 }
 
 /* =========================
 ONLINE USERS
 ========================= */
 function initOnline(){
-  const userRef = push(ref(db,"onlineUsers"));
-  set(userRef,{
-    page: location.pathname,
-    time: Date.now()
-  });
-  onDisconnect(userRef).remove();
+  try{
+    const userRef = push(ref(db,"onlineUsers"));
+    set(userRef,{
+      page: location.pathname,
+      time: Date.now()
+    });
+    onDisconnect(userRef).remove();
+  }catch(e){
+    console.error(e);
+  }
 }
 
 /* =========================
-VIEWS SYSTEM
+VIEW COUNT
 ========================= */
 function initViews(){
   document.addEventListener("click",(e)=>{
@@ -103,12 +145,14 @@ function initViews(){
     if(!card) return;
 
     const id = card.dataset.id;
+    if(!id) return;
+
     const last = localStorage.getItem("view_"+id);
     const now = Date.now();
-
-    if(last && now - last < 10000) return;
+    if(last && now-last < 10000) return;
 
     localStorage.setItem("view_"+id, now);
+
     runTransaction(ref(db,"animeViews/"+id), v => (v||0)+1);
   });
 }
@@ -120,25 +164,28 @@ function initHot(){
   const slider = document.getElementById("hotSlider");
   if(!slider) return;
 
-  onValue(ref(db,"animeViews"), snap => {
+  onValue(ref(db,"animeViews"), snap=>{
     const data = snap.val() || {};
+    if(cards.length === 0) return;
 
-    const arr = cards.map(c => ({
-      id: c.dataset.id,
-      title: c.dataset.title,
-      image: c.querySelector("img")?.src || "",
-      link: c.href,
-      views: data[c.dataset.id] || 0
-    })).sort((a,b)=>b.views-a.views);
+    const arr = cards.map(c=>({
+      id:c.dataset.id,
+      title:c.dataset.title,
+      image:c.querySelector("img")?.src || "",
+      link:c.href,
+      views:data[c.dataset.id]||0
+    }));
 
-    slider.innerHTML = "";
+    arr.sort((a,b)=>b.views-a.views);
+
+    slider.innerHTML="";
 
     arr.slice(0,10).forEach(item=>{
-      const a = document.createElement("a");
-      a.href = item.link;
-      a.className = "anime-card hot-card";
+      const a=document.createElement("a");
+      a.href=item.link;
+      a.className="anime-card hot-card";
 
-      a.innerHTML = `
+      a.innerHTML=`
         <div class="card-img">
           <img src="${item.image}" loading="lazy">
           <div class="overlay">${item.title}</div>
@@ -152,69 +199,82 @@ function initHot(){
 }
 
 /* =========================
-LOAD SHEET
+LOAD DATA (FIX SHEET ID)
 ========================= */
 function loadFromSheet(){
   const SHEET_ID = "1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58";
   const url = `https://opensheet.elk.sh/${SHEET_ID}/Sheet1`;
 
   fetch(url)
-    .then(r=>r.json())
-    .then(data=>{
-      const container = document.getElementById("animeList");
-      container.innerHTML = "";
+  .then(r=>r.json())
+  .then(data=>{
+    const container=document.getElementById("animeList");
+    if(!container) return;
 
-      data.forEach((row,i)=>{
-        const card = document.createElement("a");
-        card.href = row.link || "#";
-        card.className = "anime-card";
+    container.innerHTML="";
 
-        card.dataset.id = row.id || ("id"+i);
-        card.dataset.year = row.year || "0";
-        card.dataset.title = (row.title || "").toLowerCase();
-        card.dataset.hidden = row.hidden?.toUpperCase()==="TRUE"?"1":"0";
-        card.dataset.search = "1";
+    data.forEach((row,i)=>{
+      const card=document.createElement("a");
+      card.href=row.link||"#";
+      card.className="anime-card";
 
-        card.innerHTML = `
-          <div class="card-img">
-            <img src="${row.image || "https://via.placeholder.com/300x400"}">
-            <div class="overlay">${row.title || ""}</div>
-          </div>
-        `;
+      card.dataset.id=row.id||row.title||"id"+i;
+      card.dataset.year=row.year||"0";
+      card.dataset.title=(row.title||"").toLowerCase();
+      card.dataset.hidden=row.hidden?.toUpperCase()==="TRUE"?"1":"0";
+      card.dataset.search="1";
 
-        container.appendChild(card);
-      });
+      const img=row.image?.startsWith("http")
+        ? row.image
+        : "https://via.placeholder.com/300x400";
 
-      cards = [...document.querySelectorAll(".anime-card")];
+      card.innerHTML=`
+        <div class="card-img">
+          <img src="${img}" loading="lazy">
+          <div class="overlay">${row.title||""}</div>
+        </div>
+      `;
 
-      sortYear();
-      renderPage();
-      initHot();
-
-      const y = localStorage.getItem("scrollY");
-      if(y) setTimeout(()=>window.scrollTo(0,parseInt(y)),200);
+      container.appendChild(card);
     });
+
+    cards=[...document.querySelectorAll(".anime-card")];
+
+    if(savedSearch){
+      cards.forEach(c=>{
+        c.dataset.search=c.dataset.title.includes(savedSearch)?"1":"0";
+      });
+    }
+
+    sortYear();
+    renderPage();
+    initHot();
+
+    const y=localStorage.getItem("scrollY");
+    if(y) setTimeout(()=>window.scrollTo(0,parseInt(y)),200);
+  });
 }
 
 /* =========================
 SEARCH
 ========================= */
 function initSearch(){
-  const input = document.querySelector(".search");
+  const input=document.querySelector(".search");
   if(!input) return;
 
-  input.value = savedSearch;
+  input.value=savedSearch;
 
   input.addEventListener("input",()=>{
-    savedSearch = input.value.toLowerCase();
+    savedSearch=input.value.toLowerCase();
 
     cards.forEach(c=>{
-      c.dataset.search = c.dataset.title.includes(savedSearch)?"1":"0";
+      c.dataset.search=c.dataset.title.includes(savedSearch)?"1":"0";
     });
 
-    currentPage = 1;
-    renderPage();
+    currentPage=1;
+    isChangingPage=true;
     saveState();
+    renderPage();
   });
 }
 
@@ -222,42 +282,60 @@ function initSearch(){
 SORT
 ========================= */
 function sortYear(){
-  const container = document.getElementById("animeList");
-  cards.sort((a,b)=>(+b.dataset.year)-(+a.dataset.year));
+  cards.sort((a,b)=>(parseInt(b.dataset.year)||0)-(parseInt(a.dataset.year)||0));
+  const container=document.getElementById("animeList");
   cards.forEach(c=>container.appendChild(c));
 }
 
 /* =========================
-PAGINATION
+PAGINATION (FIX)
 ========================= */
 function renderPage(){
-  const visible = cards.filter(c =>
-    c.dataset.search !== "0" && c.dataset.hidden !== "1"
-  );
+  const visible=cards.filter(c=>c.dataset.search!=="0" && c.dataset.hidden!=="1");
 
-  const start = (currentPage-1)*perPage;
-  const end = start + perPage;
+  const start=(currentPage-1)*perPage;
+  const end=start+perPage;
 
   cards.forEach(c=>c.style.display="none");
   visible.slice(start,end).forEach(c=>c.style.display="");
 
   saveState();
+  isChangingPage=false;
 }
 
 /* =========================
-START SYSTEM
+START
 ========================= */
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener("DOMContentLoaded", () => {
+  // 1️⃣ UI / MENU
   initMenu();
   initFooter();
-  initFAB();
 
+  // 2️⃣ Firebase / System
   initOnline();
   initViews();
 
+  // 3️⃣ DATA LOAD (ต้องมาก่อน)
   loadFromSheet();
 
-  setTimeout(()=>{
+  // 4️⃣ HOT system (รอ cards)
+  setTimeout(() => {
+    initHot();
+  }, 500);
+
+  // 5️⃣ SEARCH (หลัง cards มาแล้วจะปลอดภัย)
+  setTimeout(() => {
     initSearch();
-  },300);
+  }, 600);
+
+  // 6️⃣ RESTORE STATE
+  const lastTime = localStorage.getItem("lastTime");
+  const now = Date.now();
+
+  if (lastTime && now - lastTime <= 30000) {
+    currentPage = parseInt(localStorage.getItem("lastPage") || 1);
+    savedSearch = (localStorage.getItem("searchText") || "").toLowerCase();
+  } else {
+    localStorage.clear();
+  }
 });

@@ -40,7 +40,7 @@ let isChangingPage = false;
 /* =========================
 SAVE STATE
 ========================= */
-function saveState() {
+function saveState(){
   localStorage.setItem("scrollY", window.scrollY);
   localStorage.setItem("lastPage", currentPage);
   localStorage.setItem("searchText", savedSearch);
@@ -48,17 +48,19 @@ function saveState() {
 }
 
 /* =========================
-FAB BUTTONS
+FAB
 ========================= */
-document.querySelectorAll(".fab").forEach(fab => {
-  fab.addEventListener("click", () => {
+document.querySelectorAll(".fab").forEach(fab=>{
+  fab.addEventListener("click",()=>{
     const action = fab.dataset.action;
-    if (action === "toggle-nav") {
+    if(action==="toggle-nav"){
       document.getElementById("bottomNav")?.classList.toggle("show");
-    } else if (action === "open-search") {
+    }
+    if(action==="open-search"){
       document.querySelector(".search")?.focus();
-    } else if (action === "open-hot") {
-      document.getElementById("hotSlider")?.scrollIntoView({ behavior: "smooth" });
+    }
+    if(action==="open-hot"){
+      document.getElementById("hotSlider")?.scrollIntoView({behavior:"smooth"});
     }
   });
 });
@@ -66,12 +68,12 @@ document.querySelectorAll(".fab").forEach(fab => {
 /* =========================
 MENU
 ========================= */
-function initMenu() {
+function initMenu(){
   const btn = document.getElementById("menuBtn");
   const menu = document.getElementById("menuDropdown");
-  if (!btn || !menu) return;
+  if(!btn || !menu) return;
 
-  btn.onclick = () => {
+  btn.onclick = ()=>{
     menu.style.display = menu.style.display === "flex" ? "none" : "flex";
   };
 }
@@ -79,77 +81,77 @@ function initMenu() {
 /* =========================
 FOOTER
 ========================= */
-function initFooter() {
+function initFooter(){
   const el = document.getElementById("year");
-  if (el) el.textContent = new Date().getFullYear();
+  if(el) el.textContent = new Date().getFullYear();
 }
 
 /* =========================
-ONLINE USERS
+ONLINE USERS (SAFE)
 ========================= */
-function initOnline() {
-  try {
-    const userRef = push(ref(db, "onlineUsers"));
-    set(userRef, {
+function initOnline(){
+  try{
+    const userRef = push(ref(db,"onlineUsers"));
+    set(userRef,{
       page: location.pathname,
       time: Date.now()
     });
     onDisconnect(userRef).remove();
-  } catch (e) {
-    console.error(e);
+  }catch(e){
+    console.error("online error", e);
   }
 }
 
 /* =========================
 VIEW COUNT
 ========================= */
-function initViews() {
-  document.addEventListener("click", (e) => {
+function initViews(){
+  document.addEventListener("click",(e)=>{
     const card = e.target.closest(".anime-card");
-    if (!card) return;
+    if(!card) return;
 
     const id = card.dataset.id;
-    if (!id) return;
+    if(!id) return;
 
-    const last = localStorage.getItem("view_" + id);
+    const last = localStorage.getItem("view_"+id);
     const now = Date.now();
-    if (last && now - last < 10000) return;
+    if(last && now-last < 10000) return;
 
-    localStorage.setItem("view_" + id, now);
+    localStorage.setItem("view_"+id, now);
 
-    runTransaction(ref(db, "animeViews/" + id), v => (v || 0) + 1);
+    runTransaction(ref(db,"animeViews/"+id), v=>(v||0)+1);
   });
 }
 
 /* =========================
 HOT SYSTEM
 ========================= */
-function initHot() {
+function initHot(){
   const slider = document.getElementById("hotSlider");
-  if (!slider) return;
+  if(!slider) return;
 
-  onValue(ref(db, "animeViews"), snap => {
+  onValue(ref(db,"animeViews"), snap=>{
     const data = snap.val() || {};
-    if (!cards.length) return;
+    if(cards.length===0) return;
 
-    const arr = cards.map(c => ({
-      id: c.dataset.id,
-      title: c.dataset.title,
-      image: c.querySelector("img")?.src || "",
-      link: c.href,
-      views: data[c.dataset.id] || 0
+    const arr = cards.map(c=>({
+      id:c.dataset.id,
+      title:c.dataset.title,
+      image:c.querySelector("img")?.src || "",
+      link:c.href,
+      views:data[c.dataset.id]||0
     }));
 
-    arr.sort((a, b) => b.views - a.views);
+    arr.sort((a,b)=>b.views-a.views);
 
-    slider.innerHTML = "";
+    slider.innerHTML="";
 
-    arr.slice(0, 10).forEach(item => {
-      const a = document.createElement("a");
-      a.href = item.link;
-      a.className = "anime-card hot-card";
+    arr.slice(0,10).forEach(item=>{
+      const a=document.createElement("a");
+      a.href=item.link;
+      a.className="anime-card hot-card";
 
-      a.innerHTML = `
+      a.innerHTML=`
         <div class="card-img">
           <img src="${item.image}" loading="lazy">
           <div class="overlay">${item.title}</div>
@@ -163,74 +165,76 @@ function initHot() {
 }
 
 /* =========================
-LOAD DATA
+LOAD SHEET
 ========================= */
-function loadFromSheet() {
-  const url = "https://opensheet.elk.sh/1TflKULmMK7xsxyg4KR_g3wAUpH7kVofdRNHzTzjS5Fg/Sheet1";
+function loadFromSheet(){
+  const url="https://opensheet.elk.sh/1TflKULmMK7xsxyg4KR_g3wAUpH7kVofdRNHzTzjS5Fg/Sheet1";
 
   fetch(url)
-    .then(r => r.json())
-    .then(data => {
-      const container = document.getElementById("animeList");
-      if (!container) return;
+  .then(r=>r.json())
+  .then(data=>{
+    const container=document.getElementById("animeList");
+    if(!container) return;
 
-      container.innerHTML = "";
+    container.innerHTML="";
 
-      data.forEach((row, i) => {
-        const a = document.createElement("a");
-        a.href = row.link || "#";
-        a.className = "anime-card";
+    data.forEach((row,i)=>{
+      const a=document.createElement("a");
+      a.href=row.link||"#";
+      a.className="anime-card";
 
-        a.dataset.id = row.id || row.title || "a" + i;
-        a.dataset.year = row.year || "0";
-        a.dataset.title = (row.title || "").toLowerCase();
-        a.dataset.hidden = row.hidden?.toUpperCase() === "TRUE" ? "1" : "0";
+      a.dataset.id=row.id||"a"+i;
+      a.dataset.year=row.year||"0";
+      a.dataset.title=(row.title||"").toLowerCase();
+      a.dataset.hidden=row.hidden?.toUpperCase()==="TRUE"?"1":"0";
 
-        a.innerHTML = `
-          <div class="card-img">
-            <img src="${row.image || ''}" loading="lazy">
-            <div class="overlay">${row.title || ""}</div>
-          </div>
-        `;
+      a.innerHTML=`
+        <div class="card-img">
+          <img src="${row.image||""}" loading="lazy">
+          <div class="overlay">${row.title||""}</div>
+        </div>
+      `;
 
-        container.appendChild(a);
-      });
-
-      cards = [...document.querySelectorAll(".anime-card")];
-
-      if (savedSearch) {
-        cards.forEach(c => {
-          c.dataset.search = c.dataset.title.includes(savedSearch) ? "1" : "0";
-        });
-      }
-
-      sortYear();
-      renderPage();
-      initHot();
-
-      const y = localStorage.getItem("scrollY");
-      if (y) setTimeout(() => window.scrollTo(0, parseInt(y)), 200);
+      container.appendChild(a);
     });
+
+    cards=[...document.querySelectorAll(".anime-card")];
+
+    if(savedSearch){
+      cards.forEach(c=>{
+        c.dataset.search=c.dataset.title.includes(savedSearch)?"1":"0";
+      });
+    }else{
+      cards.forEach(c=>c.dataset.search="1");
+    }
+
+    sortYear();
+    renderPage();
+    initHot();
+
+    const y=localStorage.getItem("scrollY");
+    if(y) setTimeout(()=>window.scrollTo(0,parseInt(y)),200);
+  });
 }
 
 /* =========================
 SEARCH
 ========================= */
-function initSearch() {
-  const input = document.querySelector(".search");
-  if (!input) return;
+function initSearch(){
+  const input=document.querySelector(".search");
+  if(!input) return;
 
-  if (savedSearch) input.value = savedSearch;
+  input.value=savedSearch;
 
-  input.addEventListener("input", () => {
-    savedSearch = input.value.toLowerCase();
+  input.addEventListener("input",()=>{
+    savedSearch=input.value.toLowerCase();
 
-    cards.forEach(c => {
-      c.dataset.search = c.dataset.title.includes(savedSearch) ? "1" : "0";
+    cards.forEach(c=>{
+      c.dataset.search=c.dataset.title.includes(savedSearch)?"1":"0";
     });
 
-    currentPage = 1;
-    isChangingPage = true;
+    currentPage=1;
+    isChangingPage=true;
     saveState();
     renderPage();
   });
@@ -239,43 +243,45 @@ function initSearch() {
 /* =========================
 SORT
 ========================= */
-function sortYear() {
-  cards.sort((a, b) => (parseInt(b.dataset.year) || 0) - (parseInt(a.dataset.year) || 0));
-  const container = document.getElementById("animeList");
-  if (!container) return;
-  cards.forEach(c => container.appendChild(c));
+function sortYear(){
+  cards.sort((a,b)=>(parseInt(b.dataset.year)||0)-(parseInt(a.dataset.year)||0));
+
+  const container=document.getElementById("animeList");
+  if(!container) return;
+
+  cards.forEach(c=>container.appendChild(c));
 }
 
 /* =========================
 PAGINATION
 ========================= */
-function renderPage() {
-  const visible = cards.filter(c => c.dataset.search !== "0" && c.dataset.hidden !== "1");
+function renderPage(){
+  const visible=cards.filter(c=>c.dataset.search!=="0" && c.dataset.hidden!=="1");
 
-  const start = (currentPage - 1) * perPage;
-  const end = start + perPage;
+  const start=(currentPage-1)*perPage;
+  const end=start+perPage;
 
-  cards.forEach(c => (c.style.display = "none"));
-  visible.slice(start, end).forEach(c => (c.style.display = ""));
+  cards.forEach(c=>c.style.display="none");
+  visible.slice(start,end).forEach(c=>c.style.display="");
 
   saveState();
-  isChangingPage = false;
+  isChangingPage=false;
 }
 
 /* =========================
 START
 ========================= */
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded",()=>{
   initMenu();
   initFooter();
 
-  const lastTime = localStorage.getItem("lastTime");
-  const now = Date.now();
+  const lastTime=localStorage.getItem("lastTime");
+  const now=Date.now();
 
-  if (lastTime && now - lastTime <= 30000) {
-    currentPage = parseInt(localStorage.getItem("lastPage") || 1);
-    savedSearch = (localStorage.getItem("searchText") || "").toLowerCase();
-  } else {
+  if(lastTime && now-lastTime<=30000){
+    currentPage=parseInt(localStorage.getItem("lastPage")||1);
+    savedSearch=(localStorage.getItem("searchText")||"").toLowerCase();
+  }else{
     localStorage.clear();
   }
 

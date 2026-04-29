@@ -47,23 +47,30 @@ function saveState(){
   localStorage.setItem("lastTime", Date.now());
 }
 
-/* =========================
-FAB
-========================= */
-document.querySelectorAll(".fab").forEach(fab=>{
-  fab.addEventListener("click",()=>{
+document.querySelectorAll(".fab").forEach(fab => {
+  fab.addEventListener("click", () => {
     const action = fab.dataset.action;
-    if(action==="toggle-nav"){
-      document.getElementById("bottomNav")?.classList.toggle("show");
-    }
-    if(action==="open-search"){
-      document.querySelector(".search")?.focus();
-    }
-    if(action==="open-hot"){
-      document.getElementById("hotSlider")?.scrollIntoView({behavior:"smooth"});
+
+    switch(action){
+      case "toggle-nav":
+        document.getElementById("bottomNav")?.classList.toggle("show");
+        break;
+      case "open-search":
+        document.querySelector(".search")?.focus();
+        break;
+      case "open-hot":
+        document.getElementById("hotSlider")?.scrollIntoView({behavior:"smooth"});
+        break;
+      default:
+        document.getElementById("bottomNav")?.classList.toggle("show");
+        break;
     }
   });
 });
+
+function toggleBottom(){
+  document.getElementById("bottomNav")?.classList.toggle("show");
+}
 
 /* =========================
 MENU

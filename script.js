@@ -319,10 +319,9 @@ document.addEventListener("DOMContentLoaded",()=>{
   }else{
     localStorage.clear();
   }
-
+  initFAB();
   loadFromSheet();
   initOnline();
   initViews();
   initSearch();
-  initFAB();
 });

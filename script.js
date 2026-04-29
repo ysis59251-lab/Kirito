@@ -6,24 +6,24 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getDatabase,
   ref,
-  set,
   onValue,
+  runTransaction,
+  set,
   onDisconnect,
-  push,
-  runTransaction
+  push
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 /* =========================
-FIREBASE CONFIG (ใช้ตัวเดียว)
+FIREBASE CONFIG
 ========================= */
 const firebaseConfig = {
-  apiKey: "AIzaSyAlhHlFFuDRtFmWEFzCfZc-m4vI3V2Nqeg",
-  authDomain: "mpmp-5864a.firebaseapp.com",
-  databaseURL: "https://mpmp-5864a-default-rtdb.firebaseio.com",
-  projectId: "mpmp-5864a",
-  storageBucket: "mpmp-5864a.firebasestorage.app",
-  messagingSenderId: "1071327366091",
-  appId: "1:1071327366091:web:239403c1df5da38662c44e"
+  apiKey: "AIzaSyCUxv...",
+  authDomain: "reader-4a13f.firebaseapp.com",
+  databaseURL: "https://reader-4a13f-default-rtdb.firebaseio.com",
+  projectId: "reader-4a13f",
+  storageBucket: "reader-4a13f.firebasestorage.app",
+  messagingSenderId: "220776049054",
+  appId: "1:220776049054:web:53524fb1e90ba83a12ce8f"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -66,7 +66,7 @@ function initOnline(){
 
   onValue(ref(db, "onlineUsers"), snap => {
     const data = snap.val() || {};
-    const count = Object.keys(data).length;
+    const count = Object.keys(data).length; // ✅ FIX
 
     const el = document.getElementById("onlineCount");
     if (el) el.textContent = count;
@@ -86,6 +86,7 @@ function initViews(){
 
     const last = localStorage.getItem("view_"+id);
     const now = Date.now();
+
     if(last && (now - last) < 10000) return;
 
     localStorage.setItem("view_"+id, now);
@@ -121,13 +122,15 @@ function initHot(){
       const a = document.createElement("a");
       a.href = item.link;
       a.className = "anime-card hot-card";
+
       a.innerHTML = `
         <div class="card-img">
-          <img src="${item.image}">
+          <img src="${item.image}" loading="lazy">
           <div class="overlay">${item.title}</div>
         </div>
         <div class="hot-badge">${item.views} views</div>
       `;
+
       slider.appendChild(a);
     });
   });
@@ -143,12 +146,15 @@ fetch(url)
 .then(r=>r.json())
 .then(data=>{
   const container = document.getElementById("animeList");
+  if(!container) return;
+
   container.innerHTML = "";
 
   data.forEach((row,i)=>{
     const a = document.createElement("a");
     a.href = row.link || "#";
     a.className = "anime-card";
+
     a.dataset.id = row.id || "a"+i;
     a.dataset.year = row.year || "0";
     a.dataset.title = (row.title||"").toLowerCase();
@@ -171,7 +177,9 @@ fetch(url)
   initHot();
 
   const y = localStorage.getItem("scrollY");
-  if(y) setTimeout(()=>window.scrollTo(0,parseInt(y)),200);
+  if(y){
+    setTimeout(()=>window.scrollTo(0,parseInt(y)),200);
+  }
 });
 }
 
@@ -205,35 +213,35 @@ function sortYear(){
 PAGINATION
 ========================= */
 function renderPage(){
-  const visible = cards.filter(c=>{
-    return (!savedSearch || c.dataset.title.includes(savedSearch))
-      && c.dataset.hidden !== "1";
-  });
+  const visible = cards.filter(c =>
+    (!savedSearch || c.dataset.title.includes(savedSearch))
+    && c.dataset.hidden !== "1"
+  );
 
-  const total = Math.ceil(visible.length/perPage)||1;
+  const totalPages = Math.ceil(visible.length / perPage) || 1;
 
-  const start = (currentPage-1)*perPage;
-  const end = start+perPage;
+  const start = (currentPage - 1) * perPage;
+  const end = start + perPage;
 
-  cards.forEach(c=>c.style.display="none");
-  visible.slice(start,end).forEach(c=>c.style.display="");
+  cards.forEach(c => c.style.display = "none");
+  visible.slice(start,end).forEach(c => c.style.display = "");
 
   if(isChangingPage){
     window.scrollTo({top:0,behavior:"smooth"});
   }
 
   saveState();
-  isChangingPage=false;
+  isChangingPage = false;
 }
 
 /* =========================
 START
 ========================= */
-document.addEventListener("DOMContentLoaded", ()=>{
+document.addEventListener("DOMContentLoaded", () => {
   const lastTime = localStorage.getItem("lastTime");
   const now = Date.now();
 
-  if(lastTime && now-lastTime<=30000){
+  if(lastTime && (now - lastTime) <= 30000){
     currentPage = parseInt(localStorage.getItem("lastPage")||1);
     savedSearch = (localStorage.getItem("searchText")||"").toLowerCase();
   } else {

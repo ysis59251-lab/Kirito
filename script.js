@@ -320,8 +320,12 @@ document.addEventListener("DOMContentLoaded",()=>{
     localStorage.clear();
   }
   initFAB();
-  loadFromSheet();
-  initOnline();
-  initViews();
-  initSearch();
+initMenu();
+initFooter();
+
+initOnline();
+initViews();
+
+loadFromSheet();
+initSearch();
 });

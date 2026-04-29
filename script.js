@@ -306,26 +306,37 @@ function renderPage(){
 /* =========================
 START
 ========================= */
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener("DOMContentLoaded", () => {
+  // 1️⃣ UI / MENU
   initMenu();
   initFooter();
+  initFAB();
 
-  const lastTime=localStorage.getItem("lastTime");
-  const now=Date.now();
+  // 2️⃣ Firebase / System
+  initOnline();
+  initViews();
 
-  if(lastTime && now-lastTime<=30000){
-    currentPage=parseInt(localStorage.getItem("lastPage")||1);
-    savedSearch=(localStorage.getItem("searchText")||"").toLowerCase();
-  }else{
+  // 3️⃣ DATA LOAD (ต้องมาก่อน)
+  loadFromSheet();
+
+  // 4️⃣ HOT system (รอ cards)
+  setTimeout(() => {
+    initHot();
+  }, 500);
+
+  // 5️⃣ SEARCH (หลัง cards มาแล้วจะปลอดภัย)
+  setTimeout(() => {
+    initSearch();
+  }, 600);
+
+  // 6️⃣ RESTORE STATE
+  const lastTime = localStorage.getItem("lastTime");
+  const now = Date.now();
+
+  if (lastTime && now - lastTime <= 30000) {
+    currentPage = parseInt(localStorage.getItem("lastPage") || 1);
+    savedSearch = (localStorage.getItem("searchText") || "").toLowerCase();
+  } else {
     localStorage.clear();
   }
-  initFAB();
-initMenu();
-initFooter();
-
-initOnline();
-initViews();
-
-loadFromSheet();
-initSearch();
 });

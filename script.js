@@ -165,55 +165,62 @@ function initHot(){
 }
 
 /* =========================
-LOAD SHEET
+LOAD DATA
 ========================= */
 function loadFromSheet(){
-  const url="https://opensheet.elk.sh/1TflKULmMK7xsxyg4KR_g3wAUpH7kVofdRNHzTzjS5Fg/Sheet1";
+  const SHEET_ID = "1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58";
+  const url = `https://opensheet.elk.sh/${SHEET_ID}/Sheet1`;
 
   fetch(url)
-  .then(r=>r.json())
-  .then(data=>{
-    const container=document.getElementById("animeList");
+  .then(r => r.json())
+  .then(data => {
+    const container = document.getElementById("animeList");
     if(!container) return;
 
-    container.innerHTML="";
+    container.innerHTML = "";
 
-    data.forEach((row,i)=>{
-      const a=document.createElement("a");
-      a.href=row.link||"#";
-      a.className="anime-card";
+    data.forEach((row, i) => {
+      const card = document.createElement("a");
+      card.href = row.link || "#";
+      card.className = "anime-card";
 
-      a.dataset.id=row.id||"a"+i;
-      a.dataset.year=row.year||"0";
-      a.dataset.title=(row.title||"").toLowerCase();
-      a.dataset.hidden=row.hidden?.toUpperCase()==="TRUE"?"1":"0";
+      card.dataset.id = row.id || row.title || "a"+i;
+      card.dataset.year = row.year || "0";
+      card.dataset.title = (row.title || "").toLowerCase();
+      card.dataset.hidden = row.hidden?.toUpperCase() === "TRUE" ? "1" : "0";
+      card.dataset.search = "1";
 
-      a.innerHTML=`
+      const img = row.image && row.image.startsWith("http")
+        ? row.image
+        : "https://via.placeholder.com/300x400";
+
+      card.innerHTML = `
         <div class="card-img">
-          <img src="${row.image||""}" loading="lazy">
-          <div class="overlay">${row.title||""}</div>
+          <img src="${img}" loading="lazy">
+          <div class="overlay">${row.title || ""}</div>
         </div>
       `;
 
-      container.appendChild(a);
+      container.appendChild(card);
     });
 
-    cards=[...document.querySelectorAll(".anime-card")];
+    cards = [...document.querySelectorAll(".anime-card")];
 
+    // restore search
     if(savedSearch){
       cards.forEach(c=>{
-        c.dataset.search=c.dataset.title.includes(savedSearch)?"1":"0";
+        c.dataset.search = c.dataset.title.includes(savedSearch) ? "1":"0";
       });
-    }else{
-      cards.forEach(c=>c.dataset.search="1");
     }
 
     sortYear();
     renderPage();
     initHot();
 
-    const y=localStorage.getItem("scrollY");
-    if(y) setTimeout(()=>window.scrollTo(0,parseInt(y)),200);
+    const y = localStorage.getItem("scrollY");
+    if(y){
+      setTimeout(()=>window.scrollTo(0, parseInt(y)),200);
+    }
   });
 }
 

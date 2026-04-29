@@ -15,264 +15,404 @@
   --accent2:#00c6ff;
 }
 
-*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui;}
+/* ================= BASE ================= */
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family: system-ui;
+}
 
 body{
   background:linear-gradient(160deg,#0a0a0f,#12122a);
   color:#fff;
+  overflow-x:hidden;
 }
 
-/* HEADER */
+/* glow effect */
+body::before{
+  content:"";
+  position:fixed;
+  width:600px;
+  height:600px;
+  background:radial-gradient(circle,#ff006e33,transparent 70%);
+  top:-200px;
+  left:-200px;
+  filter:blur(80px);
+  z-index:-1;
+}
+
+/* ================= HEADER ================= */
 header{
   padding:16px;
   font-size:20px;
   font-weight:700;
   background:rgba(20,20,40,0.6);
   backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--stroke);
   position:sticky;
   top:0;
   z-index:1000;
 }
 
-/* LAYOUT */
-.layout{
+/* ================= CONTAINER ================= */
+.container{
+  padding:16px;
   display:flex;
+  flex-direction:column;
+  gap:14px;
 }
 
-.sidebar{
-  width:200px;
-  background:#111122;
-  padding:15px;
-}
-
-.sidebar button{
-  width:100%;
-  margin-bottom:10px;
-  padding:10px;
-  border:none;
-  border-radius:8px;
-  background:#1a1a33;
-  color:#fff;
-}
-
-.main{
-  flex:1;
-  padding:15px;
-}
-
-/* CARD */
+/* ================= CARD ================= */
 .card{
   background:var(--card);
   border:1px solid var(--stroke);
-  border-radius:12px;
-  padding:12px;
-  margin-bottom:12px;
+  backdrop-filter:blur(15px);
+  border-radius:16px;
+  padding:14px;
+  position:relative;
+  overflow:hidden;
 }
 
-/* GRID */
+.card::before{
+  content:"";
+  position:absolute;
+  height:2px;
+  width:100%;
+  top:0;
+  left:0;
+  background:linear-gradient(90deg,var(--accent),var(--accent2));
+}
+
+/* ================= INPUT ================= */
+input{
+  width:100%;
+  padding:10px;
+  border-radius:10px;
+  border:1px solid var(--stroke);
+  background:rgba(0,0,0,0.4);
+  color:#fff;
+}
+
+/* ================= GRID ================= */
 #animeList{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
-  gap:10px;
+  gap:12px;
+  align-items:start;
+}
+
+/* ================= ANIME CARD ================= */
+.anime-card{
+  position:relative;
+  border-radius:12px;
+  overflow:hidden;
+  background:#000;
+  text-decoration:none;
+  color:#fff;
+  isolation:isolate;
 }
 
 .anime-card img{
   width:100%;
-  height:160px;
+  height:170px;
   object-fit:cover;
+}
+
+.anime-card div{
+  position:absolute;
+  bottom:0;
+  width:100%;
+  padding:6px;
+  font-size:12px;
+  background:linear-gradient(to top,rgba(0,0,0,0.85),transparent);
+  max-height:42px;
+  overflow:hidden;
+}
+
+/* ================= BUTTONS ================= */
+button{
+  border:none;
+  padding:8px 12px;
   border-radius:10px;
+  color:#fff;
 }
 
-/* ADMIN */
-.admin-item{
+.btn-delete{ background:#ff3c3c; }
+.btn-disable{ background:#ff9800; }
+
+/* ================= FLOAT BUTTON ================= */
+.btn-box{
+  position:fixed;
+  bottom:20px;
+  right:20px;
   display:flex;
-  justify-content:space-between;
-  background:#1a1a33;
-  padding:10px;
-  margin-bottom:8px;
-  border-radius:8px;
+  flex-direction:column;
+  gap:10px;
+  z-index:999;
 }
 
-button{cursor:pointer;}
-.btn-delete{background:#ff3c3c;}
-.btn-disable{background:#ffaa00;}
+.btn-box button{
+  background:linear-gradient(45deg,var(--accent2),#0072ff);
+  border-radius:30px;
+  padding:12px;
+}
+
+/* ================= TOP NOTIFICATION ================= */
+.topbar{
+  position:fixed;
+  top:70px;
+  right:15px;
+  z-index:999;
+}
+
+.inbox-btn{
+  background:linear-gradient(45deg,var(--accent),#ff4d6d);
+  padding:12px;
+  border-radius:50%;
+  position:relative;
+}
+
+.inbox-badge{
+  position:absolute;
+  top:-5px;
+  right:-5px;
+  background:red;
+  font-size:11px;
+  padding:4px 6px;
+  border-radius:50%;
+}
+
+/* ================= SLIDE PANEL ================= */
+.inbox-panel{
+  position:fixed;
+  top:0;
+  right:-100%;
+  width:320px;
+  height:100%;
+  background:rgba(10,10,20,0.95);
+  backdrop-filter:blur(20px);
+  transition:0.3s;
+  padding:15px;
+  z-index:998;
+}
+
+.inbox-panel.active{
+  right:0;
+}
+
+/* ================= MOBILE ================= */
+@media(max-width:500px){
+  .anime-card img{
+    height:150px;
+  }
+}
 </style>
 </head>
 
 <body>
 
-<header>🔥 Anime Dashboard</header>
+<header>🔥 Anime Admin Dashboard</header>
 
-<div class="layout">
+<!-- FLOAT BUTTONS -->
+<div class="btn-box">
+  <a href="add.html"><button>ลงวิดิโอ</button></a>
+  <a href="wo.html"><button>ลงรูป</button></a>
+</div>
 
-<!-- SIDEBAR -->
-<div class="sidebar">
-  <button onclick="showPage('home')">🎬 หน้าเว็บ</button>
-  <button onclick="showPage('admin')">⚙️ จัดการ</button>
-  <button onclick="showPage('report')">🚨 รายงาน</button>
+<!-- TOP REPORT BUTTON -->
+<div class="topbar">
+  <div class="inbox-btn" onclick="toggleReportPanel()">
+    🚨
+    <span id="reportUnread" class="inbox-badge">0</span>
+  </div>
+</div>
+
+<!-- REPORT PANEL -->
+<div id="reportPanel" class="inbox-panel">
+  <h3>🚨 แจ้งปัญหาจากผู้ชม</h3>
+  <div id="reportList"></div>
 </div>
 
 <!-- MAIN -->
-<div class="main">
-
-<!-- HOME -->
-<div id="home" class="page">
-  <div class="card">👥 ออนไลน์: <span id="onlineCount">0</span></div>
+<div class="container">
 
   <div class="card">
-    <input id="searchInput" placeholder="ค้นหา..." oninput="searchAnime()">
+    👥 คนออนไลน์: <span id="onlineCount">0</span>
   </div>
 
   <div class="card">
+    <h3>🔎 ค้นหาอนิเมะ</h3>
+    <input type="text" id="searchInput" placeholder="พิมพ์ชื่อเรื่อง..." oninput="searchAnime()">
+  </div>
+
+  <div class="card">
+    <h3>🎬 รายการอนิเมะ</h3>
     <div id="animeList"></div>
   </div>
-</div>
 
-<!-- ADMIN -->
-<div id="admin" class="page" style="display:none">
   <div class="card">
-    <h3>จัดการอนิเมะ</h3>
-    <div id="adminAnimeList"></div>
+    <h3>🏆 อันดับยอดฮิต</h3>
+    <div id="ranking"></div>
   </div>
-</div>
-
-<!-- REPORT -->
-<div id="report" class="page" style="display:none">
-  <div class="card">
-    <h3>แจ้งปัญหา</h3>
-    <div id="reportList"></div>
-  </div>
-</div>
 
 </div>
-</div>
 
+<audio id="notifySound">
+  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">
+</audio>
+
+<!-- ================= FIREBASE ================= -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, remove, update, runTransaction } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* FIREBASE */
-const app = initializeApp({
+/* ---------- IMPORT ---------- */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  remove,
+  update,
+  runTransaction
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+/* ================= FIREBASE INIT ================= */
+const adminApp = initializeApp({
   apiKey: "AIzaSyC1S1BToUhVmWqyeTWbHlPdI8hY0aGKNDg",
-  databaseURL: "https://darkframe300-default-rtdb.firebaseio.com"
+  authDomain: "darkframe300.firebaseapp.com",
+  databaseURL: "https://darkframe300-default-rtdb.firebaseio.com",
+  projectId: "darkframe300",
+  appId: "1:296568248360:web:7867a60675ce32e3d6bd1d"
 });
 
-const db = getDatabase(app);
+const adminDb = getDatabase(adminApp);
 
-/* NAV */
-window.showPage = (id)=>{
-  document.querySelectorAll(".page").forEach(p=>p.style.display="none");
-  document.getElementById(id).style.display="block";
-};
+/* ================= ELEMENTS ================= */
+const adminBox = document.getElementById("adminAnimeList");
+const readerBox = document.getElementById("animeList");
+const reportList = document.getElementById("reportList");
+const badge = document.getElementById("reportUnread");
 
-/* LOAD ANIME */
-let cards=[];
-async function load(){
-  const res = await fetch("https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1");
-  const data = await res.json();
+/* ================= STATE ================= */
+let cards = [];
+let currentPage = 0;
+const perPage = 40;
+let searchMode = false;
 
-  const box = document.getElementById("animeList");
-  box.innerHTML="";
+/* ================= ADMIN SYSTEM ================= */
+onValue(ref(adminDb, "anime"), (snap) => {
+  if(!adminBox) return;
 
-  data.forEach(r=>{
-    const div=document.createElement("div");
-    div.className="anime-card";
+  adminBox.innerHTML = "";
 
-    div.innerHTML=`
-      <img src="${r.image}">
-      <div>${r.title}</div>
-    `;
+  snap.forEach(c => {
+    const d = c.val();
 
-    box.appendChild(div);
-  });
+    const div = document.createElement("div");
+    div.className = "anime-item";
 
-  cards=[...document.querySelectorAll(".anime-card")];
-}
-
-/* SEARCH */
-window.searchAnime=()=>{
-  const q=document.getElementById("searchInput").value.toLowerCase();
-
-  cards.forEach(c=>{
-    c.style.display = c.innerText.toLowerCase().includes(q) ? "block":"none";
-  });
-};
-
-/* ADMIN SYSTEM */
-onValue(ref(db,"anime"),snap=>{
-  const box=document.getElementById("adminAnimeList");
-  if(!box) return;
-
-  box.innerHTML="";
-
-  snap.forEach(c=>{
-    const d=c.val();
-
-    const div=document.createElement("div");
-    div.className="admin-item";
-
-    div.innerHTML=`
-      <div>${d.title || "ไม่มีชื่อ"}</div>
+    div.innerHTML = `
+      <div>${d.title || "ไม่มีชื่อ"} (${d.status || "active"})</div>
       <div>
         <button class="btn-disable">ปิด</button>
         <button class="btn-delete">ลบ</button>
       </div>
     `;
 
-    div.querySelector(".btn-disable").onclick=()=>{
-      update(ref(db,"anime/"+c.key),{status:"disabled"});
-    };
+    div.querySelector(".btn-disable").onclick = () =>
+      update(ref(adminDb, "anime/" + c.key), { status: "disabled" });
 
-    div.querySelector(".btn-delete").onclick=()=>{
+    div.querySelector(".btn-delete").onclick = () => {
       if(confirm("ลบ?")){
-        remove(ref(db,"anime/"+c.key));
+        remove(ref(adminDb, "anime/" + c.key));
       }
     };
 
-    box.appendChild(div);
+    adminBox.appendChild(div);
   });
 });
 
-/* REPORT */
-onValue(ref(db,"reports"),snap=>{
-  const box=document.getElementById("reportList");
-  box.innerHTML="";
+/* ================= LOAD SHEET ================= */
+async function loadFromSheet(){
+  const res = await fetch("https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1");
+  const data = await res.json();
 
-  snap.forEach(r=>{
-    const d=r.val();
+  readerBox.innerHTML = "";
 
-    const div=document.createElement("div");
-    div.className="admin-item";
+  data.forEach(row => {
+    const a = document.createElement("a");
+    a.className = "anime-card";
+    a.href = row.link || "#";
 
-    div.innerHTML=`
-      <div>${d.message}</div>
-      <button class="btn-delete">ลบ</button>
+    a.innerHTML = `
+      <img src="${row.image || 'https://via.placeholder.com/300'}">
+      <div>${row.title || ""}</div>
     `;
 
-    div.querySelector("button").onclick=()=>{
-      remove(ref(db,"reports/"+r.key));
-    };
-
-    box.appendChild(div);
+    readerBox.appendChild(a);
   });
+
+  cards = [...document.querySelectorAll(".anime-card")];
+  currentPage = 0;
+  searchMode = false;
+  renderPage();
+}
+
+/* ================= PAGINATION ================= */
+function renderPage(){
+  const list = searchMode ? getVisibleCards() : cards;
+  const start = currentPage * perPage;
+  const end = start + perPage;
+
+  list.forEach(c => c.style.display = "none");
+  list.slice(start, end).forEach(c => c.style.display = "inline-block");
+}
+
+function getVisibleCards(){
+  return cards.filter(c => c.style.display !== "none");
+}
+
+/* ================= SEARCH ================= */
+window.searchAnime = function(){
+  const q = document.getElementById("searchInput").value.toLowerCase();
+
+  if(!q){
+    searchMode = false;
+    currentPage = 0;
+    renderPage();
+    return;
+  }
+
+  searchMode = true;
+
+  cards.forEach(c => {
+    const text = c.innerText.toLowerCase();
+    c.style.display = text.includes(q) ? "inline-block" : "none";
+  });
+
+  currentPage = 0;
+  renderPage();
+};
+
+/* ================= REPORT SYSTEM ================= */
+window.toggleReportPanel = function(){
+  document.getElementById("reportPanel").classList.toggle("active");
+};
+
+/* ================= ONLINE SYSTEM ================= */
+const onlineRef = ref(adminDb, "onlineCount");
+
+/* เพิ่มออนไลน์ (ครั้งที่ 1) */
+runTransaction(onlineRef, v => (v || 0) + 1);
+
+/* ลดตอนออก */
+window.addEventListener("beforeunload", () => {
+  runTransaction(onlineRef, v => Math.max((v || 1) - 1, 0));
 });
 
-/* ONLINE FIX */
-const onlineRef = ref(db,"onlineCount");
+/* ================= START ================= */
+document.addEventListener("DOMContentLoaded", loadFromSheet);
 
-runTransaction(onlineRef,v=>(v||0)+1);
-
-window.addEventListener("beforeunload",()=>{
-  runTransaction(onlineRef,v=>Math.max((v||1)-1,0));
-});
-
-onValue(onlineRef,snap=>{
-  document.getElementById("onlineCount").textContent=snap.val()||0;
-});
-
-/* START */
-load();
 </script>
 
 </body>

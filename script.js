@@ -48,28 +48,56 @@ function saveState(){
 }
 
 /* =========================
-FAB (SAFE FIX)
+FAB (SAFE + STABLE FIX)
 ========================= */
-document.addEventListener("DOMContentLoaded", () => {
-  document.querySelectorAll(".fab").forEach(fab => {
+
+function initFAB(){
+  const fabs = document.querySelectorAll(".fab");
+  if(!fabs.length) return;
+
+  fabs.forEach(fab => {
     fab.addEventListener("click", () => {
       const action = fab.dataset.action;
 
+      const bottomNav = document.getElementById("bottomNav");
+      const searchBox = document.querySelector(".search");
+      const hotSlider = document.getElementById("hotSlider");
+
       switch(action){
+
         case "toggle-nav":
-          document.getElementById("bottomNav")?.classList.toggle("show");
+          if(bottomNav){
+            bottomNav.classList.toggle("show");
+          }
           break;
+
         case "open-search":
-          document.querySelector(".search")?.focus();
+          if(searchBox){
+            searchBox.focus();
+          }
           break;
+
         case "open-hot":
-          document.getElementById("hotSlider")?.scrollIntoView({behavior:"smooth"});
+          if(hotSlider){
+            hotSlider.scrollIntoView({ behavior: "smooth" });
+          }
           break;
+
         default:
-          document.getElementById("bottomNav")?.classList.toggle("show");
+          if(bottomNav){
+            bottomNav.classList.toggle("show");
+          }
+          break;
       }
     });
   });
+}
+
+/* =========================
+AUTO START (IMPORTANT)
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  initFAB();
 });
 
 /* =========================

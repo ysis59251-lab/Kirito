@@ -1,501 +1,266 @@
-<!DOCTYPE html>  <html lang="th">  
-<head>  
-<meta charset="UTF-8">  
-<meta name="viewport" 
-content="width=device-width, initial-scale=1.0">  
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anime Admin Dashboard</title>
 
-<style>  
+<style>
 :root{
-  --bg1:#0a0a0f;
-  --bg2:#12122a;
-  --card:rgba(255,255,255,0.05);
-  --stroke:rgba(255,255,255,0.08);
-  --accent:#ff006e;
-  --accent2:#00c6ff;
+  --bg:#0b0b14;
+  --card:#141428;
+  --accent:#00c6ff;
 }
 
-/* ================= BASE ================= */
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
-  font-family: system-ui;
-}
-
+/* BASE */
 body{
-  background:linear-gradient(160deg,#0a0a0f,#12122a);
+  margin:0;
+  font-family:system-ui;
+  background:var(--bg);
   color:#fff;
-  overflow-x:hidden;
 }
 
-/* glow */
-body::before{
-  content:"";
-  position:fixed;
-  width:600px;
-  height:600px;
-  background:radial-gradient(circle,#ff006e33,transparent 70%);
-  top:-200px;
-  left:-200px;
-  filter:blur(80px);
-  z-index:-1;
-}
-
-/* ================= HEADER ================= */
-header{
-  padding:16px;
-  font-size:20px;
-  font-weight:700;
-  background:rgba(20,20,40,0.6);
-  backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--stroke);
-
-  position:sticky;
-  top:0;
-  z-index:1000; /* กันทับ */
-}
-
-/* ================= CONTAINER ================= */
-.container{
-  padding:16px;
-  padding-top:10px;
+/* LAYOUT */
+.layout{
   display:flex;
-  flex-direction:column;
-  gap:14px;
+  height:100vh;
 }
 
-/* ================= CARD ================= */
+.sidebar{
+  width:220px;
+  background:#111122;
+  padding:20px;
+}
+
+.sidebar button{
+  width:100%;
+  margin-bottom:10px;
+  padding:10px;
+  border:none;
+  border-radius:8px;
+  background:#1a1a33;
+  color:#fff;
+  cursor:pointer;
+}
+
+.main{
+  flex:1;
+  padding:20px;
+  overflow:auto;
+}
+
 .card{
   background:var(--card);
-  border:1px solid var(--stroke);
-  backdrop-filter:blur(15px);
-  border-radius:16px;
-  padding:14px;
-  position:relative;
-  overflow:hidden;
+  padding:15px;
+  border-radius:12px;
+  margin-bottom:15px;
 }
 
-.card::before{
-  content:"";
-  position:absolute;
-  height:2px;
-  width:100%;
-  top:0;
-  left:0;
-  background:linear-gradient(90deg,var(--accent),var(--accent2));
-}
-
-/* ================= INPUT ================= */
-input{
-  width:100%;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid var(--stroke);
-  background:rgba(0,0,0,0.4);
-  color:#fff;
-}
-
-/* ================= GRID ================= */
-#animeList{
+/* GRID */
+.grid{
   display:grid;
   grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
-  gap:12px;
-
-  align-items:start; /* 🔥 กันซ้อน */
-}
-
-/* ================= ANIME CARD ================= */
-.anime-card{
-  position:relative;
-  border-radius:12px;
-  overflow:hidden;
-  background:#000;
-  text-decoration:none;
-  color:#fff;
-
-  isolation:isolate; /* 🔥 กัน layer ชน */
+  gap:10px;
 }
 
 .anime-card img{
   width:100%;
-  height:170px;
+  height:160px;
   object-fit:cover;
-  display:block;
-}
-
-/* overlay text */
-.anime-card div{
-  position:absolute;
-  bottom:0;
-  width:100%;
-  padding:6px;
-  font-size:12px;
-  line-height:1.3;
-
-  background:linear-gradient(to top,rgba(0,0,0,0.85),transparent);
-
-  max-height:42px;     /* 🔥 กันล้น */
-  overflow:hidden;
-}
-
-/* ================= BUTTON ================= */
-button{
-  border:none;
-  padding:8px 12px;
   border-radius:10px;
-  color:#fff;
 }
 
-.btn-delete{ background:#ff3c3c; }
-.btn-disable{ background:#ff9800; }
-
-/* ================= FLOAT BUTTON ================= */
-.btn-box{
-  position:fixed;
-  bottom:20px;
-  right:20px;
+/* ADMIN LIST */
+.admin-item{
   display:flex;
-  flex-direction:column;
-  gap:10px;
-
-  z-index:999; /* 🔥 กันทับ */
+  justify-content:space-between;
+  margin-bottom:10px;
+  background:#1a1a33;
+  padding:10px;
+  border-radius:10px;
 }
 
-.btn-box button{
-  background:linear-gradient(45deg,var(--accent2),#0072ff);
-  border-radius:30px;
-  padding:12px;
+button{
+  cursor:pointer;
 }
 
-/* ================= TOPBAR ================= */
-.topbar{
-  position:fixed;
-  top:70px;
-  right:15px;
-  z-index:999;
-}
+.btn-delete{background:#ff3c3c;}
+.btn-disable{background:#ffaa00;}
+</style>
+</head>
 
-.inbox-btn{
-  background:linear-gradient(45deg,var(--accent),#ff4d6d);
-  padding:12px;
-  border-radius:50%;
-}
+<body>
 
-.inbox-badge{
-  position:absolute;
-  top:-5px;
-  right:-5px;
-  background:red;
-  font-size:11px;
-  padding:4px 6px;
-  border-radius:50%;
-}
+<div class="layout">
 
-/* ================= PANEL ================= */
-.inbox-panel{
-  position:fixed;
-  top:0;
-  right:-100%;
-  width:320px;
-  height:100%;
-  background:rgba(10,10,20,0.95);
-  backdrop-filter:blur(20px);
-  transition:0.3s;
-  padding:15px;
-  z-index:998;
-}
+<!-- SIDEBAR -->
+<div class="sidebar">
+  <button onclick="show('anime')">🎬 อนิเมะ</button>
+  <button onclick="show('admin')">⚙️ จัดการ</button>
+  <button onclick="show('report')">🚨 รายงาน</button>
+</div>
 
-.inbox-panel.active{
-  right:0;
-}
+<!-- MAIN -->
+<div class="main">
 
-/* ================= MOBILE ================= */
-@media(max-width:500px){
-  .anime-card img{
-    height:150px;
-  }
-}  
-</style> 
-</head>  
-<body>  
+  <!-- ANIME -->
+  <div id="anime" class="page">
+    <div class="card">
+      👥 ออนไลน์: <span id="onlineCount">0</span>
+    </div>
 
-<header>🔥 Anime Admin Dashboard</header>  <div class="btn-box">  
-  <a href="add.html"><button>ลงวิดิโอ</button></a>  
-  <a href="wo.html"><button>ลงรูป</button></a>  
-</div>  <!-- 🔝 ปุ่มแจ้งปัญหาขวาบน -->  <div class="topbar">  
-  <div class="inbox-btn" onclick="toggleReportPanel()">  
-    🚨  
-    <span id="reportUnread" class="inbox-badge">0</span>  
-  </div>  
-</div>  <!-- Slide Panel แจ้งปัญหา -->  <div id="reportPanel" class="inbox-panel">  
-  <h3>🚨 แจ้งปัญหาจากผู้ชม</h3>  
-  <div id="reportList"></div>  
-</div>  <div class="container">  <div class="card">  
-  👥 คนออนไลน์: <span id="onlineCount">0</span>  
-</div>  <div class="card">  
-  <h3>🔎 ค้นหาอนิเมะ</h3>  
-  <input type="text" id="searchInput" placeholder="พิมพ์ชื่อเรื่อง..." oninput="searchAnime()">  
-</div>  <div class="card">  
-  <h3>🎬 รายการอนิเมะ</h3>  
-  <div id="animeList"></div>  
-</div>  <div class="card">  
-  <h3>🏆 อันดับยอดฮิต</h3>  
-  <div id="ranking"></div>  
-</div>  </div>  <audio id="notifySound">  
-  <source src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg">  
-</audio>  <script type="module">  
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";  
-import {  
-  getDatabase,  
-  ref,  
-  onValue,  
-  remove,  
-  update,  
-  runTransaction  
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";  
-  
-/* ================= FIREBASE ================= */  
-const adminApp = initializeApp({  
-  apiKey: "AIzaSyC1S1BToUhVmWqyeTWbHlPdI8hY0aGKNDg",  
-  authDomain: "darkframe300.firebaseapp.com",  
-  databaseURL: "https://darkframe300-default-rtdb.firebaseio.com",  
-  projectId: "darkframe300",  
-  appId: "1:296568248360:web:7867a60675ce32e3d6bd1d"  
-});  
-  
-const adminDb = getDatabase(adminApp);  
-  
-/* ================= ELEMENTS ================= */  
-const adminBox = document.getElementById("adminAnimeList");  
-const readerBox = document.getElementById("animeList");  
-const reportList = document.getElementById("reportList");  
-const badge = document.getElementById("reportUnread");  
-  
-/* ================= STATE ================= */  
-let cards = [];  
-let currentPage = 0;  
-const perPage = 40;  
-let searchMode = false;  
-  
-/* ================= ADMIN SYSTEM ================= */  
-onValue(ref(adminDb, "anime"), (snap) => {  
-  adminBox.innerHTML = "";  
-  
-  if (!snap.exists()) {  
-    adminBox.innerHTML = "ไม่มีข้อมูล";  
-    return;  
-  }  
-  
-  snap.forEach(c => {  
-    const d = c.val();  
-  
-    const div = document.createElement("div");  
-    div.className = "anime-item";  
-  
-    div.innerHTML = `  
-      <div>${d.title || "ไม่มีชื่อ"} (${d.status || "active"})</div>  
-      <div>  
-        <button class="btn-disable">ปิด</button>  
-        <button class="btn-delete">ลบ</button>  
-      </div>  
-    `;  
-  
-    div.querySelector(".btn-disable").onclick = () =>  
-      update(ref(adminDb, "anime/" + c.key), { status: "disabled" });  
-  
-    div.querySelector(".btn-delete").onclick = () => {  
-      if (confirm("ลบ?")) {  
-        remove(ref(adminDb, "anime/" + c.key));  
-      }  
-    };  
-  
-    adminBox.appendChild(div);  
-  });  
-});  
-  
-/* ================= LOAD SHEET ================= */  
-async function loadFromSheet() {  
-  const res = await fetch("https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1");  
-  const data = await res.json();  
-  
-  readerBox.innerHTML = "";  
-  
-  data.forEach(row => {  
-    const a = document.createElement("a");  
-    a.className = "anime-card";  
-    a.href = row.link || "#";  
-  
-    a.innerHTML = `  
-      <img src="${row.image || 'https://via.placeholder.com/300'}">  
-      <div>${row.title || ""}</div>  
-    `;  
-  
-    readerBox.appendChild(a);  
-  });  
-  
-  cards = [...document.querySelectorAll(".anime-card")];  
-  currentPage = 0;  
-  searchMode = false;  
-  renderPage();  
-}  
-  
-/* ================= PAGINATION ================= */  
-function renderPage() {  
-  const list = searchMode ? getVisibleCards() : cards;  
-  
-  const start = currentPage * perPage;  
-  const end = start + perPage;  
-  
-  list.forEach(c => c.style.display = "none");  
-  list.slice(start, end).forEach(c => c.style.display = "inline-block");  
-}  
-  
-function getVisibleCards() {  
-  return cards.filter(c => c.style.display !== "none");  
-}  
-  
-window.nextPage = function () {  
-  const list = searchMode ? getVisibleCards() : cards;  
-  const max = Math.ceil(list.length / perPage) - 1;  
-  
-  if (currentPage < max) {  
-    currentPage++;  
-    renderPage();  
-  }  
-};  
-  
-window.prevPage = function () {  
-  if (currentPage > 0) {  
-    currentPage--;  
-    renderPage();  
-  }  
-};  
-  
-/* ================= SEARCH (FIX ไม่พัง pagination) ================= */  
-window.searchAnime = function () {  
-  const q = document.getElementById("searchInput").value.toLowerCase();  
-  
-  if (!q) {  
-    searchMode = false;  
-    currentPage = 0;  
-    renderPage();  
-    return;  
-  }  
-  
-  searchMode = true;  
-  
-  cards.forEach(c => {  
-    const text = c.innerText.toLowerCase();  
-    c.style.display = text.includes(q) ? "inline-block" : "none";  
-  });  
-  
-  currentPage = 0;  
-  renderPage();  
-};  
-  
-/* ================= REPORT ================= */  
-onValue(ref(adminDb, "reports"), (snap) => {  
-  reportList.innerHTML = "";  
-  
-  let count = 0;  
-  
-  snap.forEach(r => {  
-    const d = r.val();  
-    count++;  
-  
-    const div = document.createElement("div");  
-    div.className = "message-item";  
-  
-    div.innerHTML = `  
-      <div>${d.message || "report"}</div>  
-      <button class="btn-delete">ลบ</button>  
-    `;  
-  
-    div.querySelector("button").onclick = () =>  
-      remove(ref(adminDb, "reports/" + r.key));  
-  
-    reportList.appendChild(div);  
-  });  
-  
-  badge.textContent = count;  
-});  
-  
-/* ================= FIX SYSTEM ================= */
+    <div class="card">
+      <input id="search" placeholder="ค้นหา..." oninput="searchAnime()">
+    </div>
 
-// ✅ ปุ่มแจ้งเตือนใช้งานได้
-window.toggleReportPanel = function(){
-  const panel = document.getElementById("reportPanel");
-  if(panel) panel.classList.toggle("active");
+    <div class="card">
+      <div id="animeList" class="grid"></div>
+    </div>
+  </div>
+
+  <!-- ADMIN -->
+  <div id="admin" class="page" style="display:none">
+    <div class="card">
+      <h3>จัดการอนิเมะ</h3>
+      <div id="adminAnimeList"></div>
+    </div>
+  </div>
+
+  <!-- REPORT -->
+  <div id="report" class="page" style="display:none">
+    <div class="card">
+      <h3>แจ้งปัญหา</h3>
+      <div id="reportList"></div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getDatabase, ref, onValue, remove, update, runTransaction } 
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+/* FIREBASE */
+const app = initializeApp({
+  apiKey: "YOUR_KEY",
+  databaseURL: "YOUR_DB"
+});
+
+const db = getDatabase(app);
+
+/* NAV */
+window.show = (id)=>{
+  document.querySelectorAll(".page").forEach(p=>p.style.display="none");
+  document.getElementById(id).style.display="block";
 };
 
-// ✅ กัน error adminBox (ถ้าไม่มี element)
-if(!adminBox){
-  console.warn("adminAnimeList not found (skip admin system)");
+/* LOAD ANIME (SHEET) */
+let cards=[];
+async function load(){
+  const res = await fetch("https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1");
+  const data = await res.json();
+
+  const box = document.getElementById("animeList");
+  box.innerHTML="";
+
+  data.forEach(r=>{
+    const div=document.createElement("div");
+    div.className="anime-card";
+
+    div.innerHTML=`
+      <img src="${r.image}">
+      <div>${r.title}</div>
+    `;
+
+    box.appendChild(div);
+  });
+
+  cards=[...document.querySelectorAll(".anime-card")];
 }
 
-// ✅ ระบบเสียงแจ้งเตือน
-let lastReportCount = 0;
+/* SEARCH */
+window.searchAnime=()=>{
+  const q=document.getElementById("search").value.toLowerCase();
 
-onValue(ref(adminDb, "reports"), (snap) => {
-  if(!reportList || !badge) return;
+  cards.forEach(c=>{
+    c.style.display = c.innerText.toLowerCase().includes(q) ? "block":"none";
+  });
+};
 
-  reportList.innerHTML = "";
-  let count = 0;
+/* ADMIN */
+onValue(ref(db,"anime"),snap=>{
+  const box=document.getElementById("adminAnimeList");
+  box.innerHTML="";
 
-  snap.forEach(r => {
-    const d = r.val();
-    count++;
+  snap.forEach(c=>{
+    const d=c.val();
 
-    const div = document.createElement("div");
-    div.className = "message-item";
+    const div=document.createElement("div");
+    div.className="admin-item";
 
-    div.innerHTML = `
-      <div>${d.message || "report"}</div>
+    div.innerHTML=`
+      <div>${d.title}</div>
+      <div>
+        <button class="btn-disable">ปิด</button>
+        <button class="btn-delete">ลบ</button>
+      </div>
+    `;
+
+    div.querySelector(".btn-disable").onclick=()=>{
+      update(ref(db,"anime/"+c.key),{status:"disabled"});
+    };
+
+    div.querySelector(".btn-delete").onclick=()=>{
+      remove(ref(db,"anime/"+c.key));
+    };
+
+    box.appendChild(div);
+  });
+});
+
+/* REPORT */
+onValue(ref(db,"reports"),snap=>{
+  const box=document.getElementById("reportList");
+  box.innerHTML="";
+
+  snap.forEach(r=>{
+    const d=r.val();
+
+    const div=document.createElement("div");
+    div.className="admin-item";
+
+    div.innerHTML=`
+      <div>${d.message}</div>
       <button class="btn-delete">ลบ</button>
     `;
 
-    div.querySelector("button").onclick = () =>
-      remove(ref(adminDb, "reports/" + r.key));
+    div.querySelector("button").onclick=()=>{
+      remove(ref(db,"reports/"+r.key));
+    };
 
-    reportList.appendChild(div);
+    box.appendChild(div);
   });
-
-  badge.textContent = count;
-
-  // 🔥 เล่นเสียงเมื่อมีใหม่
-  if(count > lastReportCount){
-    const sound = document.getElementById("notifySound");
-    if(sound) sound.play().catch(()=>{});
-  }
-
-  lastReportCount = count;
 });
 
-// ✅ แสดงจำนวนคนออนไลน์
-onValue(ref(adminDb, "onlineCount"), (snap)=>{
-  const el = document.getElementById("onlineCount");
-  if(el) el.textContent = snap.val() || 0;
+/* ONLINE FIX */
+const onlineRef = ref(db,"onlineCount");
+
+runTransaction(onlineRef,v=>(v||0)+1);
+
+window.addEventListener("beforeunload",()=>{
+  runTransaction(onlineRef,v=>Math.max((v||1)-1,0));
 });
 
-// ✅ เพิ่ม + ลด online อย่างถูกต้อง
-const onlineRef = ref(adminDb, "onlineCount");
-
-runTransaction(onlineRef, (v) => (v || 0) + 1);
-
-// ลดตอนออก (แก้ปัญหาค้าง)
-window.addEventListener("beforeunload", () => {
-  runTransaction(onlineRef, (v) => Math.max((v || 1) - 1, 0));
+onValue(onlineRef,snap=>{
+  document.getElementById("onlineCount").textContent=snap.val()||0;
 });
 
-/* ================= ONLINE ================= */  
-runTransaction(ref(adminDb, "onlineCount"), (v) => (v || 0) + 1);  
-  
-/* ================= START ================= */  
-document.addEventListener("DOMContentLoaded",
-loadFromSheet);  
+/* START */
+load();
 
-</script> 
+</script>
 
- </body>  
+</body>
 </html>

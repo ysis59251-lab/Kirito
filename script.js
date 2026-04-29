@@ -31,7 +31,7 @@ const db = getDatabase(app);
 /* =========================
 GLOBAL STATE
 ========================= */
-let cards = [];
+let cards = []; // 🔥 FIX สำคัญ (ของหายทำให้ระบบพัง)
 let perPage = 40;
 let currentPage = 1;
 let savedSearch = "";
@@ -47,33 +47,30 @@ function saveState(){
   localStorage.setItem("lastTime", Date.now());
 }
 
-document.querySelectorAll(".fab").forEach(fab => {
-  fab.addEventListener("click", () => {
-    const action = fab.dataset.action;
+/* =========================
+FAB (SAFE FIX)
+========================= */
+document.addEventListener("DOMContentLoaded", () => {
+  document.querySelectorAll(".fab").forEach(fab => {
+    fab.addEventListener("click", () => {
+      const action = fab.dataset.action;
 
-    switch(action){
-      case "toggle-nav":
-        document.getElementById("bottomNav")?.classList.toggle("show");
-        break;
-
-      case "open-search":
-        document.querySelector(".search")?.focus();
-        break;
-
-      case "open-hot":
-        document.getElementById("hotSlider")?.scrollIntoView({behavior:"smooth"});
-        break;
-
-      default:
-        document.getElementById("bottomNav")?.classList.toggle("show");
-        break;
-    }
+      switch(action){
+        case "toggle-nav":
+          document.getElementById("bottomNav")?.classList.toggle("show");
+          break;
+        case "open-search":
+          document.querySelector(".search")?.focus();
+          break;
+        case "open-hot":
+          document.getElementById("hotSlider")?.scrollIntoView({behavior:"smooth"});
+          break;
+        default:
+          document.getElementById("bottomNav")?.classList.toggle("show");
+      }
+    });
   });
 });
-
-function toggleBottom(){
-  document.getElementById("bottomNav")?.classList.toggle("show");
-}
 
 /* =========================
 MENU
@@ -83,7 +80,7 @@ function initMenu(){
   const menu = document.getElementById("menuDropdown");
   if(!btn || !menu) return;
 
-  btn.onclick = ()=>{
+  btn.onclick = () => {
     menu.style.display = menu.style.display === "flex" ? "none" : "flex";
   };
 }
@@ -97,7 +94,7 @@ function initFooter(){
 }
 
 /* =========================
-ONLINE USERS (SAFE)
+ONLINE USERS
 ========================= */
 function initOnline(){
   try{
@@ -108,7 +105,7 @@ function initOnline(){
     });
     onDisconnect(userRef).remove();
   }catch(e){
-    console.error("online error", e);
+    console.error(e);
   }
 }
 
@@ -129,7 +126,7 @@ function initViews(){
 
     localStorage.setItem("view_"+id, now);
 
-    runTransaction(ref(db,"animeViews/"+id), v=>(v||0)+1);
+    runTransaction(ref(db,"animeViews/"+id), v => (v||0)+1);
   });
 }
 
@@ -142,7 +139,7 @@ function initHot(){
 
   onValue(ref(db,"animeViews"), snap=>{
     const data = snap.val() || {};
-    if(cards.length===0) return;
+    if(cards.length === 0) return;
 
     const arr = cards.map(c=>({
       id:c.dataset.id,
@@ -175,51 +172,50 @@ function initHot(){
 }
 
 /* =========================
-LOAD DATA
+LOAD DATA (FIX SHEET ID)
 ========================= */
 function loadFromSheet(){
   const SHEET_ID = "1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58";
   const url = `https://opensheet.elk.sh/${SHEET_ID}/Sheet1`;
 
   fetch(url)
-  .then(r => r.json())
-  .then(data => {
-    const container = document.getElementById("animeList");
+  .then(r=>r.json())
+  .then(data=>{
+    const container=document.getElementById("animeList");
     if(!container) return;
 
-    container.innerHTML = "";
+    container.innerHTML="";
 
-    data.forEach((row, i) => {
-      const card = document.createElement("a");
-      card.href = row.link || "#";
-      card.className = "anime-card";
+    data.forEach((row,i)=>{
+      const card=document.createElement("a");
+      card.href=row.link||"#";
+      card.className="anime-card";
 
-      card.dataset.id = row.id || row.title || "a"+i;
-      card.dataset.year = row.year || "0";
-      card.dataset.title = (row.title || "").toLowerCase();
-      card.dataset.hidden = row.hidden?.toUpperCase() === "TRUE" ? "1" : "0";
-      card.dataset.search = "1";
+      card.dataset.id=row.id||row.title||"id"+i;
+      card.dataset.year=row.year||"0";
+      card.dataset.title=(row.title||"").toLowerCase();
+      card.dataset.hidden=row.hidden?.toUpperCase()==="TRUE"?"1":"0";
+      card.dataset.search="1";
 
-      const img = row.image && row.image.startsWith("http")
+      const img=row.image?.startsWith("http")
         ? row.image
         : "https://via.placeholder.com/300x400";
 
-      card.innerHTML = `
+      card.innerHTML=`
         <div class="card-img">
           <img src="${img}" loading="lazy">
-          <div class="overlay">${row.title || ""}</div>
+          <div class="overlay">${row.title||""}</div>
         </div>
       `;
 
       container.appendChild(card);
     });
 
-    cards = [...document.querySelectorAll(".anime-card")];
+    cards=[...document.querySelectorAll(".anime-card")];
 
-    // restore search
     if(savedSearch){
       cards.forEach(c=>{
-        c.dataset.search = c.dataset.title.includes(savedSearch) ? "1":"0";
+        c.dataset.search=c.dataset.title.includes(savedSearch)?"1":"0";
       });
     }
 
@@ -227,10 +223,8 @@ function loadFromSheet(){
     renderPage();
     initHot();
 
-    const y = localStorage.getItem("scrollY");
-    if(y){
-      setTimeout(()=>window.scrollTo(0, parseInt(y)),200);
-    }
+    const y=localStorage.getItem("scrollY");
+    if(y) setTimeout(()=>window.scrollTo(0,parseInt(y)),200);
   });
 }
 
@@ -262,15 +256,12 @@ SORT
 ========================= */
 function sortYear(){
   cards.sort((a,b)=>(parseInt(b.dataset.year)||0)-(parseInt(a.dataset.year)||0));
-
   const container=document.getElementById("animeList");
-  if(!container) return;
-
   cards.forEach(c=>container.appendChild(c));
 }
 
 /* =========================
-PAGINATION
+PAGINATION (FIX)
 ========================= */
 function renderPage(){
   const visible=cards.filter(c=>c.dataset.search!=="0" && c.dataset.hidden!=="1");

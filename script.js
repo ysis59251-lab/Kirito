@@ -35,17 +35,7 @@ let savedSearch = "";
 let isChangingPage = false;
 
 /* =========================
-SAVE STATE
-========================= */
-function saveState(){
-  localStorage.setItem("scrollY", window.scrollY);
-  localStorage.setItem("lastPage", currentPage);
-  localStorage.setItem("searchText", savedSearch);
-  localStorage.setItem("lastTime", Date.now());
-}
-
-/* =========================
-ONLINE USERS (FIXED)
+ONLINE SYSTEM (FIXED)
 ========================= */
 function initOnline(){
   const sid = sessionStorage.getItem("sid") || crypto.randomUUID();
@@ -60,28 +50,28 @@ function initOnline(){
 
   onDisconnect(userRef).remove();
 
-  onValue(ref(db, "onlineUsers"), (snap) => {
+  onValue(ref(db, "onlineUsers"), snap => {
     const el = document.getElementById("onlineCount");
     if (el) el.textContent = snap.size || 0;
   });
 }
 
 /* =========================
-VIEW COUNT
+VIEW SYSTEM
 ========================= */
 function initViews(){
-  document.addEventListener("click", (e) => {
+  document.addEventListener("click", e => {
     const card = e.target.closest(".anime-card");
     if(!card) return;
 
     const id = card.dataset.id;
     if(!id) return;
 
-    const last = localStorage.getItem("view_" + id);
+    const last = localStorage.getItem("view_"+id);
     const now = Date.now();
-    if(last && (now - last) < 10000) return;
+    if(last && now - last < 10000) return;
 
-    localStorage.setItem("view_" + id, now);
+    localStorage.setItem("view_"+id, now);
     runTransaction(ref(db,"animeViews/"+id), v => (v||0)+1);
   });
 }
@@ -103,9 +93,7 @@ function initHot(){
       image: c.querySelector("img")?.src || "",
       link: c.href,
       views: data[c.dataset.id] || 0
-    }));
-
-    arr.sort((a,b)=>b.views-a.views);
+    })).sort((a,b)=>b.views-a.views);
 
     slider.innerHTML = "";
 
@@ -141,6 +129,7 @@ fetch(url)
     const a = document.createElement("a");
     a.href = row.link || "#";
     a.className = "anime-card";
+
     a.dataset.id = row.id || "a"+i;
     a.dataset.year = row.year || "0";
     a.dataset.title = (row.title||"").toLowerCase();
@@ -161,9 +150,6 @@ fetch(url)
   sortYear();
   renderPage();
   initHot();
-
-  const y = localStorage.getItem("scrollY");
-  if(y) setTimeout(()=>window.scrollTo(0,parseInt(y)),200);
 });
 }
 
@@ -179,7 +165,6 @@ function initSearch(){
   input.addEventListener("input", ()=>{
     savedSearch = input.value.toLowerCase();
     currentPage = 1;
-    isChangingPage = true;
     renderPage();
   });
 }
@@ -198,12 +183,10 @@ RENDER
 ========================= */
 function renderPage(){
   const visible = cards.filter(c=>{
-    const match = !savedSearch ||
-      c.dataset.title.includes(savedSearch);
-    return match && c.dataset.hidden !== "1";
+    return (!savedSearch ||
+      c.dataset.title.includes(savedSearch)) &&
+      c.dataset.hidden !== "1";
   });
-
-  const total = Math.ceil(visible.length/perPage)||1;
 
   const start = (currentPage-1)*perPage;
   const end = start+perPage;
@@ -211,21 +194,27 @@ function renderPage(){
   cards.forEach(c=>c.style.display="none");
   visible.slice(start,end).forEach(c=>c.style.display="");
 
-  if(isChangingPage)
-    window.scrollTo({top:0,behavior:"smooth"});
-
   saveState();
-  isChangingPage=false;
+}
+
+/* =========================
+SAVE STATE
+========================= */
+function saveState(){
+  localStorage.setItem("scrollY", window.scrollY);
+  localStorage.setItem("lastPage", currentPage);
+  localStorage.setItem("searchText", savedSearch);
+  localStorage.setItem("lastTime", Date.now());
 }
 
 /* =========================
 START
 ========================= */
 document.addEventListener("DOMContentLoaded", ()=>{
-  const lastTime = localStorage.getItem("lastTime");
+  const last = localStorage.getItem("lastTime");
   const now = Date.now();
 
-  if(lastTime && now-lastTime<=30000){
+  if(last && now-last<=30000){
     currentPage = parseInt(localStorage.getItem("lastPage")||1);
     savedSearch = (localStorage.getItem("searchText")||"").toLowerCase();
   } else {

@@ -1,21 +1,20 @@
 /* =========================
 FIREBASE IMPORT
 ========================= */
-<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, set, onValue, onDisconnect } 
-from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getDatabase, ref, onValue, runTransaction, set, onDisconnect, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* 🔥 Firebase Config */
+/* =========================
+FIREBASE CONFIG
+========================= */
 const firebaseConfig = {
-  apiKey: "AIzaSyAlhHlFFuDRtFmWEFzCfZc-m4vI3V2Nqeg",
-  authDomain: "mpmp-5864a.firebaseapp.com",
-  databaseURL: "https://mpmp-5864a-default-rtdb.firebaseio.com",
-  projectId: "mpmp-5864a",
-  storageBucket: "mpmp-5864a.firebasestorage.app",
-  messagingSenderId: "1071327366091",
-  appId: "1:1071327366091:web:239403c1df5da38662c44e",
-  measurementId: "G-PP1HLR95BV"
+  apiKey: "AIzaSyCUxv...",
+  authDomain: "reader-4a13f.firebaseapp.com",
+  databaseURL: "https://reader-4a13f-default-rtdb.firebaseio.com",
+  projectId: "reader-4a13f",
+  storageBucket: "reader-4a13f.firebasestorage.app",
+  messagingSenderId: "220776049054",
+  appId: "1:220776049054:web:53524fb1e90ba83a12ce8f"
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
@@ -186,7 +185,7 @@ function initHot(){
 LOAD DATA
 ========================= */
 function loadFromSheet(){
-const url = "https://opensheet.elk.sh/1NEjGfASJ7xUMtw1gozP6PWXf3LGNEKZhKVAsPbAtRh0/Sheet1";
+ const url = "https://opensheet.elk.sh/1TflKULmMK7xsxyg4KR_g3wAUpH7kVofdRNHzTzjS5Fg/Sheet1";
 
   fetch(url)
   .then(r => r.json())

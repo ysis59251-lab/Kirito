@@ -6,7 +6,9 @@ import {
   onValue,
   onDisconnect,
   push,
-  runTransaction
+  runTransaction,
+  get,
+  child
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 /* =========================
@@ -35,7 +37,17 @@ let savedSearch = "";
 let isChangingPage = false;
 
 /* =========================
-ONLINE SYSTEM (FIXED)
+SAVE STATE
+========================= */
+function saveState(){
+  localStorage.setItem("scrollY", window.scrollY);
+  localStorage.setItem("lastPage", currentPage);
+  localStorage.setItem("searchText", savedSearch);
+  localStorage.setItem("lastTime", Date.now());
+}
+
+/* =========================
+ONLINE SYSTEM (FIXED + KEEP SYSTEM)
 ========================= */
 function initOnline(){
   const sid = sessionStorage.getItem("sid") || crypto.randomUUID();
@@ -50,14 +62,16 @@ function initOnline(){
 
   onDisconnect(userRef).remove();
 
-  onValue(ref(db, "onlineUsers"), snap => {
+  // FIX: ใช้ numChildren แทน size
+  onValue(ref(db, "onlineUsers"), (snap) => {
+    const count = snap.numChildren() || 0;
     const el = document.getElementById("onlineCount");
-    if (el) el.textContent = snap.size || 0;
+    if (el) el.textContent = count;
   });
 }
 
 /* =========================
-VIEW SYSTEM
+VIEW SYSTEM (KEEP)
 ========================= */
 function initViews(){
   document.addEventListener("click", e => {
@@ -67,17 +81,17 @@ function initViews(){
     const id = card.dataset.id;
     if(!id) return;
 
-    const last = localStorage.getItem("view_"+id);
+    const last = localStorage.getItem("view_" + id);
     const now = Date.now();
     if(last && now - last < 10000) return;
 
-    localStorage.setItem("view_"+id, now);
+    localStorage.setItem("view_" + id, now);
     runTransaction(ref(db,"animeViews/"+id), v => (v||0)+1);
   });
 }
 
 /* =========================
-HOT SYSTEM
+HOT SYSTEM (KEEP)
 ========================= */
 function initHot(){
   const slider = document.getElementById("hotSlider");
@@ -93,7 +107,9 @@ function initHot(){
       image: c.querySelector("img")?.src || "",
       link: c.href,
       views: data[c.dataset.id] || 0
-    })).sort((a,b)=>b.views-a.views);
+    }));
+
+    arr.sort((a,b)=>b.views-a.views);
 
     slider.innerHTML = "";
 
@@ -114,7 +130,7 @@ function initHot(){
 }
 
 /* =========================
-LOAD SHEET
+LOAD SHEET (KEEP)
 ========================= */
 function loadFromSheet(){
 const url = "https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1";
@@ -154,7 +170,7 @@ fetch(url)
 }
 
 /* =========================
-SEARCH
+SEARCH (KEEP)
 ========================= */
 function initSearch(){
   const input = document.querySelector(".search");
@@ -165,6 +181,7 @@ function initSearch(){
   input.addEventListener("input", ()=>{
     savedSearch = input.value.toLowerCase();
     currentPage = 1;
+    isChangingPage = true;
     renderPage();
   });
 }
@@ -194,21 +211,15 @@ function renderPage(){
   cards.forEach(c=>c.style.display="none");
   visible.slice(start,end).forEach(c=>c.style.display="");
 
+  if(isChangingPage)
+    window.scrollTo({top:0,behavior:"smooth"});
+
   saveState();
+  isChangingPage=false;
 }
 
 /* =========================
-SAVE STATE
-========================= */
-function saveState(){
-  localStorage.setItem("scrollY", window.scrollY);
-  localStorage.setItem("lastPage", currentPage);
-  localStorage.setItem("searchText", savedSearch);
-  localStorage.setItem("lastTime", Date.now());
-}
-
-/* =========================
-START
+START (FIXED CRASH)
 ========================= */
 document.addEventListener("DOMContentLoaded", ()=>{
   const last = localStorage.getItem("lastTime");
@@ -225,4 +236,5 @@ document.addEventListener("DOMContentLoaded", ()=>{
   initSearch();
   initOnline();
   initViews();
+
 });

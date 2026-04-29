@@ -324,4 +324,5 @@ document.addEventListener("DOMContentLoaded",()=>{
   initOnline();
   initViews();
   initSearch();
+  initFAB();
 });

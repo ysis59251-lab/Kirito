@@ -48,20 +48,19 @@ function saveState(){
 }
 
 /* =========================
-FAB (SAFE + STABLE FIX)
+FAB BUTTONS (SAFE SYSTEM)
 ========================= */
-
 function initFAB(){
   const fabs = document.querySelectorAll(".fab");
   if(!fabs.length) return;
 
+  const bottomNav = document.getElementById("bottomNav");
+  const searchBox = document.querySelector(".search");
+  const hotSlider = document.getElementById("hotSlider");
+
   fabs.forEach(fab => {
     fab.addEventListener("click", () => {
       const action = fab.dataset.action;
-
-      const bottomNav = document.getElementById("bottomNav");
-      const searchBox = document.querySelector(".search");
-      const hotSlider = document.getElementById("hotSlider");
 
       switch(action){
 

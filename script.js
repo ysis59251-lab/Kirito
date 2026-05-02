@@ -276,14 +276,18 @@ function initSearch(){
     saveState();
     renderPage();
 
-    input.blur(); // 🔥 ซ่อนคีย์บอร์ด
+    // 🔥 ซ่อนคีย์บอร์ด
+    input.blur();
+
+    // 🔥 เลื่อนขึ้นบน
+    window.scrollTo({top:0,behavior:"smooth"});
   }
 
   function resetSearch(){
     savedSearch="";
 
     cards.forEach(c=>{
-      c.dataset.search="1"; // 🔥 แสดงทั้งหมด
+      c.dataset.search="1";
     });
 
     currentPage=1;
@@ -291,17 +295,26 @@ function initSearch(){
     renderPage();
   }
 
-  // 🔹 พิมพ์
+  // 🔹 พิมพ์ (ยังไม่ค้นหาทันที)
   input.addEventListener("input",()=>{
-    // 🔥 ถ้าลบจนว่าง → รีเซ็ต
-    if(input.value.trim() === ""){
+    // 🔥 ถ้าลบจนว่าง → กลับหน้าเดิม
+    if(input.value.trim()===""){
       resetSearch();
     }
   });
 
   // 🔹 กด Enter = ค้นหา
   input.addEventListener("keydown",(e)=>{
-    if(e.key === "Enter"){
+    if(e.key==="Enter"){
+      doSearch();
+    }
+  });
+
+  // 🔥 กดปุ่ม Search บนมือถือ (บางเครื่องใช้ event นี้)
+  input.addEventListener("search",()=>{
+    if(input.value.trim()===""){
+      resetSearch();
+    }else{
       doSearch();
     }
   });

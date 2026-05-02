@@ -276,16 +276,30 @@ function initSearch(){
     saveState();
     renderPage();
 
-    // 🔥 ซ่อนคีย์บอร์ด
-    input.blur();
+    input.blur(); // 🔥 ซ่อนคีย์บอร์ด
   }
 
-  // 🔹 พิมพ์แล้วค้นหา (ของเดิม)
+  function resetSearch(){
+    savedSearch="";
+
+    cards.forEach(c=>{
+      c.dataset.search="1"; // 🔥 แสดงทั้งหมด
+    });
+
+    currentPage=1;
+    saveState();
+    renderPage();
+  }
+
+  // 🔹 พิมพ์
   input.addEventListener("input",()=>{
-    savedSearch=input.value.toLowerCase();
+    // 🔥 ถ้าลบจนว่าง → รีเซ็ต
+    if(input.value.trim() === ""){
+      resetSearch();
+    }
   });
 
-  // 🔥 กดปุ่มค้นหา (Enter)
+  // 🔹 กด Enter = ค้นหา
   input.addEventListener("keydown",(e)=>{
     if(e.key === "Enter"){
       doSearch();

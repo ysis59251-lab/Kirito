@@ -240,6 +240,8 @@ function loadFromSheet(){
 
     cards=[...document.querySelectorAll(".anime-card")];
 
+initSearch();
+
     if(savedSearch){
       cards.forEach(c=>{
         c.dataset.search=c.dataset.title.includes(savedSearch)?"1":"0";
@@ -364,11 +366,6 @@ document.addEventListener("DOMContentLoaded", () => {
   setTimeout(() => {
     initHot();
   }, 500);
-
-  // 5️⃣ SEARCH (หลัง cards มาแล้วจะปลอดภัย)
-  setTimeout(() => {
-    initSearch();
-  }, 600);
 
   // 6️⃣ RESTORE STATE
   const lastTime = localStorage.getItem("lastTime");

@@ -264,7 +264,7 @@ function initSearch(){
 
   input.value=savedSearch;
 
-  input.addEventListener("input",()=>{
+  function doSearch(){
     savedSearch=input.value.toLowerCase();
 
     cards.forEach(c=>{
@@ -275,6 +275,21 @@ function initSearch(){
     isChangingPage=true;
     saveState();
     renderPage();
+
+    // 🔥 ซ่อนคีย์บอร์ด
+    input.blur();
+  }
+
+  // 🔹 พิมพ์แล้วค้นหา (ของเดิม)
+  input.addEventListener("input",()=>{
+    savedSearch=input.value.toLowerCase();
+  });
+
+  // 🔥 กดปุ่มค้นหา (Enter)
+  input.addEventListener("keydown",(e)=>{
+    if(e.key === "Enter"){
+      doSearch();
+    }
   });
 }
 

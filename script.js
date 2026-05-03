@@ -185,7 +185,7 @@ function initHot(){
 LOAD DATA
 ========================= */
 function loadFromSheet(){
-const url = "https://opensheet.elk.sh/1NEjGfASJ7xUMtw1gozP6PWXf3LGNEKZhKVAsPbAtRh0/Sheet1";
+const url = "https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1";
 
   fetch(url)
   .then(r => r.json())

@@ -252,40 +252,61 @@ function sortYear(){
 /* =========================
 PAGINATION
 ========================= */
-function renderPage(){
-const visible=cards.filter(c=>c.dataset.search!=="0" && c.dataset.hidden!=="1");
+function renderNumbers(){
+  const box=document.getElementById("numberBox");
+  if(!box) return;
 
-const start=(currentPage-1)*perPage;
-const end=start+perPage;
+  const pages=Math.ceil(visibleCache.length/perPage);
+  box.innerHTML="";
 
-cards.forEach(c=>c.style.display="none");
-visible.slice(start,end).forEach(c=>c.style.display="");
+  const pagesPerSet = 5;
+  const currentSet = Math.ceil(currentPage / pagesPerSet);
 
-renderNumbers(visible.length);
-saveState();
-}
+  const start = (currentSet - 1) * pagesPerSet + 1;
+  let end = start + pagesPerSet - 1;
 
-function renderNumbers(total){
-const box=document.getElementById("numberBox");
-if(!box) return;
+  if(end > pages) end = pages;
 
-const pages=Math.ceil(total/perPage);
-box.innerHTML="";
+  if(start > 1){
+    const prev=document.createElement("button");
+    prev.textContent="<";
 
-for(let i=1;i<=pages;i++){
-const b=document.createElement("button");
-b.textContent=i;
-if(i===currentPage) b.classList.add("active");
+    prev.onclick=()=>{
+      currentPage = start - 1;
+      renderPage();
+      window.scrollTo({top:0,behavior:"smooth"});
+    };
 
-b.onclick=()=>{  
-  currentPage=i;  
-  renderPage();  
-  window.scrollTo({top:0,behavior:"smooth"});  
-};  
+    box.appendChild(prev);
+  }
 
-box.appendChild(b);
+  for(let i=start;i<=end;i++){
+    const b=document.createElement("button");
+    b.textContent=i;
 
-}
+    if(i===currentPage) b.classList.add("active");
+
+    b.onclick=()=>{
+      currentPage=i;
+      renderPage();
+      window.scrollTo({top:0,behavior:"smooth"});
+    };
+
+    box.appendChild(b);
+  }
+
+  if(end < pages){
+    const next=document.createElement("button");
+    next.textContent=">";
+
+    next.onclick=()=>{
+      currentPage = end + 1;
+      renderPage();
+      window.scrollTo({top:0,behavior:"smooth"});
+    };
+
+    box.appendChild(next);
+  }
 }
 
   // ================= NEXT =================

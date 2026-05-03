@@ -438,9 +438,9 @@ html{
 
 .toggle-bottom,
 .fab{
-  position:fixed;
-  bottom:20px;
-  right:15px;
+  position:static; /* หรือจะลบทิ้งก็ได้ */
+  display:block;
+  margin:20px auto; /* ดันไปกลาง + มีระยะล่าง */
   width:46px;
   height:46px;
   border-radius:50%;
@@ -448,7 +448,6 @@ html{
   color:#fff;
   border:none;
   font-size:20px;
-  z-index:30;
   cursor:pointer;
 }
 

@@ -1,269 +1,464 @@
-/* ================= RESET ================= */
+/* =========================
+   RESET + GLOBAL
+========================= */
 *{
   box-sizing:border-box;
   margin:0;
   padding:0;
-  font-family:'Segoe UI',system-ui,sans-serif;
+  font-family:'Segoe UI',sans-serif
+}
+
+body{
+  background:#000;
+  color:#fff;
+  min-height:100vh
 }
 
 html{
   scroll-behavior:smooth;
 }
 
-body{
-  min-height:100vh;
-  color:#fff;
-  background:#050505;
-  overflow-x:hidden;
-}
-
-/* ================= BACKGROUND ================= */
+/* =========================
+   BACKGROUND
+========================= */
 #bg{
   position:fixed;
   inset:0;
-  background:url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center/cover no-repeat;
-  filter:brightness(.35) saturate(1.2);
-  transform:scale(1.05);
-  z-index:-2;
+  background:url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center/cover;
+  z-index:-1;
 }
 
-#bg::after{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:radial-gradient(circle at top,#0000,rgba(0,0,0,.85));
-}
-
-/* ================= HEADER ================= */
+/* =========================
+   HEADER + SEARCH
+========================= */
 .header{
   position:sticky;
   top:0;
-  z-index:50;
-  padding:14px;
+  background:rgba(0,0,0,.6);
+  backdrop-filter:blur(10px);
+  padding:15px;
   text-align:center;
-  background:rgba(10,10,10,.45);
-  backdrop-filter:blur(18px);
-  border-bottom:1px solid rgba(255,255,255,.08);
+  z-index:10;
 }
 
 .search{
   width:90%;
-  max-width:420px;
-  padding:12px 16px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.15);
-  background:rgba(255,255,255,.06);
-  color:#fff;
-  outline:none;
-  transition:.3s;
+  max-width:400px;
+  padding:10px 14px;
+  border-radius:20px;
+  border:none;
 }
 
-.search:focus{
-  border-color:#ff3b3b;
-  box-shadow:0 0 15px rgba(255,59,59,.4);
-}
-
-/* ================= MENU ================= */
+/* =========================
+   MENU
+========================= */
 #menuBtn{
   position:fixed;
-  top:16px;
-  left:16px;
+  top:15px;
+  left:15px;
   font-size:28px;
   cursor:pointer;
-  z-index:1000;
-  transition:.2s;
-}
-
-#menuBtn:hover{
-  transform:scale(1.1);
+  z-index:1000
 }
 
 #menuDropdown{
   position:fixed;
   top:60px;
-  left:16px;
-  background:rgba(20,20,20,.85);
-  backdrop-filter:blur(14px);
-  border:1px solid rgba(255,255,255,.08);
-  border-radius:14px;
+  left:15px;
+  background:#111;
+  border-radius:10px;
   display:none;
   flex-direction:column;
-  overflow:hidden;
-  min-width:160px;
   z-index:1000;
 }
 
 #menuDropdown a{
-  padding:12px 14px;
+  padding:10px 14px;
   color:#fff;
-  text-decoration:none;
-  transition:.2s;
+  text-decoration:none
 }
 
 #menuDropdown a:hover{
-  background:rgba(255,255,255,.08);
-  color:#ffcc00;
+  background:#222
 }
 
-/* ================= GRID ================= */
+/* =========================
+   GRID LIST (ANIME)
+========================= */
 #animeList{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 12px;
+}
+
+.anime-list{
+  padding:20px;
   display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:14px;
-  padding:14px;
+  grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+  gap:16px;
 }
 
-/* ================= CARD ================= */
+/* =========================
+   CARD BASE
+========================= */
 .anime-card{
-  position:relative;
-  border-radius:18px;
+  text-decoration: none;
+  background:rgba(255,255,255,.08);
+  border-radius:16px;
   overflow:hidden;
-  text-decoration:none;
   color:#fff;
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.08);
-  transition:.3s;
+  position:relative;
 }
 
-.anime-card:hover{
-  transform:translateY(-6px);
-  box-shadow:0 20px 40px rgba(0,0,0,.5);
+.card{
+  position: relative;
+  width: 180px;
 }
 
-/* ================= IMAGE ================= */
+.card img{
+  width: 100%;
+  border-radius: 12px;
+}
+
+.card-img{
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
 .card-img img{
+  width: 100%;
+  height: 360px;
+  object-fit: cover;
+  display: block;
+}
+
+.img-box img{
   width:100%;
-  height:380px;
+  height:320px;
   object-fit:cover;
-  filter:contrast(1.1) saturate(1.1);
-  transition:.4s;
+  display:block
 }
 
-.anime-card:hover img{
-  transform:scale(1.05);
-}
-
-/* ================= OVERLAY ================= */
+/* =========================
+   TEXT / OVERLAY
+========================= */
 .overlay{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 10px;
+  font-size: 13px;
+  color: white;
+  background: linear-gradient(transparent, rgba(0,0,0,0.9));
+}
+
+.overlay-text{
   position:absolute;
   bottom:0;
+  left:0;
   width:100%;
-  padding:12px;
+  padding:10px;
   font-size:13px;
-  background:linear-gradient(to top,rgba(0,0,0,.95),transparent);
+  background:linear-gradient(to top,rgba(0,0,0,.8),transparent)
 }
 
-/* ================= BADGE ================= */
+.title{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  color: white;
+  padding: 8px;
+  font-size: 13px;
+  background: linear-gradient(transparent, rgba(0,0,0,0.8));
+}
+
+.text-center{
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 28px;
+  font-weight: bold;
+  color: #ffffff;
+  text-shadow: 0 0 10px rgba(0,0,0,0.7);
+  pointer-events: none;
+}
+
+/* =========================
+   BADGE
+========================= */
 .badge{
-  position:absolute;
-  top:10px;
-  left:10px;
-  padding:5px 12px;
-  font-size:12px;
-  border-radius:999px;
-  backdrop-filter:blur(10px);
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  background: orange;
+  color: white;
+  padding: 4px 10px;
+  font-size: 12px;
+  border-radius: 999px;
 }
 
 .hot{background:#ff3b3b}
-.new{background:#00e676}
+.new{background:#00c853}
 .recommend{background:#ffd600;color:#000}
 
-/* ================= HOT SECTION ================= */
+/* =========================
+   HOT SECTION
+========================= */
 .hot-section{
-  padding:22px;
-  background:linear-gradient(180deg,#111,#1a1a1a);
+  padding:20px;
+  background: linear-gradient(180deg,#1e1e1e,#2a2a2a);
+}
+
+.hot-section h2{
+  font-size:20px;
+  margin-bottom:15px;
+  font-weight:800;
+  background: linear-gradient(90deg,#ff4d4d,#ffb347);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
 
 .hot-slider{
   display:flex;
-  gap:16px;
+  gap:18px;
   overflow-x:auto;
+  padding-bottom:15px;
   scroll-behavior:smooth;
-  padding-bottom:8px;
 }
 
-.hot-slider::-webkit-scrollbar{
-  display:none;
-}
+.hot-slider::-webkit-scrollbar{display:none}
 
+/* =========================
+   HOT CARD
+========================= */
 .hot-card{
-  min-width:180px;
-  border-radius:18px;
+  min-width:170px;
+  border-radius:20px;
   overflow:hidden;
-  background:#111;
-  border:1px solid rgba(255,255,255,.08);
-  transition:.3s;
+  position:relative;
+  background:#fff;
+  text-decoration:none;
+  box-shadow:
+  0 10px 25px rgba(0,0,0,.25),
+  0 0 0 1px rgba(255,255,255,.4) inset;
+  transition:transform .35s ease, box-shadow .35s ease;
 }
 
 .hot-card:hover{
-  transform:translateY(-10px) scale(1.02);
-  box-shadow:0 15px 30px rgba(0,0,0,.6);
+  transform:translateY(-10px);
+  box-shadow:
+  0 20px 45px rgba(255,77,77,.35),
+  0 0 0 1px rgba(255,255,255,.6) inset;
 }
 
 .hot-card img{
   width:100%;
   height:260px;
   object-fit:cover;
+  display:block;
+  transition:transform .5s ease;
 }
 
-/* ================= GLOW EFFECT ================= */
+.hot-card:hover img{
+  transform:scale(1.08);
+}
+
+.hot-card::after{
+  content:"";
+  position:absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  height:50%;
+  background:linear-gradient(to top,rgba(0,0,0,.75),transparent);
+}
+
+.hot-card .title{
+  position:absolute;
+  bottom:12px;
+  left:14px;
+  right:14px;
+  font-size:15px;
+  font-weight:700;
+  color:#fff;
+  z-index:2;
+}
+
+.hot-badge{
+  position:absolute;
+  top:12px;
+  left:12px;
+  padding:6px 14px;
+  border-radius:50px;
+  font-size:12px;
+  font-weight:700;
+  background:linear-gradient(90deg,#ff4d4d,#ffb347);
+  color:#fff;
+  box-shadow:0 6px 18px rgba(255,77,77,.45);
+  z-index:2;
+}
+
+/* =========================
+   ANIME GLOW EFFECT
+========================= */
 .anime-wrapper{
-  position:relative;
-  display:flex;
-  justify-content:center;
-  margin:90px 0;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 80px 0;
+  overflow: visible;
 }
 
 .anime-wrapper::before{
   content:"";
   position:absolute;
-  width:420px;
-  height:420px;
-  background:conic-gradient(#ff3b3b,#ffcc00,#00e5ff,#ff3b3b);
-  filter:blur(110px);
-  opacity:.4;
+  width:500px;
+  height:500px;
+  background: conic-gradient(
+  from 180deg,
+  #ff6a6a,
+  #ffb347,
+  #ffd86b,
+  #ff6a6a
+  );
   border-radius:50%;
-  animation:spin 14s linear infinite;
+  filter: blur(100px);
+  opacity:0.6;
+  animation: rotateGlow 12s linear infinite;
+  z-index:0;
 }
 
-@keyframes spin{
-  to{transform:rotate(360deg);}
+.anime-wrapper::after{
+  content:"";
+  position:absolute;
+  width:360px;
+  height:360px;
+  border-radius:50%;
+  border: 2px solid rgba(255,255,255,0.4);
+  box-shadow:
+  0 0 20px rgba(255,120,120,0.6),
+  inset 0 0 20px rgba(255,180,0,0.6);
+  z-index:1;
 }
 
 .anime-img{
-  width:360px;
-  position:relative;
-  z-index:2;
+  width: 360px;
+  max-width: 90%;
+  position: relative;
+  z-index: 2;
+  filter:
+  drop-shadow(0 20px 40px rgba(0,0,0,0.4))
+  drop-shadow(0 0 30px rgba(255,150,100,0.5));
 }
 
-/* ================= PAGINATION ================= */
+@keyframes rotateGlow{
+  from{ transform: rotate(0deg) scale(1); }
+  to{ transform: rotate(360deg) scale(1.1); }
+}
+
+/* =========================
+   BOTTOM CONTROL
+========================= */
 .bottom-area{
-  position:fixed;
-  left:50%;
-  bottom:18px;
-  transform:translateX(-50%);
-  z-index:100;
+  position: fixed;
+  left: 50%;
+  bottom: -200px;
+  transform: translateX(-50%);
+  width:260px;
+  z-index:20;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  transition: bottom .35s ease;
+}
+
+.bottom-area.show{
+  bottom: 20px;
 }
 
 #numberBox{
   display:flex;
   gap:8px;
-  padding:10px 14px;
-  background:rgba(0,0,0,.5);
-  backdrop-filter:blur(16px);
-  border:1px solid rgba(255,255,255,.1);
+  padding:10px 12px;
+  background:rgba(0,0,0,.75);
+  backdrop-filter:blur(8px);
   border-radius:16px;
+  box-shadow:0 6px 18px rgba(0,0,0,.6);
+  border:1px solid rgba(255,255,255,.08);
 }
 
-/* ================= NUMBER ================= */
+.num{
+  width:40px;
+  height:40px;
+  background:#1c1c1c;
+  color:#fff;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:600;
+  cursor:pointer;
+  transition:.2s ease;
+}
+
+.num:hover{
+  background:#ff3b3b;
+  transform:scale(1.05);
+}
+
+.num.active{
+  background:#ffcc00;
+  color:#000;
+  font-weight:bold;
+  cursor:default;
+}
+
+.bottom-nav{
+  width:260px;
+  display:flex;
+  justify-content:space-between;
+}
+
+.bottom-nav button{
+  width:44px;
+  height:44px;
+  border-radius:50%;
+  border:none;
+  background:#111;
+  color:#fff;
+  font-size:18px;
+}
+
+.toggle-bottom,
+.fab{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin:25px auto;
+  padding:12px 16px;
+
+  background:rgba(0,0,0,.7);
+  border-radius:16px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 6px 20px rgba(0,0,0,.5);
+}
+
 .num{
   width:42px;
   height:42px;
   display:flex;
   align-items:center;
   justify-content:center;
-  border-radius:12px;
-  background:rgba(255,255,255,.08);
+  border-radius:10px;
+  background:#1c1c1c;
+  color:#fff;
   cursor:pointer;
   transition:.25s;
 }
@@ -274,32 +469,95 @@ body{
 }
 
 .num.active{
-  background:linear-gradient(135deg,#ffcc00,#ff3b3b);
+  background:#ffcc00;
   color:#000;
   font-weight:bold;
 }
 
-/* ================= REPORT ================= */
+/* =========================
+   REPORT SYSTEM
+========================= */
 #reportBtn{
   position:fixed;
-  top:16px;
-  right:16px;
-  width:44px;
-  height:44px;
+  top:15px;
+  right:15px;
+  width:42px;
+  height:42px;
   border-radius:50%;
-  background:linear-gradient(135deg,#ff3b3b,#ff0055);
+  background:#ff3b3b;
+  color:#fff;
+  font-size:20px;
   display:flex;
   align-items:center;
   justify-content:center;
-  box-shadow:0 10px 20px rgba(255,59,59,.3);
+  cursor:pointer;
   z-index:1001;
 }
 
-/* ================= FOOTER ================= */
+#reportBox{
+  position:fixed;
+  top:70px;
+  right:-320px;
+  width:280px;
+  background:#111;
+  border-radius:16px;
+  padding:14px;
+  z-index:1000;
+  transition:.35s ease;
+  box-shadow:0 10px 30px rgba(0,0,0,.6);
+}
+
+#reportBox.show{
+  right:15px;
+}
+
+#reportBox textarea{
+  width:100%;
+  height:90px;
+  background:#000;
+  border:1px solid #333;
+  border-radius:10px;
+  color:#fff;
+  padding:8px;
+  resize:none;
+}
+
+#reportBox button{
+  margin-top:10px;
+  width:100%;
+  padding:8px;
+  border:none;
+  border-radius:10px;
+  background:#ff3b3b;
+  color:#fff;
+  font-size:14px;
+  cursor:pointer;
+}
+
+/* =========================
+   FOOTER
+========================= */
 .footer{
-  padding:30px;
+  width:100%;
+  background:#000;
+  padding:25px 12px;
   text-align:center;
-  color:#aaa;
-  background:#050505;
-  border-top:1px solid rgba(255,255,255,.08);
+}
+
+.footer p{
+  font-family: Arial, Helvetica, sans-serif;
+  font-size:13px;
+  color:#b5b5b5;
+  font-weight:400;
+  line-height:1.7;
+  margin:0;
+}
+
+.footer a{
+  color:#4da3ff;
+  text-decoration:none;
+}
+
+.footer a:hover{
+  text-decoration:underline;
 }

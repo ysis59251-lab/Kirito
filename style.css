@@ -438,17 +438,40 @@ html{
 
 .toggle-bottom,
 .fab{
-  position:static; /* หรือจะลบทิ้งก็ได้ */
-  display:block;
-  margin:20px auto; /* ดันไปกลาง + มีระยะล่าง */
-  width:46px;
-  height:46px;
-  border-radius:50%;
-  background:#ff3b3b;
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  margin:25px auto;
+  padding:12px 16px;
+
+  background:rgba(0,0,0,.7);
+  border-radius:16px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 6px 20px rgba(0,0,0,.5);
+}
+
+.num{
+  width:42px;
+  height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:10px;
+  background:#1c1c1c;
   color:#fff;
-  border:none;
-  font-size:20px;
   cursor:pointer;
+  transition:.25s;
+}
+
+.num:hover{
+  background:#ff3b3b;
+  transform:scale(1.1);
+}
+
+.num.active{
+  background:#ffcc00;
+  color:#000;
+  font-weight:bold;
 }
 
 /* =========================

@@ -1,112 +1,156 @@
+/* ================= RESET ================= */
 *{
   box-sizing:border-box;
   margin:0;
   padding:0;
-  font-family:'Segoe UI',sans-serif;
-}
-
-body{
-  background:#000;
-  color:#fff;
-  min-height:100vh;
+  font-family:'Segoe UI',system-ui,sans-serif;
 }
 
 html{
   scroll-behavior:smooth;
 }
 
+body{
+  min-height:100vh;
+  color:#fff;
+  background:#050505;
+  overflow-x:hidden;
+}
+
 /* ================= BACKGROUND ================= */
 #bg{
   position:fixed;
   inset:0;
-  background:url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center/cover;
-  z-index:-1;
+  background:url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center/cover no-repeat;
+  filter:brightness(.35) saturate(1.2);
+  transform:scale(1.05);
+  z-index:-2;
+}
+
+#bg::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:radial-gradient(circle at top,#0000,rgba(0,0,0,.85));
 }
 
 /* ================= HEADER ================= */
 .header{
   position:sticky;
   top:0;
-  background:rgba(0,0,0,.6);
-  backdrop-filter:blur(10px);
-  padding:15px;
+  z-index:50;
+  padding:14px;
   text-align:center;
-  z-index:10;
+  background:rgba(10,10,10,.45);
+  backdrop-filter:blur(18px);
+  border-bottom:1px solid rgba(255,255,255,.08);
 }
 
 .search{
   width:90%;
-  max-width:400px;
-  padding:10px 14px;
-  border-radius:20px;
-  border:none;
+  max-width:420px;
+  padding:12px 16px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.15);
+  background:rgba(255,255,255,.06);
+  color:#fff;
+  outline:none;
+  transition:.3s;
+}
+
+.search:focus{
+  border-color:#ff3b3b;
+  box-shadow:0 0 15px rgba(255,59,59,.4);
 }
 
 /* ================= MENU ================= */
 #menuBtn{
   position:fixed;
-  top:15px;
-  left:15px;
+  top:16px;
+  left:16px;
   font-size:28px;
   cursor:pointer;
   z-index:1000;
+  transition:.2s;
+}
+
+#menuBtn:hover{
+  transform:scale(1.1);
 }
 
 #menuDropdown{
   position:fixed;
   top:60px;
-  left:15px;
-  background:#111;
-  border-radius:10px;
+  left:16px;
+  background:rgba(20,20,20,.85);
+  backdrop-filter:blur(14px);
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:14px;
   display:none;
   flex-direction:column;
+  overflow:hidden;
+  min-width:160px;
   z-index:1000;
 }
 
 #menuDropdown a{
-  padding:10px 14px;
+  padding:12px 14px;
   color:#fff;
   text-decoration:none;
+  transition:.2s;
 }
 
 #menuDropdown a:hover{
-  background:#222;
+  background:rgba(255,255,255,.08);
+  color:#ffcc00;
 }
 
 /* ================= GRID ================= */
 #animeList{
   display:grid;
   grid-template-columns:repeat(2,1fr);
-  gap:12px;
-  padding:12px;
+  gap:14px;
+  padding:14px;
 }
 
 /* ================= CARD ================= */
 .anime-card{
-  text-decoration:none;
-  background:rgba(255,255,255,.08);
-  border-radius:16px;
-  overflow:hidden;
-  color:#fff;
   position:relative;
+  border-radius:18px;
+  overflow:hidden;
+  text-decoration:none;
+  color:#fff;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.08);
+  transition:.3s;
+}
+
+.anime-card:hover{
+  transform:translateY(-6px);
+  box-shadow:0 20px 40px rgba(0,0,0,.5);
 }
 
 /* ================= IMAGE ================= */
 .card-img img{
   width:100%;
-  height:360px;
+  height:380px;
   object-fit:cover;
-  display:block;
+  filter:contrast(1.1) saturate(1.1);
+  transition:.4s;
 }
 
-/* ================= TEXT ================= */
+.anime-card:hover img{
+  transform:scale(1.05);
+}
+
+/* ================= OVERLAY ================= */
 .overlay{
   position:absolute;
   bottom:0;
   width:100%;
-  padding:10px;
+  padding:12px;
   font-size:13px;
-  background:linear-gradient(transparent,rgba(0,0,0,.9));
+  background:linear-gradient(to top,rgba(0,0,0,.95),transparent);
 }
 
 /* ================= BADGE ================= */
@@ -114,45 +158,46 @@ html{
   position:absolute;
   top:10px;
   left:10px;
-  padding:4px 10px;
+  padding:5px 12px;
   font-size:12px;
   border-radius:999px;
+  backdrop-filter:blur(10px);
 }
 
 .hot{background:#ff3b3b}
-.new{background:#00c853}
+.new{background:#00e676}
 .recommend{background:#ffd600;color:#000}
 
 /* ================= HOT SECTION ================= */
 .hot-section{
-  padding:20px;
-  background:linear-gradient(180deg,#1e1e1e,#2a2a2a);
+  padding:22px;
+  background:linear-gradient(180deg,#111,#1a1a1a);
 }
 
 .hot-slider{
   display:flex;
-  gap:18px;
+  gap:16px;
   overflow-x:auto;
   scroll-behavior:smooth;
+  padding-bottom:8px;
 }
 
 .hot-slider::-webkit-scrollbar{
   display:none;
 }
 
-/* ================= HOT CARD ================= */
 .hot-card{
-  min-width:170px;
-  border-radius:20px;
+  min-width:180px;
+  border-radius:18px;
   overflow:hidden;
-  position:relative;
-  background:#fff;
-  box-shadow:0 10px 25px rgba(0,0,0,.25);
+  background:#111;
+  border:1px solid rgba(255,255,255,.08);
   transition:.3s;
 }
 
 .hot-card:hover{
-  transform:translateY(-8px);
+  transform:translateY(-10px) scale(1.02);
+  box-shadow:0 15px 30px rgba(0,0,0,.6);
 }
 
 .hot-card img{
@@ -161,24 +206,24 @@ html{
   object-fit:cover;
 }
 
-/* ================= GLOW ================= */
+/* ================= GLOW EFFECT ================= */
 .anime-wrapper{
   position:relative;
   display:flex;
   justify-content:center;
-  margin:80px 0;
+  margin:90px 0;
 }
 
 .anime-wrapper::before{
   content:"";
   position:absolute;
-  width:400px;
-  height:400px;
-  background:conic-gradient(#ff6a6a,#ffb347,#ffd86b,#ff6a6a);
-  filter:blur(90px);
-  opacity:.5;
+  width:420px;
+  height:420px;
+  background:conic-gradient(#ff3b3b,#ffcc00,#00e5ff,#ff3b3b);
+  filter:blur(110px);
+  opacity:.4;
   border-radius:50%;
-  animation:spin 12s linear infinite;
+  animation:spin 14s linear infinite;
 }
 
 @keyframes spin{
@@ -191,34 +236,34 @@ html{
   z-index:2;
 }
 
-/* ================= PAGINATION (สวยสุด) ================= */
+/* ================= PAGINATION ================= */
 .bottom-area{
   position:fixed;
   left:50%;
-  bottom:20px;
+  bottom:18px;
   transform:translateX(-50%);
-  z-index:20;
+  z-index:100;
 }
 
 #numberBox{
   display:flex;
-  gap:10px;
-  padding:12px 16px;
-  background:rgba(0,0,0,.6);
-  backdrop-filter:blur(12px);
-  border-radius:18px;
-  box-shadow:0 10px 25px rgba(0,0,0,.6);
+  gap:8px;
+  padding:10px 14px;
+  background:rgba(0,0,0,.5);
+  backdrop-filter:blur(16px);
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:16px;
 }
 
 /* ================= NUMBER ================= */
 .num{
-  width:44px;
-  height:44px;
+  width:42px;
+  height:42px;
   display:flex;
   align-items:center;
   justify-content:center;
   border-radius:12px;
-  background:#1c1c1c;
+  background:rgba(255,255,255,.08);
   cursor:pointer;
   transition:.25s;
 }
@@ -229,7 +274,7 @@ html{
 }
 
 .num.active{
-  background:linear-gradient(90deg,#ffcc00,#ff7b00);
+  background:linear-gradient(135deg,#ffcc00,#ff3b3b);
   color:#000;
   font-weight:bold;
 }
@@ -237,22 +282,24 @@ html{
 /* ================= REPORT ================= */
 #reportBtn{
   position:fixed;
-  top:15px;
-  right:15px;
-  width:42px;
-  height:42px;
+  top:16px;
+  right:16px;
+  width:44px;
+  height:44px;
   border-radius:50%;
-  background:#ff3b3b;
+  background:linear-gradient(135deg,#ff3b3b,#ff0055);
   display:flex;
   align-items:center;
   justify-content:center;
+  box-shadow:0 10px 20px rgba(255,59,59,.3);
   z-index:1001;
 }
 
 /* ================= FOOTER ================= */
 .footer{
-  padding:25px;
+  padding:30px;
   text-align:center;
-  background:#000;
-  color:#b5b5b5;
+  color:#aaa;
+  background:#050505;
+  border-top:1px solid rgba(255,255,255,.08);
 }

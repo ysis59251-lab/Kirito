@@ -252,51 +252,41 @@ function sortYear(){
 /* =========================
 PAGINATION
 ========================= */
+function renderPage(){
+const visible=cards.filter(c=>c.dataset.search!=="0" && c.dataset.hidden!=="1");
+
+const start=(currentPage-1)*perPage;
+const end=start+perPage;
+
+cards.forEach(c=>c.style.display="none");
+visible.slice(start,end).forEach(c=>c.style.display="");
+
+renderNumbers(visible.length);
+saveState();
+}
+
 function renderNumbers(total){
-  const box=document.getElementById("numberBox");
-  if(!box) return;
+const box=document.getElementById("numberBox");
+if(!box) return;
 
-  const pages=Math.ceil(total/perPage);
-  box.innerHTML="";
+const pages=Math.ceil(total/perPage);
+box.innerHTML="";
 
-  const pagesPerSet = 5;
+for(let i=1;i<=pages;i++){
+const b=document.createElement("button");
+b.textContent=i;
+if(i===currentPage) b.classList.add("active");
 
-  const currentSet = Math.ceil(currentPage / pagesPerSet);
+b.onclick=()=>{  
+  currentPage=i;  
+  renderPage();  
+  window.scrollTo({top:0,behavior:"smooth"});  
+};  
 
-  const start = (currentSet - 1) * pagesPerSet + 1;
-  let end = start + pagesPerSet - 1;
+box.appendChild(b);
 
-  if(end > pages) end = pages;
-
-  // ================= PREV =================
-  if(start > 1){
-    const prev=document.createElement("button");
-    prev.textContent="<";
-
-    prev.onclick=()=>{
-      currentPage = start - 1;
-      renderPage();
-      window.scrollTo({top:0,behavior:"smooth"});
-    };
-
-    box.appendChild(prev);
-  }
-
-  // ================= NUMBERS =================
-  for(let i=start;i<=end;i++){
-    const b=document.createElement("button");
-    b.textContent=i;
-
-    if(i===currentPage) b.classList.add("active");
-
-    b.onclick=()=>{
-      currentPage=i;
-      renderPage();
-      window.scrollTo({top:0,behavior:"smooth"});
-    };
-
-    box.appendChild(b);
-  }
+}
+}
 
   // ================= NEXT =================
   if(end < pages){

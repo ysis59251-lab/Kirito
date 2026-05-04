@@ -39,6 +39,14 @@ function saveState(){
   localStorage.setItem("lastTime", Date.now());
 }
 
+
+set(userRef, {
+  page: location.pathname,
+  title: document.title,
+  time: Date.now()
+});
+
+
 /* =========================
 FAB BUTTONS
 ========================= */
@@ -372,14 +380,6 @@ document.addEventListener("click", (e) => {
     saveState();
   }
 });
-
-
-set(userRef, {
-  page: location.pathname,
-  title: document.title,
-  time: Date.now()
-});
-
 
 /* =========================
 START

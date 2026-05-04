@@ -152,21 +152,17 @@ onValue(ref(db, "onlineUsers"), (snap) => {
   const box = document.getElementById("onlineList");
   box.innerHTML = "";
 
-  /* เก็บสถิติหน้า */
   const pageStats = {};
 
   for (let id in data) {
     const u = data[id];
 
-    /* ⛔ ลบคนตาย (เกิน 15 วิ) */
-    if (!u.time || now - u.time > 15000) {
-      remove(ref(db, "onlineUsers/" + id));
-      continue;
-    }
+    // ตัดคนตาย
+    if (!u.time || now - u.time > 15000) continue;
 
     count++;
 
-    /* 📊 เก็บสถิติ */
+    // รวมสถิติทุกหน้า
     pageStats[u.title] = (pageStats[u.title] || 0) + 1;
 
     box.innerHTML += `
@@ -180,22 +176,19 @@ onValue(ref(db, "onlineUsers"), (snap) => {
 
   document.getElementById("onlineCount").textContent = count;
 
-  /* ===== TOP PAGE ===== */
+  // 🔥 TOP อนิเมะ
   const topBox = document.getElementById("topPage");
-  if(topBox){
-    let html = "<h4>🔥 กำลังฮิตตอนนี้</h4>";
+  let html = "<h4>🔥 อนิเมะคนดูสด</h4>";
 
-    Object.entries(pageStats)
-      .sort((a,b)=>b[1]-a[1])
-      .slice(0,5)
-      .forEach(([name,val])=>{
-        html += `📺 ${name} (${val})<br>`;
-      });
+  Object.entries(pageStats)
+    .sort((a,b)=>b[1]-a[1])
+    .slice(0,5)
+    .forEach(([name,val])=>{
+      html += `📺 ${name} (${val})<br>`;
+    });
 
-    topBox.innerHTML = html;
-  }
+  topBox.innerHTML = html;
 });
-</script>
 
 </script>
 

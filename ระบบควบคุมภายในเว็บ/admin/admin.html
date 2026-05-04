@@ -116,7 +116,7 @@ import {
   remove
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* ===== CONFIG ===== */
+/* ================= FIX CONFIG ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyCUxv...",
   authDomain: "reader-4a13f.firebaseapp.com",
@@ -124,20 +124,19 @@ const firebaseConfig = {
   projectId: "reader-4a13f",
   storageBucket: "reader-4a13f.firebasestorage.app",
   messagingSenderId: "220776049054",
-  appId: "1:220776049054:web:53524fb1e90ba83a12ce8f"}:
+  appId: "1:220776049054:web:53524fb1e90ba83a12ce8f"
+};
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ===== SESSION ID ===== */
+/* ================= USER ================= */
 const sid = sessionStorage.getItem("sid") || crypto.randomUUID();
 sessionStorage.setItem("sid", sid);
 
 const userRef = ref(db, "onlineUsers/" + sid);
 
-/* =========================
-  ONLINE UPDATE (HEARTBEAT)
-========================= */
+/* ================= HEARTBEAT ================= */
 function updateUser(){
   set(userRef, {
     page: location.pathname,
@@ -147,38 +146,14 @@ function updateUser(){
 }
 
 updateUser();
-setInterval(updateUser, 10000);
+setInterval(updateUser, 8000);
 onDisconnect(userRef).remove();
 
-/* =========================
-  CLEAN OFFLINE USERS
-========================= */
-function cleanOffline(){
-  const now = Date.now();
-
-  onValue(ref(db,"onlineUsers"), (snap) => {
-    const data = snap.val() || {};
-
-    for(let id in data){
-      const u = data[id];
-      if(!u.time || now - u.time > 15000){
-        remove(ref(db,"onlineUsers/" + id));
-      }
-    }
-
-    alert("ล้างเรียบร้อย");
-  }, { onlyOnce:true });
-}
-
-/* =========================
-  DISPLAY DASHBOARD
-========================= */
+/* ================= DASHBOARD ================= */
 onValue(ref(db,"onlineUsers"), (snap) => {
 
   const data = snap.val() || {};
   const now = Date.now();
-
-  let count = 0;
 
   const box = document.getElementById("onlineList");
   const countEl = document.getElementById("onlineCount");
@@ -187,24 +162,22 @@ onValue(ref(db,"onlineUsers"), (snap) => {
 
   if(box) box.innerHTML = "";
 
+  let count = 0;
   const pageStats = {};
   const pageCount = {};
 
   for(let id in data){
     const u = data[id];
 
-    /* 💀 ลบคนค้าง */
+    // ลบคนตาย
     if(!u.time || now - u.time > 15000){
-      remove(ref(db,"onlineUsers/" + id));
+      remove(ref(db,"onlineUsers/"+id));
       continue;
     }
 
     count++;
 
-    /* 📺 top anime */
     pageStats[u.title] = (pageStats[u.title] || 0) + 1;
-
-    /* 📄 page count */
     pageCount[u.page] = (pageCount[u.page] || 0) + 1;
 
     if(box){
@@ -218,51 +191,41 @@ onValue(ref(db,"onlineUsers"), (snap) => {
     }
   }
 
-  /* =========================
-    ONLINE COUNT
-  ========================= */
-  if(countEl){
-    countEl.textContent = count;
-  }
+  if(countEl) countEl.textContent = count;
 
-  /* =========================
-    TOP ANIME
-  ========================= */
   if(topBox){
-    let html = "<h4>🔥 อนิเมะคนดูสด</h4>";
-
-    Object.entries(pageStats)
-      .sort((a,b)=>b[1]-a[1])
-      .slice(0,5)
-      .forEach(([name,val])=>{
-        html += `📺 ${name} (${val})<br>`;
-      });
-
-    topBox.innerHTML = html;
+    topBox.innerHTML =
+      "<h4>🔥 Top คนดู</h4>" +
+      Object.entries(pageStats)
+        .sort((a,b)=>b[1]-a[1])
+        .slice(0,5)
+        .map(([n,v])=>`📺 ${n} (${v})`)
+        .join("<br>");
   }
 
-  /* =========================
-    PAGE STATS
-  ========================= */
   if(pageList){
-    pageList.innerHTML = "";
-
-    Object.entries(pageCount)
-      .sort((a,b)=>b[1]-a[1])
-      .forEach(([page,count])=>{
-        pageList.innerHTML += `
-          📄 ${page} : ${count} คน<br>
-        `;
-      });
+    pageList.innerHTML =
+      Object.entries(pageCount)
+        .sort((a,b)=>b[1]-a[1])
+        .map(([p,c])=>`📄 ${p} : ${c} คน`)
+        .join("<br>");
   }
-
 });
 
-/* =========================
-  CLEAN FUNCTION GLOBAL
-========================= */
-window.cleanOffline = cleanOffline;
+/* ================= GLOBAL ================= */
+window.cleanOffline = function(){
+  const now = Date.now();
 
+  onValue(ref(db,"onlineUsers"), snap=>{
+    const data = snap.val() || {};
+    for(let id in data){
+      if(!data[id].time || now - data[id].time > 15000){
+        remove(ref(db,"onlineUsers/"+id));
+      }
+    }
+    alert("ล้างเรียบร้อย");
+  }, {onlyOnce:true});
+};
 </script>
 
 </body>

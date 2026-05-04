@@ -39,14 +39,6 @@ function saveState(){
   localStorage.setItem("lastTime", Date.now());
 }
 
-
-set(userRef, {
-  page: location.pathname,
-  title: document.title,
-  time: Date.now()
-});
-
-
 /* =========================
 FAB BUTTONS
 ========================= */
@@ -104,12 +96,30 @@ ONLINE USERS
 ========================= */
 function initOnline(){
   try{
-    const userRef = push(ref(db,"onlineUsers"));
-    set(userRef,{
-      page: location.pathname,
-      time: Date.now()
-    });
+    // 🔥 สร้าง ID เดียวต่อคน
+    const sid = sessionStorage.getItem("sid") || crypto.randomUUID();
+    sessionStorage.setItem("sid", sid);
+
+    const userRef = ref(db,"onlineUsers/" + sid);
+
+    // 🔥 ฟังก์ชันอัปเดต
+    function updateUser(){
+      set(userRef,{
+        page: location.pathname,
+        title: document.title,
+        time: Date.now()
+      });
+    }
+
+    // เข้าเว็บ
+    updateUser();
+
+    // 🔥 อัปเดตทุก 10 วิ
+    setInterval(updateUser, 10000);
+
+    // ออกเว็บ
     onDisconnect(userRef).remove();
+
   }catch(e){
     console.error("online error", e);
   }

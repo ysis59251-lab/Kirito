@@ -116,7 +116,7 @@ import {
   remove
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* ================= FIX CONFIG ================= */
+/* ================= CONFIG ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyCUxv...",
   authDomain: "reader-4a13f.firebaseapp.com",
@@ -136,12 +136,16 @@ sessionStorage.setItem("sid", sid);
 
 const userRef = ref(db, "onlineUsers/" + sid);
 
+/* ================= ADMIN MODE ================= */
+const isAdmin = true; // 👈 เปิด/ปิดโหมดแอดมินตรงนี้
+
 /* ================= HEARTBEAT ================= */
 function updateUser(){
   set(userRef, {
     page: location.pathname,
-    title: document.title,
-    time: Date.now()
+    title: isAdmin ? "ADMIN" : document.title,
+    time: Date.now(),
+    role: isAdmin ? "admin" : "user"
   });
 }
 
@@ -166,14 +170,18 @@ onValue(ref(db,"onlineUsers"), (snap) => {
   const pageStats = {};
   const pageCount = {};
 
+  /* ================= LOOP USERS ================= */
   for(let id in data){
     const u = data[id];
 
-    // ลบคนตาย
+    // 💀 ลบคนตาย
     if(!u.time || now - u.time > 15000){
-      remove(ref(db,"onlineUsers/"+id));
+      remove(ref(db,"onlineUsers/" + id));
       continue;
     }
+
+    // 🚫 กัน admin ออกจากระบบสถิติ
+    if(u.role === "admin") continue;
 
     count++;
 
@@ -191,8 +199,12 @@ onValue(ref(db,"onlineUsers"), (snap) => {
     }
   }
 
-  if(countEl) countEl.textContent = count;
+  /* ================= ONLINE COUNT ================= */
+  if(countEl){
+    countEl.textContent = count;
+  }
 
+  /* ================= TOP PAGE ================= */
   if(topBox){
     topBox.innerHTML =
       "<h4>🔥 Top คนดู</h4>" +
@@ -203,6 +215,7 @@ onValue(ref(db,"onlineUsers"), (snap) => {
         .join("<br>");
   }
 
+  /* ================= PAGE STATS ================= */
   if(pageList){
     pageList.innerHTML =
       Object.entries(pageCount)
@@ -210,22 +223,26 @@ onValue(ref(db,"onlineUsers"), (snap) => {
         .map(([p,c])=>`📄 ${p} : ${c} คน`)
         .join("<br>");
   }
+
 });
 
-/* ================= GLOBAL ================= */
+/* ================= CLEAN OFFLINE ================= */
 window.cleanOffline = function(){
   const now = Date.now();
 
   onValue(ref(db,"onlineUsers"), snap=>{
     const data = snap.val() || {};
+
     for(let id in data){
       if(!data[id].time || now - data[id].time > 15000){
         remove(ref(db,"onlineUsers/"+id));
       }
     }
+
     alert("ล้างเรียบร้อย");
   }, {onlyOnce:true});
 };
+
 </script>
 
 </body>

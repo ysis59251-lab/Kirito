@@ -81,6 +81,15 @@ input{
   <div id="topPage"></div>
 </div>
 
+<div class="card">
+  <button onclick="cleanOffline()">🧹 ล้างคนออฟไลน์</button>
+</div>
+
+<div class="card">
+  <h4>📄 คนต่อหน้า</h4>
+  <div id="pageList"></div>
+</div>
+
 <!-- 🔎 SEARCH -->
 <div class="card">
   <h3>ค้นหา</h3>
@@ -125,7 +134,9 @@ sessionStorage.setItem("sid", sid);
 
 const userRef = ref(db, "onlineUsers/" + sid);
 
-/* ===== UPDATE USER (Heartbeat) ===== */
+/* =========================
+  ONLINE UPDATE (HEARTBEAT)
+========================= */
 function updateUser(){
   set(userRef, {
     page: location.pathname,
@@ -134,38 +145,66 @@ function updateUser(){
   });
 }
 
-/* เข้าเว็บ */
 updateUser();
-
-/* อัปเดตทุก 10 วิ กันค้าง */
 setInterval(updateUser, 10000);
-
-/* ออกเว็บ */
 onDisconnect(userRef).remove();
 
-/* ===== DISPLAY ===== */
-onValue(ref(db, "onlineUsers"), (snap) => {
+/* =========================
+  CLEAN OFFLINE USERS
+========================= */
+function cleanOffline(){
+  const now = Date.now();
+
+  onValue(ref(db,"onlineUsers"), (snap) => {
+    const data = snap.val() || {};
+
+    for(let id in data){
+      const u = data[id];
+      if(!u.time || now - u.time > 15000){
+        remove(ref(db,"onlineUsers/" + id));
+      }
+    }
+
+    alert("ล้างเรียบร้อย");
+  }, { onlyOnce:true });
+}
+
+/* =========================
+  DISPLAY DASHBOARD
+========================= */
+onValue(ref(db,"onlineUsers"), (snap) => {
+
   const data = snap.val() || {};
   const now = Date.now();
 
   let count = 0;
+
   const box = document.getElementById("onlineList");
+  const countEl = document.getElementById("onlineCount");
+  const topBox = document.getElementById("topPage");
+  const pageList = document.getElementById("pageList");
+
   if(box) box.innerHTML = "";
 
   const pageStats = {};
+  const pageCount = {};
 
-  for (let id in data) {
+  for(let id in data){
     const u = data[id];
 
-    // 💀 ลบคนค้างจริง
-    if (!u.time || now - u.time > 15000) {
-      remove(ref(db, "onlineUsers/" + id));
+    /* 💀 ลบคนค้าง */
+    if(!u.time || now - u.time > 15000){
+      remove(ref(db,"onlineUsers/" + id));
       continue;
     }
 
     count++;
 
+    /* 📺 top anime */
     pageStats[u.title] = (pageStats[u.title] || 0) + 1;
+
+    /* 📄 page count */
+    pageCount[u.page] = (pageCount[u.page] || 0) + 1;
 
     if(box){
       box.innerHTML += `
@@ -178,10 +217,16 @@ onValue(ref(db, "onlineUsers"), (snap) => {
     }
   }
 
-  const countEl = document.getElementById("onlineCount");
-  if(countEl) countEl.textContent = count;
+  /* =========================
+    ONLINE COUNT
+  ========================= */
+  if(countEl){
+    countEl.textContent = count;
+  }
 
-  const topBox = document.getElementById("topPage");
+  /* =========================
+    TOP ANIME
+  ========================= */
   if(topBox){
     let html = "<h4>🔥 อนิเมะคนดูสด</h4>";
 
@@ -194,7 +239,30 @@ onValue(ref(db, "onlineUsers"), (snap) => {
 
     topBox.innerHTML = html;
   }
+
+  /* =========================
+    PAGE STATS
+  ========================= */
+  if(pageList){
+    pageList.innerHTML = "";
+
+    Object.entries(pageCount)
+      .sort((a,b)=>b[1]-a[1])
+      .forEach(([page,count])=>{
+        pageList.innerHTML += `
+          📄 ${page} : ${count} คน<br>
+        `;
+      });
+  }
+
 });
+
+/* =========================
+  CLEAN FUNCTION GLOBAL
+========================= */
+window.cleanOffline = cleanOffline;
+
+</script>
 
 </script>
 

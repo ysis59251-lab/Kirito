@@ -150,47 +150,50 @@ onValue(ref(db, "onlineUsers"), (snap) => {
 
   let count = 0;
   const box = document.getElementById("onlineList");
-  box.innerHTML = "";
+  if(box) box.innerHTML = "";
 
   const pageStats = {};
 
   for (let id in data) {
     const u = data[id];
 
-    // ตัดคนตาย
+    // 💀 ลบคนค้างจริง
     if (!u.time || now - u.time > 15000) {
-  remove(ref(db, "onlineUsers/" + id));
-  continue;
-}
+      remove(ref(db, "onlineUsers/" + id));
+      continue;
+    }
 
     count++;
 
-    // รวมสถิติทุกหน้า
     pageStats[u.title] = (pageStats[u.title] || 0) + 1;
 
-    box.innerHTML += `
-      <div style="padding:6px;border-bottom:1px solid #333">
-        👤 ${id}<br>
-        📺 ${u.title}<br>
-        📄 ${u.page}
-      </div>
-    `;
+    if(box){
+      box.innerHTML += `
+        <div style="padding:6px;border-bottom:1px solid #333">
+          👤 ${id}<br>
+          📺 ${u.title}<br>
+          📄 ${u.page}
+        </div>
+      `;
+    }
   }
 
-  document.getElementById("onlineCount").textContent = count;
+  const countEl = document.getElementById("onlineCount");
+  if(countEl) countEl.textContent = count;
 
-  // 🔥 TOP อนิเมะ
   const topBox = document.getElementById("topPage");
-  let html = "<h4>🔥 อนิเมะคนดูสด</h4>";
+  if(topBox){
+    let html = "<h4>🔥 อนิเมะคนดูสด</h4>";
 
-  Object.entries(pageStats)
-    .sort((a,b)=>b[1]-a[1])
-    .slice(0,5)
-    .forEach(([name,val])=>{
-      html += `📺 ${name} (${val})<br>`;
-    });
+    Object.entries(pageStats)
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,5)
+      .forEach(([name,val])=>{
+        html += `📺 ${name} (${val})<br>`;
+      });
 
-  topBox.innerHTML = html;
+    topBox.innerHTML = html;
+  }
 });
 
 </script>

@@ -177,123 +177,87 @@ for(let i=1;i<=30;i++){
 const API = "https://script.google.com/macros/s/AKfycbxWBZkZyb5NRdMXLkBpwCX-zvDEc2BFSZFPzazKpyWsMSYlD0A7TL8GUP_Esy5MBbbNhg/exec";
 
 /* =========================
-   ELEMENTS
+   ELEMENTS (โหลดหลัง DOM)
 ========================= */
-const btn = document.querySelector("#sendBtn");
+document.addEventListener("DOMContentLoaded", () => {
 
-const animeInput   = document.getElementById("anime");
-const nameInput    = document.getElementById("name");
-const episodeInput = document.getElementById("episode");
-const videoInput   = document.getElementById("video_url");
-const descInput    = document.getElementById("desc");
-const coverInput   = document.getElementById("cover");
+  const btn = document.getElementById("sendBtn");
 
-const popup = document.getElementById("popup");
-const text  = document.getElementById("popupText");
+  const animeInput   = document.getElementById("anime");
+  const nameInput    = document.getElementById("name");
+  const episodeInput = document.getElementById("episode");
+  const videoInput   = document.getElementById("video_url");
+  const descInput    = document.getElementById("desc");
+  const coverInput   = document.getElementById("cover");
 
-/* =========================
-   LANG
-========================= */
-function getLangs(){
-  return document.querySelectorAll('.lang-box input:checked');
-}
+  const popup = document.getElementById("popup");
+  const text  = document.getElementById("popupText");
 
-/* =========================
-   TOOLS
-========================= */
-function clearInput(){
-  videoInput.value = "";
-}
-
-async function pasteText(){
-  try {
-    const clip = await navigator.clipboard.readText();
-    videoInput.value = clip;
-  } catch {
-    alert("เบราว์เซอร์ไม่อนุญาต clipboard");
-  }
-}
-
-/* =========================
-   EPISODE CONTROL
-========================= */
-function changeEp(step){
-  let val = parseInt(episodeInput.value);
-
-  if(isNaN(val)) val = 1;
-
-  val += step;
-
-  if(val < 1) val = 1;
-  if(val > 30) val = 30;
-
-  episodeInput.value = val;
-}
-
-/* =========================
-   SEND
-========================= */
-async function send(){
-
-  btn.disabled = true;
-  popup.style.display = "flex";
-  text.innerText = "⏳ กำลังส่ง...";
-
-  try{
-
-    const langs = getLangs();
-
-    if(langs.length === 0){
-      throw new Error("no lang");
-    }
-
-    for(let lang of langs){
-
-      const data = {
-        anime: animeInput.value,
-        name: nameInput.value,
-        episode: episodeInput.value,
-        title: lang.value,
-        video_url: videoInput.value,
-        desc: descInput.value,
-        cover: coverInput.value
-      };
-
-      await fetch(API, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(data)
-      });
-
-    }
-
-    text.innerText = "✅ ส่งแล้ว!";
-    clearInput();
-
-  }catch(e){
-    text.innerText = "❌ ส่งไม่สำเร็จ";
-    console.error(e);
+  function getLangs(){
+    return document.querySelectorAll('.lang-box input:checked');
   }
 
-  setTimeout(()=>{
-    popup.style.display = "none";
-    btn.disabled = false;
-  },1200);
-}
+  function clearInput(){
+    videoInput.value = "";
+  }
 
-/* =========================
-   POPUP
-========================= */
-function show(msg){
-  popup.style.display = "flex";
-  text.innerText = msg;
+  async function send(){
 
-  setTimeout(()=>{
-    popup.style.display = "none";
-  },1200);
-}
+    btn.disabled = true;
+    popup.style.display = "flex";
+    text.innerText = "⏳ กำลังส่ง...";
+
+    try{
+
+      const langs = getLangs();
+
+      if(langs.length === 0){
+        throw new Error("no lang");
+      }
+
+      // ส่งพร้อมกัน เร็วกว่า
+      await Promise.all(
+        Array.from(langs).map(lang => {
+
+          const data = {
+            anime: animeInput.value.trim(),
+            name: nameInput.value.trim(),
+            episode: episodeInput.value.trim(),
+            title: lang.value,
+            video_url: videoInput.value.trim(),
+            desc: descInput.value.trim(),
+            cover: coverInput.value.trim()
+          };
+
+          return fetch(API, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+          });
+
+        })
+      );
+
+      text.innerText = "✅ ส่งแล้ว!";
+      clearInput();
+
+    }catch(e){
+      text.innerText = "❌ ส่งไม่สำเร็จ";
+      console.error(e);
+    }
+
+    setTimeout(()=>{
+      popup.style.display = "none";
+      btn.disabled = false;
+    },1200);
+  }
+
+  // ผูกปุ่ม
+  btn.addEventListener("click", send);
+
+});
 </script>
 
 </body>

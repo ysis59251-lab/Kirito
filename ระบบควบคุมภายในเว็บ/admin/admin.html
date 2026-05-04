@@ -158,7 +158,10 @@ onValue(ref(db, "onlineUsers"), (snap) => {
     const u = data[id];
 
     // ตัดคนตาย
-    if (!u.time || now - u.time > 15000) continue;
+    if (!u.time || now - u.time > 15000) {
+  remove(ref(db, "onlineUsers/" + id));
+  continue;
+}
 
     count++;
 

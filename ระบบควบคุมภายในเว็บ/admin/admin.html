@@ -93,18 +93,17 @@ input{
 
 <!-- ================= FIREBASE ================= -->
 <script type="module">
-
-/* ========= IMPORT (รวมให้ถูก ไม่ซ้อน) ========= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getDatabase,
   ref,
   onValue,
   set,
-  onDisconnect
+  onDisconnect,
+  remove
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* ========= CONFIG ========= */
+/* ===== CONFIG ===== */
 const firebaseConfig = {
   apiKey: "AIzaSyAlhHlFFuDRtFmWEFzCfZc-m4vI3V2Nqeg",
   authDomain: "mpmp-5864a.firebaseapp.com",
@@ -116,47 +115,83 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ========= ONLINE SYSTEM ========= */
+/* ===== SESSION ID ===== */
 const sid = sessionStorage.getItem("sid") || crypto.randomUUID();
 sessionStorage.setItem("sid", sid);
 
 const userRef = ref(db, "onlineUsers/" + sid);
 
+/* ===== UPDATE USER (Heartbeat) ===== */
+function updateUser(){
+  set(userRef, {
+    page: location.pathname,
+    title: document.title,
+    time: Date.now()
+  });
+}
+
 /* เข้าเว็บ */
-set(userRef, {
-  page: location.pathname,
-  time: Date.now()
-});
+updateUser();
+
+/* อัปเดตทุก 10 วิ กันค้าง */
+setInterval(updateUser, 10000);
 
 /* ออกเว็บ */
 onDisconnect(userRef).remove();
 
-/* นับ + แสดง */
+/* ===== DISPLAY ===== */
 onValue(ref(db, "onlineUsers"), (snap) => {
   const data = snap.val() || {};
+  const now = Date.now();
 
-  document.getElementById("onlineCount").textContent =
-    Object.keys(data).length;
-
+  let count = 0;
   const box = document.getElementById("onlineList");
   box.innerHTML = "";
+
+  /* เก็บสถิติหน้า */
+  const pageStats = {};
 
   for (let id in data) {
     const u = data[id];
 
+    /* ⛔ ลบคนตาย (เกิน 15 วิ) */
+    if (!u.time || now - u.time > 15000) {
+      remove(ref(db, "onlineUsers/" + id));
+      continue;
+    }
+
+    count++;
+
+    /* 📊 เก็บสถิติ */
+    pageStats[u.title] = (pageStats[u.title] || 0) + 1;
+
     box.innerHTML += `
       <div style="padding:6px;border-bottom:1px solid #333">
         👤 ${id}<br>
+        📺 ${u.title}<br>
         📄 ${u.page}
       </div>
     `;
   }
-});
 
-/* ========= SEARCH (ตัวอย่างสั้น) ========= */
-window.searchAnime = function(){
-  console.log("search...");
-};
+  document.getElementById("onlineCount").textContent = count;
+
+  /* ===== TOP PAGE ===== */
+  const topBox = document.getElementById("topPage");
+  if(topBox){
+    let html = "<h4>🔥 กำลังฮิตตอนนี้</h4>";
+
+    Object.entries(pageStats)
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,5)
+      .forEach(([name,val])=>{
+        html += `📺 ${name} (${val})<br>`;
+      });
+
+    topBox.innerHTML = html;
+  }
+});
+</script>
 
 </script>
 

@@ -1,4 +1,3 @@
-<!-- ================= HTML ================= -->
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -7,10 +6,6 @@
 <title>Anime Admin Dashboard</title>
 
 <style>
-/* =========================
-   LAYOUT SPLIT ADMIN
-========================= */
-
 body{
   margin:0;
   font-family:system-ui;
@@ -20,125 +15,89 @@ body{
   overflow:hidden;
 }
 
-/* ===== MAIN WRAPPER ===== */
-.wrapper{
-  display:flex;
-  height:100vh;
-}
+.wrapper{display:flex;height:100vh;}
 
-/* =========================
-   LEFT MENU
-========================= */
 .sidebar{
-  width:280px;
+  width:260px;
   background:rgba(255,255,255,0.05);
   border-right:1px solid rgba(255,255,255,0.1);
-  backdrop-filter: blur(10px);
-
+  padding:14px;
   display:flex;
   flex-direction:column;
-  padding:14px;
   gap:10px;
-
-  overflow-y:auto;
 }
 
-/* MENU ITEM */
 .menu-item{
   padding:12px;
   border-radius:12px;
-  background:rgba(255,255,255,0.04);
-  border:1px solid rgba(255,255,255,0.08);
-
+  background:rgba(255,255,255,0.05);
   cursor:pointer;
   transition:0.2s;
-  user-select:none;
 }
 
 .menu-item:hover{
-  background:rgba(0,212,255,0.15);
-  border-color:#00d4ff;
-  transform:translateX(4px);
+  background:#00d4ff22;
 }
 
-/* ACTIVE */
 .menu-item.active{
   background:linear-gradient(90deg,#ff2e88,#00d4ff);
   color:#000;
   font-weight:bold;
 }
 
-/* =========================
-   RIGHT CONTENT
-========================= */
 .content{
   flex:1;
   padding:16px;
-  overflow-y:auto;
-  background:radial-gradient(circle at top,#1a1d3a,#0b0c14 60%);
+  overflow:auto;
 }
 
-/* CARD INSIDE CONTENT */
 .panel{
+  display:none;
   background:rgba(255,255,255,0.05);
-  border:1px solid rgba(255,255,255,0.1);
-  border-radius:16px;
   padding:16px;
-  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+  border-radius:16px;
+  border:1px solid rgba(255,255,255,0.1);
 }
 
-/* ONLINE BOX STYLE */
-.user-box{
-  padding:8px;
-  border-bottom:1px solid rgba(255,255,255,0.1);
-  font-size:13px;
-}
-
-/* TOP BAR TITLE */
-.title{
-  font-size:18px;
-  font-weight:bold;
-  margin-bottom:10px;
-}
-
-/* =========================
-   MOBILE FIX
-========================= */
-@media (max-width: 768px){
-  .sidebar{
-    width:200px;
-  }
+.panel.active{
+  display:block;
 }
 </style>
 </head>
 
 <body>
 
-<header>🔥 Anime Admin Dashboard</header>
-
 <div class="wrapper">
 
-  <!-- LEFT MENU -->
-  <div class="sidebar">
-    <div class="menu-item active" onclick="showPage('online')">👥 คนออนไลน์</div>
-    <div class="menu-item" onclick="showPage('top')">🔥 Top Anime</div>
-    <div class="menu-item" onclick="showPage('page')">📄 Page Stats</div>
+<!-- LEFT -->
+<div class="sidebar">
+  <div class="menu-item active" onclick="showPage('online')">👥 คนออนไลน์</div>
+  <div class="menu-item" onclick="showPage('top')">🔥 Top Anime</div>
+  <div class="menu-item" onclick="showPage('page')">📄 Page Stats</div>
+</div>
+
+<!-- RIGHT -->
+<div class="content">
+
+  <div id="page-online" class="panel active">
+    <h3>👥 Online Users</h3>
+    <div id="onlineList"></div>
+    <h4>รวม: <span id="onlineCount">0</span></h4>
   </div>
 
-  <!-- RIGHT CONTENT -->
-  <div class="content">
+  <div id="page-top" class="panel">
+    <h3>🔥 Top Anime</h3>
+    <div id="topPage"></div>
+  </div>
 
-    <div id="page-online" class="panel">...</div>
-
-    <div id="page-top" class="panel" style="display:none">...</div>
-
-    <div id="page-page" class="panel" style="display:none">...</div>
-
+  <div id="page-page" class="panel">
+    <h3>📄 Page Stats</h3>
+    <div id="pageList"></div>
   </div>
 
 </div>
+</div>
 
-<!-- ================= FIREBASE ================= -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
@@ -168,18 +127,15 @@ const db = getDatabase(app);
 const sid = sessionStorage.getItem("sid") || crypto.randomUUID();
 sessionStorage.setItem("sid", sid);
 
-const userRef = ref(db, "onlineUsers/" + sid);
-
-/* ================= ADMIN MODE ================= */
-const isAdmin = true; // 👈 เปิด/ปิดโหมดแอดมินตรงนี้
+const userRef = ref(db,"onlineUsers/"+sid);
 
 /* ================= HEARTBEAT ================= */
 function updateUser(){
-  set(userRef, {
+  set(userRef,{
     page: location.pathname,
-    title: isAdmin ? "ADMIN" : document.title,
+    title: document.title,
     time: Date.now(),
-    role: isAdmin ? "admin" : "user"
+    role: "user"
   });
 }
 
@@ -187,111 +143,79 @@ updateUser();
 setInterval(updateUser, 8000);
 onDisconnect(userRef).remove();
 
-/* ================= DASHBOARD ================= */
-onValue(ref(db,"onlineUsers"), (snap) => {
+/* ================= PAGE SWITCH ================= */
+window.showPage = function(page){
 
-  const data = snap.val() || {};
-  const now = Date.now();
-
-  const box = document.getElementById("onlineList");
-  const countEl = document.getElementById("onlineCount");
-  const topBox = document.getElementById("topPage");
-  const pageList = document.getElementById("pageList");
-
-  if(box) box.innerHTML = "";
-
-  let count = 0;
-  const pageStats = {};
-  const pageCount = {};
-
-  /* ================= LOOP USERS ================= */
-  for(let id in data){
-    const u = data[id];
-
-    // 💀 ลบคนตาย
-    if(!u.time || now - u.time > 15000){
-      remove(ref(db,"onlineUsers/" + id));
-      continue;
-    }
-
-    // 🚫 กัน admin ออกจากระบบสถิติ
-    if(u.role === "admin") continue;
-
-    count++;
-
-    pageStats[u.title] = (pageStats[u.title] || 0) + 1;
-    pageCount[u.page] = (pageCount[u.page] || 0) + 1;
-
-    if(box){
-      box.innerHTML += `
-        <div style="padding:6px;border-bottom:1px solid #333">
-          👤 ${id}<br>
-          📺 ${u.title}<br>
-          📄 ${u.page}
-        </div>
-      `;
-    }
-  }
-
-
-function showPage(page){
-
-  document.querySelectorAll(".panel").forEach(p => {
-    p.style.display = "none";
+  document.querySelectorAll(".panel").forEach(p=>{
+    p.classList.remove("active");
   });
 
-  document.getElementById("page-"+page).style.display = "block";
+  document.getElementById("page-"+page).classList.add("active");
 
   document.querySelectorAll(".menu-item").forEach(m=>{
     m.classList.remove("active");
   });
 
   event.target.classList.add("active");
-}
-  /* ================= ONLINE COUNT ================= */
-  if(countEl){
-    countEl.textContent = count;
+};
+
+/* ================= REALTIME ================= */
+onValue(ref(db,"onlineUsers"), snap=>{
+
+  const data = snap.val() || {};
+  const now = Date.now();
+
+  let count = 0;
+  const pageStats = {};
+  const pageCount = {};
+
+  const onlineList = document.getElementById("onlineList");
+  const onlineCount = document.getElementById("onlineCount");
+  const topPage = document.getElementById("topPage");
+  const pageList = document.getElementById("pageList");
+
+  if(onlineList) onlineList.innerHTML = "";
+
+  for(let id in data){
+    const u = data[id];
+
+    if(!u.time || now - u.time > 15000){
+      remove(ref(db,"onlineUsers/"+id));
+      continue;
+    }
+
+    count++;
+
+    pageStats[u.title] = (pageStats[u.title]||0)+1;
+    pageCount[u.page] = (pageCount[u.page]||0)+1;
+
+    if(onlineList){
+      onlineList.innerHTML += `
+        👤 ${id}<br>
+        📺 ${u.title}<br>
+        📄 ${u.page}<hr>
+      `;
+    }
   }
 
-  /* ================= TOP PAGE ================= */
-  if(topBox){
-    topBox.innerHTML =
-      "<h4>🔥 Top คนดู</h4>" +
-      Object.entries(pageStats)
-        .sort((a,b)=>b[1]-a[1])
-        .slice(0,5)
-        .map(([n,v])=>`📺 ${n} (${v})`)
-        .join("<br>");
+  if(onlineCount) onlineCount.textContent = count;
+
+  if(topPage){
+    topPage.innerHTML = Object.entries(pageStats)
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,5)
+      .map(([n,v])=>`📺 ${n} (${v})`)
+      .join("<br>");
   }
 
-  /* ================= PAGE STATS ================= */
   if(pageList){
-    pageList.innerHTML =
-      Object.entries(pageCount)
-        .sort((a,b)=>b[1]-a[1])
-        .map(([p,c])=>`📄 ${p} : ${c} คน`)
-        .join("<br>");
+    pageList.innerHTML = Object.entries(pageCount)
+      .sort((a,b)=>b[1]-a[1])
+      .map(([p,c])=>`📄 ${p} : ${c}`)
+      .join("<br>");
   }
 
 });
-
-/* ================= CLEAN OFFLINE ================= */
-window.cleanOffline = function(){
-  const now = Date.now();
-
-  onValue(ref(db,"onlineUsers"), snap=>{
-    const data = snap.val() || {};
-
-    for(let id in data){
-      if(!data[id].time || now - data[id].time > 15000){
-        remove(ref(db,"onlineUsers/"+id));
-      }
-    }
-
-    alert("ล้างเรียบร้อย");
-  }, {onlyOnce:true});
-};
-
 </script>
 
 </body>

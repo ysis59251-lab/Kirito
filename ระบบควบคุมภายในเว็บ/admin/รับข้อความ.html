@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Report Inbox</title>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui;
+  background:#0b0c14;
+  color:#fff;
+}
+
+header{
+  padding:14px;
+  background:#111428;
+  position:sticky;
+  top:0;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+}
+
+.container{
+  padding:14px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.report{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  padding:12px;
+  border-radius:12px;
+}
+
+.report small{
+  color:#aaa;
+}
+
+.actions{
+  margin-top:8px;
+  display:flex;
+  gap:8px;
+}
+
+button{
+  border:none;
+  padding:6px 10px;
+  border-radius:8px;
+  cursor:pointer;
+}
+
+.read{
+  background:#00c6ff;
+  color:#000;
+}
+
+.delete{
+  background:#ff3b3b;
+  color:#fff;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  📩 Report Inbox
+</header>
+
+<div class="container" id="box">
+  กำลังโหลด...
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  remove,
+  update
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+/* ===== FIREBASE ===== */
+const firebaseConfig = {
+  apiKey: "AIzaSyCUxv...",
+  authDomain: "reader-4a13f.firebaseapp.com",
+  databaseURL: "https://reader-4a13f-default-rtdb.firebaseio.com",
+  projectId: "reader-4a13f",
+  storageBucket: "reader-4a13f.firebasestorage.app",
+  messagingSenderId: "220776049054",
+  appId: "1:220776049054:web:53524fb1e90ba83a12ce8f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* ===== LOAD REPORT ===== */
+onValue(ref(db,"reports"), snap=>{
+  const data = snap.val() || {};
+  const box = document.getElementById("box");
+
+  if(Object.keys(data).length === 0){
+    box.innerHTML = "ไม่มีรายงาน";
+    return;
+  }
+
+  box.innerHTML = "";
+
+  Object.entries(data).reverse().forEach(([id,r])=>{
+
+    const div = document.createElement("div");
+    div.className = "report";
+
+    div.innerHTML = `
+      <div class="topbar">
+        <b>${r.page || "unknown"}</b>
+        <small>${new Date(r.time).toLocaleString()}</small>
+      </div>
+
+      <div style="margin-top:6px">
+        📝 ${r.detail}
+      </div>
+
+      <small style="color:#888">
+        🌐 ${r.language || "-"} | 📱 ${r.screen || "-"}
+      </small>
+
+      <div class="actions">
+        <button class="read">✔ อ่านแล้ว</button>
+        <button class="delete">🗑 ลบ</button>
+      </div>
+    `;
+
+    /* ===== MARK READ ===== */
+    div.querySelector(".read").onclick = () => {
+      update(ref(db,"reports/"+id), {
+        read:true
+      });
+    };
+
+    /* ===== DELETE ===== */
+    div.querySelector(".delete").onclick = () => {
+      remove(ref(db,"reports/"+id));
+    };
+
+    /* ===== STYLE IF READ ===== */
+    if(r.read){
+      div.style.opacity = "0.5";
+    }
+
+    box.appendChild(div);
+  });
+});
+</script>
+
+</body>
+</html>

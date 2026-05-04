@@ -133,9 +133,14 @@ button{
 <select id="episode">
   <option value="">เลือกตอน</option>
   <script>
-    for(let i=1;i<=30;i++){
-      document.write(`<option value="${i}">${i}</option>`);
-    }
+    const epSelect = document.getElementById("episode");
+
+for(let i=1;i<=30;i++){
+  const opt = document.createElement("option");
+  opt.value = i;
+  opt.textContent = i;
+  epSelect.appendChild(opt);
+}
   </script>
 </select>
 

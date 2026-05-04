@@ -177,9 +177,9 @@ for(let i=1;i<=30;i++){
 const API = "https://script.google.com/macros/s/AKfycbxWBZkZyb5NRdMXLkBpwCX-zvDEc2BFSZFPzazKpyWsMSYlD0A7TL8GUP_Esy5MBbbNhg/exec";
 
 /* =========================
-   INPUT ELEMENTS
+   ELEMENTS
 ========================= */
-const btn = document.querySelector("#sendBtn"); // 🔥 fix ไม่ไปจับปุ่มตัวแรกมั่ว
+const btn = document.querySelector("#sendBtn");
 
 const animeInput   = document.getElementById("anime");
 const nameInput    = document.getElementById("name");
@@ -192,7 +192,7 @@ const popup = document.getElementById("popup");
 const text  = document.getElementById("popupText");
 
 /* =========================
-   LANG CHECKBOX
+   LANG
 ========================= */
 function getLangs(){
   return document.querySelectorAll('.lang-box input:checked');
@@ -209,19 +209,17 @@ async function pasteText(){
   try {
     const clip = await navigator.clipboard.readText();
     videoInput.value = clip;
-  } catch (err) {
+  } catch {
     alert("เบราว์เซอร์ไม่อนุญาต clipboard");
   }
 }
 
 /* =========================
-   CHANGE EPISODE (◀ ▶)
+   EPISODE CONTROL
 ========================= */
 function changeEp(step){
-
   let val = parseInt(episodeInput.value);
 
-  // ถ้ายังไม่เลือก ให้เริ่มที่ 1
   if(isNaN(val)) val = 1;
 
   val += step;
@@ -245,33 +243,38 @@ async function send(){
 
     const langs = getLangs();
 
+    if(langs.length === 0){
+      throw new Error("no lang");
+    }
+
     for(let lang of langs){
 
-      const url = API + 
-      "?anime=" + encodeURIComponent(animeInput.value) +
-      "&name=" + encodeURIComponent(nameInput.value) +
-      "&episode=" + episodeInput.value +
-      "&title=" + encodeURIComponent(lang.value) +
-      "&video_url=" + encodeURIComponent(videoInput.value) +
-      "&desc=" + encodeURIComponent(descInput.value) +
-      "&cover=" + encodeURIComponent(coverInput.value);
+      const data = {
+        anime: animeInput.value,
+        name: nameInput.value,
+        episode: episodeInput.value,
+        title: lang.value,
+        video_url: videoInput.value,
+        desc: descInput.value,
+        cover: coverInput.value
+      };
 
-      await new Promise(resolve=>{
-        await fetch(API, {
-  method: "POST",
-  body: JSON.stringify(data)
-});
-        img.onload = resolve;
-        img.onerror = resolve;
+      await fetch(API, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify(data)
       });
 
     }
 
     text.innerText = "✅ ส่งแล้ว!";
-    clearInput(); // 🔥 ล้างลิงก์หลังส่ง
+    clearInput();
 
   }catch(e){
     text.innerText = "❌ ส่งไม่สำเร็จ";
+    console.error(e);
   }
 
   setTimeout(()=>{

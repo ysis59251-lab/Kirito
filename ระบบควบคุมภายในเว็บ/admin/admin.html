@@ -8,209 +8,106 @@
 
 <style>
 /* =========================
-   MODERN ANIME ADMIN UI
+   LAYOUT SPLIT ADMIN
 ========================= */
-
-:root{
-  --bg:#0b0c14;
-  --bg2:#11132a;
-
-  --card:rgba(255,255,255,0.06);
-  --card2:rgba(255,255,255,0.1);
-
-  --stroke:rgba(255,255,255,0.12);
-
-  --text:#eaeaf2;
-  --muted:#9aa0b4;
-
-  --accent:#ff2e88;
-  --accent2:#00d4ff;
-
-  --good:#00ff9d;
-  --warn:#ffcc00;
-  --bad:#ff4d4d;
-
-  --radius:18px;
-  --shadow:0 10px 30px rgba(0,0,0,0.45);
-}
-
-/* =========================
-   RESET
-========================= */
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-  font-family:system-ui, sans-serif;
-}
 
 body{
-  background:radial-gradient(circle at top, #1a1d3a, var(--bg) 60%);
-  color:var(--text);
-  min-height:100vh;
+  margin:0;
+  font-family:system-ui;
+  background:#0b0c14;
+  color:#fff;
+  height:100vh;
+  overflow:hidden;
+}
+
+/* ===== MAIN WRAPPER ===== */
+.wrapper{
+  display:flex;
+  height:100vh;
 }
 
 /* =========================
-   HEADER
+   LEFT MENU
 ========================= */
-header{
-  position:sticky;
-  top:0;
-  z-index:100;
-
-  padding:16px;
-  font-weight:700;
-  letter-spacing:0.5px;
-
-  background:rgba(10,10,20,0.75);
-  backdrop-filter: blur(12px);
-  border-bottom:1px solid var(--stroke);
-}
-
-/* =========================
-   LAYOUT
-========================= */
-.container{
-  max-width:1200px;
-  margin:auto;
-  padding:16px;
+.sidebar{
+  width:280px;
+  background:rgba(255,255,255,0.05);
+  border-right:1px solid rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
 
   display:flex;
   flex-direction:column;
-  gap:16px;
+  padding:14px;
+  gap:10px;
+
+  overflow-y:auto;
 }
 
-/* =========================
-   CARD (GLASS UI)
-========================= */
-.card{
-  background:var(--card);
-  border:1px solid var(--stroke);
-  border-radius:var(--radius);
-  padding:16px;
-  box-shadow:var(--shadow);
-
-  transition:0.25s ease;
-}
-
-.card:hover{
-  background:var(--card2);
-  transform:translateY(-2px);
-}
-
-/* =========================
-   INPUT
-========================= */
-input{
-  width:100%;
-  padding:12px 14px;
-
+/* MENU ITEM */
+.menu-item{
+  padding:12px;
   border-radius:12px;
-  border:1px solid var(--stroke);
-
-  background:#0d0f1f;
-  color:var(--text);
-
-  outline:none;
-  transition:0.2s ease;
-}
-
-input:focus{
-  border-color:var(--accent2);
-  box-shadow:0 0 0 3px rgba(0,212,255,0.15);
-}
-
-/* =========================
-   ANIME GRID
-========================= */
-#animeList{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
-  gap:14px;
-}
-
-/* =========================
-   ANIME CARD
-========================= */
-.anime-card{
-  border-radius:14px;
-  overflow:hidden;
-
-  background:#0f111f;
-  border:1px solid var(--stroke);
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
 
   cursor:pointer;
-  transition:0.25s ease;
-  position:relative;
+  transition:0.2s;
+  user-select:none;
 }
 
-.anime-card:hover{
-  transform:scale(1.05);
-  box-shadow:0 15px 40px rgba(0,0,0,0.6);
-  border-color:var(--accent2);
+.menu-item:hover{
+  background:rgba(0,212,255,0.15);
+  border-color:#00d4ff;
+  transform:translateX(4px);
 }
 
-.anime-card img{
-  width:100%;
-  height:180px;
-  object-fit:cover;
-  display:block;
-}
-
-/* =========================
-   OVERLAY TITLE
-========================= */
-.anime-card .overlay{
-  position:absolute;
-  bottom:0;
-  left:0;
-  right:0;
-
-  padding:6px;
-  font-size:12px;
-  text-align:center;
-
-  background:linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+/* ACTIVE */
+.menu-item.active{
+  background:linear-gradient(90deg,#ff2e88,#00d4ff);
+  color:#000;
+  font-weight:bold;
 }
 
 /* =========================
-   ONLINE BADGE COLORS
+   RIGHT CONTENT
 ========================= */
-.good{color:var(--good);}
-.warn{color:var(--warn);}
-.bad{color:var(--bad);}
+.content{
+  flex:1;
+  padding:16px;
+  overflow-y:auto;
+  background:radial-gradient(circle at top,#1a1d3a,#0b0c14 60%);
+}
+
+/* CARD INSIDE CONTENT */
+.panel{
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:16px;
+  padding:16px;
+  box-shadow:0 10px 30px rgba(0,0,0,0.4);
+}
+
+/* ONLINE BOX STYLE */
+.user-box{
+  padding:8px;
+  border-bottom:1px solid rgba(255,255,255,0.1);
+  font-size:13px;
+}
+
+/* TOP BAR TITLE */
+.title{
+  font-size:18px;
+  font-weight:bold;
+  margin-bottom:10px;
+}
 
 /* =========================
-   BUTTON FIX BOX
+   MOBILE FIX
 ========================= */
-.btn-box{
-  position:fixed;
-  right:16px;
-  bottom:16px;
-
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-}
-
-/* =========================
-   SCROLLBAR
-========================= */
-::-webkit-scrollbar{
-  width:8px;
-}
-
-::-webkit-scrollbar-track{
-  background:#0a0a14;
-}
-
-::-webkit-scrollbar-thumb{
-  background:rgba(255,255,255,0.2);
-  border-radius:10px;
-}
-
-::-webkit-scrollbar-thumb:hover{
-  background:rgba(255,255,255,0.4);
+@media (max-width: 768px){
+  .sidebar{
+    width:200px;
+  }
 }
 </style>
 </head>
@@ -219,34 +116,25 @@ input:focus{
 
 <header>🔥 Anime Admin Dashboard</header>
 
-<div class="container">
+<div class="wrapper">
 
-<!-- 👥 ONLINE -->
-<div class="card">
-  👥 คนออนไลน์: <span id="onlineCount">0</span>
-  <div id="onlineList"></div>
-</div>
+  <!-- LEFT MENU -->
+  <div class="sidebar">
+    <div class="menu-item active" onclick="showPage('online')">👥 คนออนไลน์</div>
+    <div class="menu-item" onclick="showPage('top')">🔥 Top Anime</div>
+    <div class="menu-item" onclick="showPage('page')">📄 Page Stats</div>
+  </div>
 
-<div class="card">
-  <div id="topPage"></div>
-</div>
+  <!-- RIGHT CONTENT -->
+  <div class="content">
 
-<div class="card">
-  <h4>📄 คนต่อหน้า</h4>
-  <div id="pageList"></div>
-</div>
+    <div id="page-online" class="panel">...</div>
 
-<!-- 🔎 SEARCH -->
-<div class="card">
-  <h3>ค้นหา</h3>
-  <input id="searchInput" oninput="searchAnime()">
-</div>
+    <div id="page-top" class="panel" style="display:none">...</div>
 
-<!-- 🎬 LIST -->
-<div class="card">
-  <h3>อนิเมะ</h3>
-  <div id="animeList"></div>
-</div>
+    <div id="page-page" class="panel" style="display:none">...</div>
+
+  </div>
 
 </div>
 
@@ -345,6 +233,21 @@ onValue(ref(db,"onlineUsers"), (snap) => {
     }
   }
 
+
+function showPage(page){
+
+  document.querySelectorAll(".panel").forEach(p => {
+    p.style.display = "none";
+  });
+
+  document.getElementById("page-"+page).style.display = "block";
+
+  document.querySelectorAll(".menu-item").forEach(m=>{
+    m.classList.remove("active");
+  });
+
+  event.target.classList.add("active");
+}
   /* ================= ONLINE COUNT ================= */
   if(countEl){
     countEl.textContent = count;

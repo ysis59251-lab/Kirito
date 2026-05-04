@@ -373,6 +373,14 @@ document.addEventListener("click", (e) => {
   }
 });
 
+
+set(userRef, {
+  page: location.pathname,
+  title: document.title,
+  time: Date.now()
+});
+
+
 /* =========================
 START
 ========================= */

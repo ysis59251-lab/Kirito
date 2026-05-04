@@ -7,60 +7,183 @@
 <title>Anime Admin Dashboard</title>
 
 <style>
-/* ====== (CSS ของนายเหมือนเดิม ผมไม่ตัด) ====== */
+/* =========================
+   THEME (MODERN UI)
+========================= */
 :root{
   --bg1:#0a0a0f;
   --bg2:#12122a;
-  --card:rgba(255,255,255,0.05);
-  --stroke:rgba(255,255,255,0.08);
+
+  --card:rgba(255,255,255,0.06);
+  --card-hover:rgba(255,255,255,0.1);
+
+  --stroke:rgba(255,255,255,0.12);
+
   --accent:#ff006e;
   --accent2:#00c6ff;
+
+  --text:#eaeaea;
+  --muted:#a0a0b0;
+
+  --radius:16px;
+  --shadow:0 10px 30px rgba(0,0,0,0.4);
 }
 
-*{margin:0;padding:0;box-sizing:border-box;font-family:system-ui;}
+/* =========================
+   RESET
+========================= */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:system-ui, sans-serif;
+}
 
 body{
-  background:linear-gradient(160deg,#0a0a0f,#12122a);
-  color:#fff;
+  background:radial-gradient(circle at top, #151530, #0a0a0f 60%);
+  color:var(--text);
+  min-height:100vh;
+  line-height:1.4;
 }
 
+/* =========================
+   HEADER
+========================= */
 header{
-  padding:16px;
-  background:rgba(20,20,40,0.6);
+  padding:18px;
+  background:rgba(20,20,40,0.7);
+  backdrop-filter: blur(10px);
   position:sticky;
   top:0;
+  z-index:10;
+  font-weight:600;
+  letter-spacing:0.5px;
+  border-bottom:1px solid var(--stroke);
 }
 
-.container{padding:16px;display:flex;flex-direction:column;gap:14px;}
+/* =========================
+   LAYOUT
+========================= */
+.container{
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+  max-width:1100px;
+  margin:auto;
+}
 
+/* =========================
+   CARD (GLASS STYLE)
+========================= */
 .card{
   background:var(--card);
   border:1px solid var(--stroke);
-  padding:14px;
-  border-radius:16px;
+  padding:16px;
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  backdrop-filter: blur(12px);
+
+  transition:0.2s ease;
 }
 
+.card:hover{
+  background:var(--card-hover);
+  transform:translateY(-2px);
+}
+
+/* =========================
+   INPUT
+========================= */
 input{
   width:100%;
-  padding:10px;
-  border-radius:10px;
-  background:#000;
+  padding:12px;
+  border-radius:12px;
+  background:#0a0a12;
   color:#fff;
   border:1px solid var(--stroke);
+  outline:none;
+  transition:0.2s;
 }
 
+input:focus{
+  border-color:var(--accent2);
+  box-shadow:0 0 0 2px rgba(0,198,255,0.2);
+}
+
+/* =========================
+   GRID ANIME
+========================= */
 #animeList{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(130px,1fr));
-  gap:12px;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:14px;
 }
 
-.anime-card img{width:100%;height:170px;object-fit:cover;}
+/* =========================
+   CARD ITEM
+========================= */
+.anime-card{
+  border-radius:14px;
+  overflow:hidden;
+  background:#111;
+  border:1px solid var(--stroke);
+  transition:0.25s ease;
+  cursor:pointer;
+}
 
+.anime-card:hover{
+  transform:scale(1.05);
+  box-shadow:0 15px 40px rgba(0,0,0,0.5);
+}
+
+.anime-card img{
+  width:100%;
+  height:180px;
+  object-fit:cover;
+  display:block;
+}
+
+/* =========================
+   BUTTON BOX (FLOAT)
+========================= */
 .btn-box{
   position:fixed;
-  right:20px;
-  bottom:20px;
+  right:18px;
+  bottom:18px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+/* =========================
+   SMALL TEXT STYLE
+========================= */
+small, .muted{
+  color:var(--muted);
+}
+
+/* =========================
+   CARD TEXT IMPROVE
+========================= */
+.card h3, .card h4{
+  margin-bottom:10px;
+}
+
+/* =========================
+   SCROLLBAR (สวยขึ้น)
+========================= */
+::-webkit-scrollbar{
+  width:8px;
+}
+
+::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,0.2);
+  border-radius:10px;
+}
+
+::-webkit-scrollbar-thumb:hover{
+  background:rgba(255,255,255,0.35);
 }
 </style>
 </head>

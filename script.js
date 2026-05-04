@@ -96,13 +96,12 @@ ONLINE USERS
 ========================= */
 function initOnline(){
   try{
-    // 🔥 สร้าง ID เดียวต่อคน
+
     const sid = sessionStorage.getItem("sid") || crypto.randomUUID();
     sessionStorage.setItem("sid", sid);
 
     const userRef = ref(db,"onlineUsers/" + sid);
 
-    // 🔥 ฟังก์ชันอัปเดต
     function updateUser(){
       set(userRef,{
         page: location.pathname,
@@ -111,13 +110,13 @@ function initOnline(){
       });
     }
 
-    // เข้าเว็บ
-    updateUser();
+    // 🔥 กัน Firebase ช้า
+    setTimeout(updateUser, 500);
 
-    // 🔥 อัปเดตทุก 10 วิ
+    // 🔥 heartbeat
     setInterval(updateUser, 10000);
 
-    // ออกเว็บ
+    // 🔥 กันค้าง
     onDisconnect(userRef).remove();
 
   }catch(e){

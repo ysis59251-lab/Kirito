@@ -8,25 +8,30 @@
 
 <style>
 /* =========================
-   THEME (MODERN UI)
+   MODERN ANIME ADMIN UI
 ========================= */
+
 :root{
-  --bg1:#0a0a0f;
-  --bg2:#12122a;
+  --bg:#0b0c14;
+  --bg2:#11132a;
 
   --card:rgba(255,255,255,0.06);
-  --card-hover:rgba(255,255,255,0.1);
+  --card2:rgba(255,255,255,0.1);
 
   --stroke:rgba(255,255,255,0.12);
 
-  --accent:#ff006e;
-  --accent2:#00c6ff;
+  --text:#eaeaf2;
+  --muted:#9aa0b4;
 
-  --text:#eaeaea;
-  --muted:#a0a0b0;
+  --accent:#ff2e88;
+  --accent2:#00d4ff;
 
-  --radius:16px;
-  --shadow:0 10px 30px rgba(0,0,0,0.4);
+  --good:#00ff9d;
+  --warn:#ffcc00;
+  --bad:#ff4d4d;
+
+  --radius:18px;
+  --shadow:0 10px 30px rgba(0,0,0,0.45);
 }
 
 /* =========================
@@ -40,24 +45,25 @@
 }
 
 body{
-  background:radial-gradient(circle at top, #151530, #0a0a0f 60%);
+  background:radial-gradient(circle at top, #1a1d3a, var(--bg) 60%);
   color:var(--text);
   min-height:100vh;
-  line-height:1.4;
 }
 
 /* =========================
    HEADER
 ========================= */
 header{
-  padding:18px;
-  background:rgba(20,20,40,0.7);
-  backdrop-filter: blur(10px);
   position:sticky;
   top:0;
-  z-index:10;
-  font-weight:600;
+  z-index:100;
+
+  padding:16px;
+  font-weight:700;
   letter-spacing:0.5px;
+
+  background:rgba(10,10,20,0.75);
+  backdrop-filter: blur(12px);
   border-bottom:1px solid var(--stroke);
 }
 
@@ -65,30 +71,30 @@ header{
    LAYOUT
 ========================= */
 .container{
+  max-width:1200px;
+  margin:auto;
   padding:16px;
+
   display:flex;
   flex-direction:column;
   gap:16px;
-  max-width:1100px;
-  margin:auto;
 }
 
 /* =========================
-   CARD (GLASS STYLE)
+   CARD (GLASS UI)
 ========================= */
 .card{
   background:var(--card);
   border:1px solid var(--stroke);
-  padding:16px;
   border-radius:var(--radius);
+  padding:16px;
   box-shadow:var(--shadow);
-  backdrop-filter: blur(12px);
 
-  transition:0.2s ease;
+  transition:0.25s ease;
 }
 
 .card:hover{
-  background:var(--card-hover);
+  background:var(--card2);
   transform:translateY(-2px);
 }
 
@@ -97,22 +103,25 @@ header{
 ========================= */
 input{
   width:100%;
-  padding:12px;
+  padding:12px 14px;
+
   border-radius:12px;
-  background:#0a0a12;
-  color:#fff;
   border:1px solid var(--stroke);
+
+  background:#0d0f1f;
+  color:var(--text);
+
   outline:none;
-  transition:0.2s;
+  transition:0.2s ease;
 }
 
 input:focus{
   border-color:var(--accent2);
-  box-shadow:0 0 0 2px rgba(0,198,255,0.2);
+  box-shadow:0 0 0 3px rgba(0,212,255,0.15);
 }
 
 /* =========================
-   GRID ANIME
+   ANIME GRID
 ========================= */
 #animeList{
   display:grid;
@@ -121,20 +130,24 @@ input:focus{
 }
 
 /* =========================
-   CARD ITEM
+   ANIME CARD
 ========================= */
 .anime-card{
   border-radius:14px;
   overflow:hidden;
-  background:#111;
+
+  background:#0f111f;
   border:1px solid var(--stroke);
-  transition:0.25s ease;
+
   cursor:pointer;
+  transition:0.25s ease;
+  position:relative;
 }
 
 .anime-card:hover{
   transform:scale(1.05);
-  box-shadow:0 15px 40px rgba(0,0,0,0.5);
+  box-shadow:0 15px 40px rgba(0,0,0,0.6);
+  border-color:var(--accent2);
 }
 
 .anime-card img{
@@ -145,36 +158,50 @@ input:focus{
 }
 
 /* =========================
-   BUTTON BOX (FLOAT)
+   OVERLAY TITLE
+========================= */
+.anime-card .overlay{
+  position:absolute;
+  bottom:0;
+  left:0;
+  right:0;
+
+  padding:6px;
+  font-size:12px;
+  text-align:center;
+
+  background:linear-gradient(to top, rgba(0,0,0,0.85), transparent);
+}
+
+/* =========================
+   ONLINE BADGE COLORS
+========================= */
+.good{color:var(--good);}
+.warn{color:var(--warn);}
+.bad{color:var(--bad);}
+
+/* =========================
+   BUTTON FIX BOX
 ========================= */
 .btn-box{
   position:fixed;
-  right:18px;
-  bottom:18px;
+  right:16px;
+  bottom:16px;
+
   display:flex;
   flex-direction:column;
   gap:10px;
 }
 
 /* =========================
-   SMALL TEXT STYLE
-========================= */
-small, .muted{
-  color:var(--muted);
-}
-
-/* =========================
-   CARD TEXT IMPROVE
-========================= */
-.card h3, .card h4{
-  margin-bottom:10px;
-}
-
-/* =========================
-   SCROLLBAR (สวยขึ้น)
+   SCROLLBAR
 ========================= */
 ::-webkit-scrollbar{
   width:8px;
+}
+
+::-webkit-scrollbar-track{
+  background:#0a0a14;
 }
 
 ::-webkit-scrollbar-thumb{
@@ -183,7 +210,7 @@ small, .muted{
 }
 
 ::-webkit-scrollbar-thumb:hover{
-  background:rgba(255,255,255,0.35);
+  background:rgba(255,255,255,0.4);
 }
 </style>
 </head>

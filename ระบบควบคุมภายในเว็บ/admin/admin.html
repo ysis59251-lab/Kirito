@@ -15,13 +15,17 @@ body{
   overflow:hidden;
 }
 
-.wrapper{display:flex;height:100vh;}
+.wrapper{
+  display:flex;
+  height:100vh;
+}
 
+/* LEFT */
 .sidebar{
   width:260px;
-  background:rgba(255,255,255,0.05);
+  background:#111428;
   border-right:1px solid rgba(255,255,255,0.1);
-  padding:14px;
+  padding:12px;
   display:flex;
   flex-direction:column;
   gap:10px;
@@ -29,14 +33,9 @@ body{
 
 .menu-item{
   padding:12px;
-  border-radius:12px;
-  background:rgba(255,255,255,0.05);
+  border-radius:10px;
   cursor:pointer;
-  transition:0.2s;
-}
-
-.menu-item:hover{
-  background:#00d4ff22;
+  background:rgba(255,255,255,0.05);
 }
 
 .menu-item.active{
@@ -45,22 +44,29 @@ body{
   font-weight:bold;
 }
 
+/* RIGHT */
 .content{
   flex:1;
-  padding:16px;
+  padding:15px;
   overflow:auto;
 }
 
 .panel{
   display:none;
   background:rgba(255,255,255,0.05);
-  padding:16px;
-  border-radius:16px;
+  padding:15px;
+  border-radius:12px;
   border:1px solid rgba(255,255,255,0.1);
 }
 
 .panel.active{
   display:block;
+}
+
+.user{
+  padding:6px;
+  border-bottom:1px solid #333;
+  font-size:13px;
 }
 </style>
 </head>
@@ -71,18 +77,18 @@ body{
 
 <!-- LEFT -->
 <div class="sidebar">
-  <div class="menu-item active" onclick="showPage('online')">👥 คนออนไลน์</div>
-  <div class="menu-item" onclick="showPage('top')">🔥 Top Anime</div>
-  <div class="menu-item" onclick="showPage('page')">📄 Page Stats</div>
+  <div class="menu-item active" onclick="showPage('online',event)">👥 คนออนไลน์</div>
+  <div class="menu-item" onclick="showPage('top',event)">🔥 Top Anime</div>
+  <div class="menu-item" onclick="showPage('page',event)">📄 Page Stats</div>
 </div>
 
 <!-- RIGHT -->
 <div class="content">
 
   <div id="page-online" class="panel active">
-    <h3>👥 Online Users</h3>
+    <h3>👥 คนออนไลน์</h3>
     <div id="onlineList"></div>
-    <h4>รวม: <span id="onlineCount">0</span></h4>
+    <div>จำนวน: <span id="onlineCount">0</span></div>
   </div>
 
   <div id="page-top" class="panel">
@@ -96,6 +102,7 @@ body{
   </div>
 
 </div>
+
 </div>
 
 <script type="module">
@@ -109,7 +116,7 @@ import {
   remove
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* ================= CONFIG ================= */
+/* ===== FIREBASE ===== */
 const firebaseConfig = {
   apiKey: "AIzaSyCUxv...",
   authDomain: "reader-4a13f.firebaseapp.com",
@@ -123,28 +130,31 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-/* ================= USER ================= */
+/* ===== USER ===== */
 const sid = sessionStorage.getItem("sid") || crypto.randomUUID();
 sessionStorage.setItem("sid", sid);
 
 const userRef = ref(db,"onlineUsers/"+sid);
 
-/* ================= HEARTBEAT ================= */
+/* ===== ADMIN MODE ===== */
+const isAdmin = true;
+
+/* ===== HEARTBEAT ===== */
 function updateUser(){
   set(userRef,{
     page: location.pathname,
-    title: document.title,
+    title: isAdmin ? "ADMIN" : document.title,
     time: Date.now(),
-    role: "user"
+    role: isAdmin ? "admin" : "user"
   });
 }
 
 updateUser();
-setInterval(updateUser, 8000);
+setInterval(updateUser,8000);
 onDisconnect(userRef).remove();
 
-/* ================= PAGE SWITCH ================= */
-window.showPage = function(page){
+/* ===== PAGE SWITCH (FIXED) ===== */
+window.showPage = function(page, event){
 
   document.querySelectorAll(".panel").forEach(p=>{
     p.classList.remove("active");
@@ -156,25 +166,25 @@ window.showPage = function(page){
     m.classList.remove("active");
   });
 
-  event.target.classList.add("active");
+  if(event) event.target.classList.add("active");
 };
 
-/* ================= REALTIME ================= */
+/* ===== DASHBOARD ===== */
 onValue(ref(db,"onlineUsers"), snap=>{
 
   const data = snap.val() || {};
   const now = Date.now();
 
+  const list = document.getElementById("onlineList");
+  const countEl = document.getElementById("onlineCount");
+  const topBox = document.getElementById("topPage");
+  const pageList = document.getElementById("pageList");
+
+  list.innerHTML = "";
+
   let count = 0;
   const pageStats = {};
   const pageCount = {};
-
-  const onlineList = document.getElementById("onlineList");
-  const onlineCount = document.getElementById("onlineCount");
-  const topPage = document.getElementById("topPage");
-  const pageList = document.getElementById("pageList");
-
-  if(onlineList) onlineList.innerHTML = "";
 
   for(let id in data){
     const u = data[id];
@@ -184,37 +194,41 @@ onValue(ref(db,"onlineUsers"), snap=>{
       continue;
     }
 
+    if(u.role === "admin") continue;
+
     count++;
 
     pageStats[u.title] = (pageStats[u.title]||0)+1;
     pageCount[u.page] = (pageCount[u.page]||0)+1;
 
-    if(onlineList){
-      onlineList.innerHTML += `
+    list.innerHTML += `
+      <div class="user">
         👤 ${id}<br>
         📺 ${u.title}<br>
-        📄 ${u.page}<hr>
-      `;
-    }
+        📄 ${u.page}
+      </div>
+    `;
   }
 
-  if(onlineCount) onlineCount.textContent = count;
+  countEl.textContent = count;
 
-  if(topPage){
-    topPage.innerHTML = Object.entries(pageStats)
+  topBox.innerHTML =
+    Object.entries(pageStats)
       .sort((a,b)=>b[1]-a[1])
       .slice(0,5)
       .map(([n,v])=>`📺 ${n} (${v})`)
       .join("<br>");
-  }
 
-  if(pageList){
-    pageList.innerHTML = Object.entries(pageCount)
+  pageList.innerHTML =
+    Object.entries(pageCount)
       .sort((a,b)=>b[1]-a[1])
       .map(([p,c])=>`📄 ${p} : ${c}`)
       .join("<br>");
-  }
+});
 
+/* ===== AUTO OPEN ===== */
+window.addEventListener("DOMContentLoaded",()=>{
+  showPage("online");
 });
 </script>
 

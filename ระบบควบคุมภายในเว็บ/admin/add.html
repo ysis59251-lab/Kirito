@@ -164,8 +164,7 @@ for(let i=1;i<=30;i++){
   <input id="desc" placeholder="เรื่องย่อ">
   <input id="cover" placeholder="ลิงก์รูป">
 
-  <button id="sendBtn" onclick="send()">เพิ่มตอน</button>
-</div>
+ <button id="sendBtn">เพิ่มตอน</button>
 
 <div id="popup">
   <div class="popup-box">
@@ -176,9 +175,6 @@ for(let i=1;i<=30;i++){
 <script>
 const API = "https://script.google.com/macros/s/AKfycbxWBZkZyb5NRdMXLkBpwCX-zvDEc2BFSZFPzazKpyWsMSYlD0A7TL8GUP_Esy5MBbbNhg/exec";
 
-/* =========================
-   ELEMENTS (โหลดหลัง DOM)
-========================= */
 document.addEventListener("DOMContentLoaded", () => {
 
   const btn = document.getElementById("sendBtn");
@@ -215,14 +211,13 @@ document.addEventListener("DOMContentLoaded", () => {
         throw new Error("no lang");
       }
 
-      // ส่งพร้อมกัน เร็วกว่า
       await Promise.all(
         Array.from(langs).map(lang => {
 
           const data = {
             anime: animeInput.value.trim(),
             name: nameInput.value.trim(),
-            episode: episodeInput.value.trim(),
+            episode: episodeInput.value,
             title: lang.value,
             video_url: videoInput.value.trim(),
             desc: descInput.value.trim(),
@@ -254,11 +249,39 @@ document.addEventListener("DOMContentLoaded", () => {
     },1200);
   }
 
-  // ผูกปุ่ม
+  // 👇 ตรงนี้สำคัญ
   btn.addEventListener("click", send);
 
 });
-</script>
 
+/* =========================
+   ปุ่มตอน (ต้องอยู่นอก)
+========================= */
+function changeEp(step){
+  const episodeInput = document.getElementById("episode");
+  let val = parseInt(episodeInput.value);
+
+  if(isNaN(val)) val = 1;
+
+  val += step;
+
+  if(val < 1) val = 1;
+  if(val > 30) val = 30;
+
+  episodeInput.value = val;
+}
+
+/* =========================
+   paste
+========================= */
+async function pasteText(){
+  try {
+    const clip = await navigator.clipboard.readText();
+    document.getElementById("video_url").value = clip;
+  } catch {
+    alert("เบราว์เซอร์ไม่อนุญาต clipboard");
+  }
+}
+</script>
 </body>
 </html>

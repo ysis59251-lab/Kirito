@@ -5,37 +5,421 @@
 <meta name="viewport"
 content="width=device-width, initial-scale=1.0">
 
-<title>ค้นหา</title>
+<title>ค้นหาอนิเมะ</title>
 
 <style>
 
+/* =========================
+RESET
+========================= */
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+/* =========================
+BODY
+========================= */
 body{
-  background:#111827;
+
+  min-height:100vh;
+
+  font-family:
+  system-ui,
+  sans-serif;
+
+  background:
+  linear-gradient(
+    180deg,
+    #0f172a,
+    #020617
+  );
+
   color:white;
-  font-family:sans-serif;
+
   padding:20px;
+
+}
+
+/* =========================
+BG EFFECT
+========================= */
+body::before{
+
+  content:"";
+
+  position:fixed;
+
+  inset:0;
+
+  background:
+
+  radial-gradient(
+    circle at top,
+    rgba(59,130,246,.18),
+    transparent 40%
+  );
+
+  pointer-events:none;
+
+}
+
+/* =========================
+CONTAINER
+========================= */
+.container{
+
+  max-width:800px;
+
+  margin:auto;
+
+}
+
+/* =========================
+TITLE
+========================= */
+.title{
+
+  font-size:34px;
+
+  font-weight:800;
+
+  margin-bottom:25px;
+
+  text-align:center;
+
+  letter-spacing:1px;
+
+}
+
+/* =========================
+SEARCH BOX
+========================= */
+.search-box{
+
+  display:flex;
+
+  gap:10px;
+
+  margin-bottom:30px;
+
+}
+
+.search-box input{
+
+  flex:1;
+
+  height:55px;
+
+  border:none;
+
+  outline:none;
+
+  border-radius:16px;
+
+  padding:0 18px;
+
+  font-size:16px;
+
+  background:#1e293b;
+
+  color:white;
+
+  transition:.25s;
+
+}
+
+.search-box input:focus{
+
+  background:#334155;
+
+  box-shadow:
+  0 0 0 3px
+  rgba(59,130,246,.3);
+
+}
+
+.search-box button{
+
+  border:none;
+
+  padding:0 24px;
+
+  border-radius:16px;
+
+  background:
+  linear-gradient(
+    135deg,
+    #3b82f6,
+    #2563eb
+  );
+
+  color:white;
+
+  font-size:16px;
+
+  font-weight:700;
+
+  cursor:pointer;
+
+  transition:.25s;
+
+}
+
+.search-box button:hover{
+
+  transform:translateY(-2px);
+
+  opacity:.92;
+
+}
+
+/* =========================
+RESULT CARD
+========================= */
+.result-card{
+
+  background:
+  rgba(30,41,59,.75);
+
+  border:
+  1px solid
+  rgba(255,255,255,.06);
+
+  border-radius:24px;
+
+  padding:30px;
+
+  backdrop-filter:blur(10px);
+
+  box-shadow:
+  0 10px 30px
+  rgba(0,0,0,.35);
+
+}
+
+/* =========================
+LABEL
+========================= */
+.label{
+
+  font-size:14px;
+
+  color:#94a3b8;
+
+  margin-bottom:10px;
+
+}
+
+/* =========================
+QUERY TEXT
+========================= */
+.query{
+
+  font-size:28px;
+
+  font-weight:800;
+
+  color:#60a5fa;
+
+  word-break:break-word;
+
+}
+
+/* =========================
+EMPTY
+========================= */
+.empty{
+
+  color:#f87171;
+
+}
+
+/* =========================
+BACK BUTTON
+========================= */
+.back-btn{
+
+  display:inline-flex;
+
+  align-items:center;
+
+  justify-content:center;
+
+  margin-top:25px;
+
+  height:50px;
+
+  padding:0 24px;
+
+  border-radius:14px;
+
+  text-decoration:none;
+
+  color:white;
+
+  background:#1e293b;
+
+  transition:.25s;
+
+}
+
+.back-btn:hover{
+
+  background:#334155;
+
+  transform:translateY(-2px);
+
+}
+
+/* =========================
+MOBILE
+========================= */
+@media(max-width:600px){
+
+  .title{
+    font-size:28px;
+  }
+
+  .query{
+    font-size:22px;
+  }
+
+  .search-box{
+    flex-direction:column;
+  }
+
+  .search-box button{
+    height:52px;
+  }
+
 }
 
 </style>
 </head>
 <body>
 
-<h1>ผลการค้นหา</h1>
+<div class="container">
 
-<div id="result"></div>
+  <h1 class="title">
+    🔍 ค้นหาอนิเมะ
+  </h1>
+
+  <!-- SEARCH -->
+  <div class="search-box">
+
+    <input
+      type="text"
+      id="searchInput"
+      placeholder="พิมพ์ชื่ออนิเมะ..."
+    >
+
+    <button onclick="searchAnime()">
+      ค้นหา
+    </button>
+
+  </div>
+
+  <!-- RESULT -->
+  <div class="result-card">
+
+    <div class="label">
+      ผลการค้นหา
+    </div>
+
+    <div
+      id="result"
+      class="query"
+    ></div>
+
+  </div>
+
+  <!-- BACK -->
+  <a
+    href="index.html"
+    class="back-btn"
+  >
+    ← กลับหน้าแรก
+  </a>
+
+</div>
 
 <script>
 
+/* =========================
+GET QUERY
+========================= */
 const params =
 new URLSearchParams(location.search);
 
 const query =
-params.get("q") || "ไม่มีคำค้น";
+params.get("q");
 
-document
-.getElementById("result")
-.textContent =
-"คุณค้นหา: " + query;
+/* =========================
+ELEMENTS
+========================= */
+const result =
+document.getElementById("result");
+
+const input =
+document.getElementById("searchInput");
+
+/* =========================
+SHOW RESULT
+========================= */
+if(query){
+
+  result.textContent = query;
+
+  input.value = query;
+
+}
+
+else{
+
+  result.textContent =
+  "ไม่มีคำค้น";
+
+  result.classList.add(
+    "empty"
+  );
+
+}
+
+/* =========================
+SEARCH
+========================= */
+function searchAnime(){
+
+  const val =
+  input.value.trim();
+
+  if(!val) return;
+
+  location.href =
+
+  `search.html?q=${
+    encodeURIComponent(val)
+  }`;
+
+}
+
+/* =========================
+ENTER SEARCH
+========================= */
+input.addEventListener(
+  "keypress",
+  (e) => {
+
+    if(e.key === "Enter"){
+
+      searchAnime();
+
+    }
+
+  }
+);
 
 </script>
 

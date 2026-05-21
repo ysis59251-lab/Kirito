@@ -288,7 +288,7 @@ function searchAnime(){
   if(value.trim() !== ""){
 
     window.location.href =
-    "search.html?q=" + encodeURIComponent(value);
+    "ระบบควบคุมภายในเว็บ/search.html?q=" + encodeURIComponent(value);
 
   }
 

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>ค้นหา</title>
+
+<style>
+
+body{
+  background:#111827;
+  color:white;
+  font-family:sans-serif;
+  padding:20px;
+}
+
+</style>
+</head>
+<body>
+
+<h1>ผลการค้นหา</h1>
+
+<div id="result"></div>
+
+<script>
+
+const params =
+new URLSearchParams(window.location.search);
+
+const query = params.get("q");
+
+document.getElementById("result").innerHTML =
+"คุณค้นหา: " + query;
+
+</script>
+
+</body>
+</html>

@@ -257,43 +257,66 @@ const url = "https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH
 SEARCH
 ========================= */
 function initSearch(){
-  const input = document.querySelector(".search");
+
+  const input =
+  document.querySelector(".search");
+
   if(!input) return;
 
   if(savedSearch){
     input.value = savedSearch;
   }
 
+  // 🔍 กด Enter ค้นหา
+  input.addEventListener("keypress", (e) => {
+
+    if(e.key === "Enter"){
+
+      const val =
+      input.value.trim();
+
+      if(val !== ""){
+
+        saveState();
+
+        window.location.href =
+        "ระบบควบคุมภายในเว็บ/search.html?q=" +
+        encodeURIComponent(val);
+
+      }
+
+    }
+
+  });
+
+  // 🔥 ค้นหาแบบเดิม realtime
   input.addEventListener("input", () => {
-    const val = input.value.toLowerCase();
+
+    const val =
+    input.value.toLowerCase();
+
     savedSearch = val;
 
     cards.forEach(c => {
-      c.dataset.search = (c.dataset.title || "").toLowerCase().includes(val) ? "1":"0";
+
+      c.dataset.search =
+      (c.dataset.title || "")
+      .toLowerCase()
+      .includes(val)
+      ? "1"
+      : "0";
+
     });
 
     currentPage = 1;
     isChangingPage = true;
+
     saveState();
     renderPage();
+
   });
-}
-
-
-function searchAnime(){
-
-  const value =
-  document.getElementById("searchInput").value;
-
-  if(value.trim() !== ""){
-
-    window.location.href =
-    "ระบบควบคุมภายในเว็บ/search.html?q=" + encodeURIComponent(value);
-
-  }
 
 }
-
 
 /* =========================
 SORT

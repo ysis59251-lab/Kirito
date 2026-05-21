@@ -279,6 +279,22 @@ function initSearch(){
   });
 }
 
+
+function searchAnime(){
+
+  const value =
+  document.getElementById("searchInput").value;
+
+  if(value.trim() !== ""){
+
+    window.location.href =
+    "search.html?q=" + encodeURIComponent(value);
+
+  }
+
+}
+
+
 /* =========================
 SORT
 ========================= */

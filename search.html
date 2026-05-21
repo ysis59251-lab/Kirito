@@ -2,7 +2,8 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport"
+content="width=device-width, initial-scale=1.0">
 
 <title>ค้นหา</title>
 
@@ -26,11 +27,14 @@ body{
 <script>
 
 const params =
-new URLSearchParams(window.location.search);
+new URLSearchParams(location.search);
 
-const query = params.get("q");
+const query =
+params.get("q") || "ไม่มีคำค้น";
 
-document.getElementById("result").innerHTML =
+document
+.getElementById("result")
+.textContent =
 "คุณค้นหา: " + query;
 
 </script>

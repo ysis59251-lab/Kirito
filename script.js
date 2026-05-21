@@ -280,7 +280,7 @@ function initSearch(){
         saveState();
 
         window.location.href =
-        "ระบบควบคุมภายในเว็บ/search.html?q=" +
+        "search.html?q=" +
         encodeURIComponent(val);
 
       }

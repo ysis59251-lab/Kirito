@@ -9,6 +9,90 @@ content="width=device-width, initial-scale=1.0">
 
 <style>
 
+#result{
+
+  display:grid;
+
+  grid-template-columns:
+  repeat(
+    auto-fill,
+    minmax(180px,1fr)
+  );
+
+  gap:20px;
+
+  margin-top:30px;
+
+}
+
+.anime-card{
+
+  background:#1e293b;
+
+  border-radius:18px;
+
+  overflow:hidden;
+
+  text-decoration:none;
+
+  color:white;
+
+  transition:.25s;
+
+}
+
+.anime-card:hover{
+
+  transform:translateY(-5px);
+
+}
+
+.anime-card img{
+
+  width:100%;
+
+  height:260px;
+
+  object-fit:cover;
+
+  display:block;
+
+}
+
+.info{
+
+  padding:14px;
+
+}
+
+.info h3{
+
+  font-size:16px;
+
+  margin-bottom:8px;
+
+}
+
+.info span{
+
+  color:#94a3b8;
+
+  font-size:14px;
+
+}
+
+.empty{
+
+  text-align:center;
+
+  padding:50px;
+
+  font-size:20px;
+
+  color:#f87171;
+
+}
+
 /* =========================
 RESET
 ========================= */
@@ -347,79 +431,122 @@ MOBILE
 
 <script>
 
-/* =========================
-GET QUERY
-========================= */
 const params =
 new URLSearchParams(location.search);
 
 const query =
-params.get("q");
+(
+  params.get("q") || ""
+)
+.toLowerCase();
 
-/* =========================
-ELEMENTS
-========================= */
 const result =
 document.getElementById("result");
 
-const input =
-document.getElementById("searchInput");
-
 /* =========================
-SHOW RESULT
+LOAD DATA
 ========================= */
-if(query){
+async function loadAnime(){
 
-  result.textContent = query;
+  const url =
+  "https://script.google.com/macros/s/AKfycbw23F39mdzWkHkpw88GRP9il4sRF9mmnb1xiVAYottpyjBY_JGNLEK9ETNkBSKj2u97/exec";
 
-  input.value = query;
+  try{
 
-}
+    const res =
+    await fetch(url);
 
-else{
+    const data =
+    await res.json();
 
-  result.textContent =
-  "ไม่มีคำค้น";
+    const filtered =
 
-  result.classList.add(
-    "empty"
-  );
+    data.filter(row =>
 
-}
+      (
+        row.title || ""
+      )
 
-/* =========================
-SEARCH
-========================= */
-function searchAnime(){
+      .toLowerCase()
 
-  const val =
-  input.value.trim();
+      .includes(query)
 
-  if(!val) return;
+    );
 
-  location.href =
-
-  `search.html?q=${
-    encodeURIComponent(val)
-  }`;
-
-}
-
-/* =========================
-ENTER SEARCH
-========================= */
-input.addEventListener(
-  "keypress",
-  (e) => {
-
-    if(e.key === "Enter"){
-
-      searchAnime();
-
-    }
+    renderAnime(filtered);
 
   }
-);
+
+  catch(err){
+
+    result.innerHTML =
+    "<p>โหลดข้อมูลไม่ได้</p>";
+
+    console.error(err);
+
+  }
+
+}
+
+/* =========================
+RENDER
+========================= */
+function renderAnime(data){
+
+  if(data.length === 0){
+
+    result.innerHTML = `
+      <div class="empty">
+        ไม่พบอนิเมะ
+      </div>
+    `;
+
+    return;
+
+  }
+
+  result.innerHTML = "";
+
+  data.forEach(row => {
+
+    const card =
+    document.createElement("a");
+
+    card.href =
+    row.link || "#";
+
+    card.className =
+    "anime-card";
+
+    card.innerHTML = `
+      <img
+        src="${row.image || ""}"
+        alt="${row.title || ""}"
+      >
+
+      <div class="info">
+
+        <h3>
+          ${row.title || "ไม่มีชื่อ"}
+        </h3>
+
+        <span>
+          ${row.year || ""}
+        </span>
+
+      </div>
+    `;
+
+    result.appendChild(card);
+
+  });
+
+}
+
+/* =========================
+START
+========================= */
+loadAnime();
 
 </script>
 

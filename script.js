@@ -2,7 +2,15 @@
 FIREBASE IMPORT
 ========================= */
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getDatabase, ref, onValue, runTransaction, set, onDisconnect, push } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  runTransaction,
+  set,
+  onDisconnect,
+  remove
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 /* =========================
 FIREBASE CONFIG

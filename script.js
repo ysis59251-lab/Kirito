@@ -723,6 +723,16 @@ function searchAnime(){
 
   if(!val) return;
 
+  // ล้างข้อความค้นหา
+  input.value = "";
+
+  // ลบ search state
+  savedSearch = "";
+
+  localStorage.removeItem(
+    "searchText"
+  );
+
   location.href =
 
   `search.html?q=${

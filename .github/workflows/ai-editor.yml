@@ -1,0 +1,163 @@
+name: AI Editor
+
+on:
+  workflow_dispatch:
+    inputs:
+      instruction:
+        description: "สั่ง AI ว่าต้องการแก้อะไร"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  edit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ask OpenAI and apply changes
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          USER_INSTRUCTION: ${{ inputs.instruction }}
+        run: |
+          python - <<'PY'
+          import os
+          import json
+          import subprocess
+          import urllib.request
+
+          instruction = os.environ["USER_INSTRUCTION"]
+
+          files = subprocess.check_output(
+              ["git", "ls-files"],
+              text=True
+          ).splitlines()
+
+          allowed = (".html", ".css", ".js", ".json")
+
+          selected = [
+              f for f in files
+              if f.lower().endswith(allowed)
+              and not f.startswith(".github/")
+              and "node_modules/" not in f
+          ]
+
+          max_total = 100000
+          total = 0
+          context = []
+
+          for path in selected:
+              try:
+                  data = open(path, "r", encoding="utf-8").read()
+              except Exception:
+                  continue
+
+              if total + len(data) > max_total:
+                  continue
+
+              context.append(
+                  f"\n===== FILE: {path} =====\n{data}"
+              )
+              total += len(data)
+
+          prompt = f"""
+          You are an expert web developer editing a GitHub repository.
+
+          USER REQUEST:
+          {instruction}
+
+          RULES:
+          1. Only modify files necessary for the request.
+          2. Preserve existing functionality.
+          3. Do not modify unrelated parts.
+          4. Return ONLY valid JSON.
+          5. Use this exact format:
+
+          {{
+            "changes": [
+              {{
+                "path": "relative/path/file.html",
+                "content": "COMPLETE FILE CONTENT"
+              }}
+            ]
+          }}
+
+          Repository:
+          {"".join(context)}
+          """
+
+          payload = {
+              "model": "gpt-5",
+              "input": prompt
+          }
+
+          request = urllib.request.Request(
+              "https://api.openai.com/v1/responses",
+              data=json.dumps(payload).encode(),
+              headers={
+                  "Authorization":
+                      "Bearer " + os.environ["OPENAI_API_KEY"],
+                  "Content-Type": "application/json"
+              },
+              method="POST"
+          )
+
+          with urllib.request.urlopen(request) as response:
+              result = json.loads(response.read())
+
+          output = result.get("output_text")
+
+          if not output:
+              raise RuntimeError("OpenAI ไม่ได้ส่งผลลัพธ์กลับมา")
+
+          output = output.strip()
+
+          if output.startswith("```"):
+              output = output.replace("```json", "", 1)
+              output = output.replace("```", "")
+              output = output.strip()
+
+          data = json.loads(output)
+
+          for change in data["changes"]:
+              path = change["path"]
+
+              if (
+                  not path
+                  or path.startswith("/")
+                  or ".." in path.split("/")
+                  or path.startswith(".github/")
+              ):
+                  raise RuntimeError(
+                      f"ไม่อนุญาตให้แก้ไฟล์นี้: {path}"
+                  )
+
+              os.makedirs(
+                  os.path.dirname(path) or ".",
+                  exist_ok=True
+              )
+
+              with open(path, "w", encoding="utf-8") as f:
+                  f.write(change["content"])
+
+              print("Updated:", path)
+          PY
+
+      - name: Commit changes
+        run: |
+          git config user.name "AI Editor"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add .
+
+          if git diff --cached --quiet; then
+            echo "ไม่มีการเปลี่ยนแปลง"
+            exit 0
+          fi
+
+          git commit -m "AI: update repository"
+          git push

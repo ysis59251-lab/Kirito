@@ -1,0 +1,174 @@
+name: AI Editor
+
+on:
+  workflow_dispatch:
+    inputs:
+      instruction:
+        description: "สั่ง AI ว่าต้องการแก้อะไร"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  models: read
+
+jobs:
+  edit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: AI edit repository
+        env:
+          GH_TOKEN: ${{ github.token }}
+          USER_INSTRUCTION: ${{ inputs.instruction }}
+        run: |
+          python <<'PY'
+          import os
+          import json
+          import subprocess
+          import urllib.request
+
+          instruction = os.environ["USER_INSTRUCTION"]
+
+          # หาไฟล์เว็บที่ AI สามารถอ่านได้
+          files = subprocess.check_output(
+              ["git", "ls-files"],
+              text=True
+          ).splitlines()
+
+          allowed = (
+              ".html",
+              ".css",
+              ".js",
+              ".json",
+              ".md"
+          )
+
+          selected = [
+              f for f in files
+              if f.lower().endswith(allowed)
+              and ".git/" not in f
+              and "node_modules/" not in f
+          ]
+
+          # จำกัดขนาด context เพื่อไม่ส่ง Repo ใหญ่เกินไป
+          MAX_TOTAL = 120000
+          total = 0
+          repo_text = []
+
+          for path in selected:
+              try:
+                  data = open(path, "r", encoding="utf-8").read()
+              except Exception:
+                  continue
+
+              if total + len(data) > MAX_TOTAL:
+                  continue
+
+              repo_text.append(
+                  f"\n===== FILE: {path} =====\n{data}"
+              )
+              total += len(data)
+
+          context = "".join(repo_text)
+
+          system = """
+          You are an expert web developer working directly inside a GitHub repository.
+
+          The user wants you to modify the repository.
+
+          Rules:
+          1. Only modify files that are necessary.
+          2. Preserve existing functionality unless the user explicitly asks to change it.
+          3. Do not invent missing files.
+          4. Return ONLY valid JSON.
+          5. The JSON format must be:
+
+          {
+            "changes": [
+              {
+                "path": "relative/path/file.html",
+                "content": "complete new file content"
+              }
+            ]
+          }
+
+          The content must be the COMPLETE replacement content of each changed file.
+          Do not use Markdown fences.
+          """
+
+          prompt = f"""
+          USER REQUEST:
+          {instruction}
+
+          REPOSITORY FILES:
+          {context}
+          """
+
+          payload = {
+              "model": "openai/gpt-4.1",
+              "messages": [
+                  {"role": "system", "content": system},
+                  {"role": "user", "content": prompt}
+              ],
+              "temperature": 0.2,
+              "response_format": {"type": "json_object"}
+          }
+
+          request = urllib.request.Request(
+              "https://models.github.ai/inference/chat/completions",
+              data=json.dumps(payload).encode(),
+              headers={
+                  "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
+                  "Content-Type": "application/json",
+                  "Accept": "application/vnd.github+json"
+              },
+              method="POST"
+          )
+
+          with urllib.request.urlopen(request) as response:
+              result = json.loads(response.read())
+
+          content = result["choices"][0]["message"]["content"]
+          changes = json.loads(content)["changes"]
+
+          if not isinstance(changes, list):
+              raise RuntimeError("AI returned invalid changes")
+
+          for change in changes:
+              path = change["path"]
+              new_content = change["content"]
+
+              if not path or path.startswith("/") or ".." in path.split("/"):
+                  raise RuntimeError(f"Unsafe path: {path}")
+
+              os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+
+              with open(path, "w", encoding="utf-8") as f:
+                  f.write(new_content)
+
+              print(f"Updated: {path}")
+          PY
+
+      - name: Commit changes
+        run: |
+          git config user.name "AI Editor"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add .
+
+          if git diff --cached --quiet; then
+            echo "ไม่มีการเปลี่ยนแปลง"
+            exit 0
+          fi
+
+          git commit -m "AI: update repository"
+          git push

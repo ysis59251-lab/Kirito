@@ -20,25 +20,21 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-
-      - name: AI edit repository
+      - name: Install GitHub Models
+        run: gh extension install https://github.com/github/gh-models
         env:
           GH_TOKEN: ${{ github.token }}
+
+      - name: Prepare repository context
+        env:
           USER_INSTRUCTION: ${{ inputs.instruction }}
         run: |
-          python <<'PY'
+          python - <<'PY'
           import os
-          import json
           import subprocess
-          import urllib.request
 
           instruction = os.environ["USER_INSTRUCTION"]
 
-          # หาไฟล์เว็บที่ AI สามารถอ่านได้
           files = subprocess.check_output(
               ["git", "ls-files"],
               text=True
@@ -48,8 +44,7 @@ jobs:
               ".html",
               ".css",
               ".js",
-              ".json",
-              ".md"
+              ".json"
           )
 
           selected = [
@@ -59,104 +54,147 @@ jobs:
               and "node_modules/" not in f
           ]
 
-          # จำกัดขนาด context เพื่อไม่ส่ง Repo ใหญ่เกินไป
-          MAX_TOTAL = 120000
+          max_total = 100000
           total = 0
-          repo_text = []
 
-          for path in selected:
-              try:
-                  data = open(path, "r", encoding="utf-8").read()
-              except Exception:
-                  continue
+          with open("repository_context.txt", "w", encoding="utf-8") as out:
+              out.write("USER REQUEST:\n")
+              out.write(instruction)
+              out.write("\n\nREPOSITORY FILES:\n")
 
-              if total + len(data) > MAX_TOTAL:
-                  continue
+              for path in selected:
+                  try:
+                      data = open(
+                          path,
+                          "r",
+                          encoding="utf-8"
+                      ).read()
+                  except Exception:
+                      continue
 
-              repo_text.append(
-                  f"\n===== FILE: {path} =====\n{data}"
-              )
-              total += len(data)
+                  if total + len(data) > max_total:
+                      continue
 
-          context = "".join(repo_text)
+                  out.write(
+                      f"\n===== FILE: {path} =====\n"
+                  )
+                  out.write(data)
+                  out.write("\n")
 
-          system = """
-          You are an expert web developer working directly inside a GitHub repository.
+                  total += len(data)
 
-          The user wants you to modify the repository.
+          print(f"Files included: {len(selected)}")
+          print(f"Context size: {total}")
+          PY
 
-          Rules:
-          1. Only modify files that are necessary.
-          2. Preserve existing functionality unless the user explicitly asks to change it.
-          3. Do not invent missing files.
-          4. Return ONLY valid JSON.
-          5. The JSON format must be:
+      - name: Ask AI for changes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          cat repository_context.txt | \
+          gh models run openai/gpt-4o \
+          "You are an expert web developer editing this GitHub repository.
+
+          Read the repository context carefully.
+
+          The user wants:
+          ${{ inputs.instruction }}
+
+          IMPORTANT RULES:
+          1. Only modify files necessary for the user's request.
+          2. Preserve all existing functionality.
+          3. Do not modify unrelated parts.
+          4. Focus especially on the exact file or feature requested.
+          5. Return ONLY a JSON object.
+          6. The JSON must have this exact format:
 
           {
-            "changes": [
+            \"changes\": [
               {
-                "path": "relative/path/file.html",
-                "content": "complete new file content"
+                \"path\": \"relative/path/file.html\",
+                \"content\": \"COMPLETE FILE CONTENT\"
               }
             ]
           }
 
-          The content must be the COMPLETE replacement content of each changed file.
-          Do not use Markdown fences.
-          """
+          The content must contain the complete replacement content of every changed file.
+          Do not use Markdown fences." \
+          > ai_response.txt
 
-          prompt = f"""
-          USER REQUEST:
-          {instruction}
+      - name: Apply AI changes
+        run: |
+          python - <<'PY'
+          import json
+          import re
+          import os
 
-          REPOSITORY FILES:
-          {context}
-          """
+          raw = open(
+              "ai_response.txt",
+              "r",
+              encoding="utf-8"
+          ).read().strip()
 
-          payload = {
-              "model": "openai/gpt-4.1",
-              "messages": [
-                  {"role": "system", "content": system},
-                  {"role": "user", "content": prompt}
-              ],
-              "temperature": 0.2,
-              "response_format": {"type": "json_object"}
-          }
-
-          request = urllib.request.Request(
-              "https://models.github.ai/inference/chat/completions",
-              data=json.dumps(payload).encode(),
-              headers={
-                  "Authorization": f"Bearer {os.environ['GH_TOKEN']}",
-                  "Content-Type": "application/json",
-                  "Accept": "application/vnd.github+json"
-              },
-              method="POST"
+          # เอา Markdown fence ออกถ้า AI เผลอใส่มา
+          raw = re.sub(
+              r"^```(?:json)?\s*",
+              "",
+              raw
           )
 
-          with urllib.request.urlopen(request) as response:
-              result = json.loads(response.read())
+          raw = re.sub(
+              r"\s*```$",
+              "",
+              raw
+          )
 
-          content = result["choices"][0]["message"]["content"]
-          changes = json.loads(content)["changes"]
+          data = json.loads(raw)
+
+          changes = data.get("changes", [])
 
           if not isinstance(changes, list):
-              raise RuntimeError("AI returned invalid changes")
+              raise RuntimeError("Invalid AI response")
+
+          if not changes:
+              print("AI ไม่ได้ขอแก้ไฟล์")
+              raise SystemExit(0)
 
           for change in changes:
               path = change["path"]
-              new_content = change["content"]
+              content = change["content"]
 
-              if not path or path.startswith("/") or ".." in path.split("/"):
-                  raise RuntimeError(f"Unsafe path: {path}")
+              if (
+                  not path
+                  or path.startswith("/")
+                  or ".." in path.split("/")
+              ):
+                  raise RuntimeError(
+                      f"Unsafe path: {path}"
+                  )
 
-              os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+              if path.startswith(".github/"):
+                  raise RuntimeError(
+                      "AI ห้ามแก้ GitHub workflow"
+                  )
 
-              with open(path, "w", encoding="utf-8") as f:
-                  f.write(new_content)
+              os.makedirs(
+                  os.path.dirname(path) or ".",
+                  exist_ok=True
+              )
+
+              with open(
+                  path,
+                  "w",
+                  encoding="utf-8"
+              ) as f:
+                  f.write(content)
 
               print(f"Updated: {path}")
           PY
+
+      - name: Show changes
+        run: |
+          git status --short
+          git diff --stat
 
       - name: Commit changes
         run: |

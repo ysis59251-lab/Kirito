@@ -12,12 +12,12 @@
 <body>
 <header class="top">
   <div class="head"><h1>📚 AnimeFume • Sheet2</h1><a class="back" href="home.html">หน้าแรก</a></div>
-  <input id="search" class="search" type="search" placeholder="ค้นหาอนิเมะใน Sheet2..." autocomplete="off">
-  <div id="status" class="status">กำลังโหลดข้อมูล...</div>
+  <input id="search" class="search" type="search" placeholder="ค้นหาอนิเมะในข้อมูลที่ฝังในโค้ด..." autocomplete="off">
+  <div id="status" class="status">กำลังโหลดข้อมูลจากโค้ด...</div>
 </header>
 <main id="grid" class="grid"><div class="empty">กำลังโหลด...</div></main>
+<script src="sheet2-data.js"></script>
 <script>
-const SHEET_URL="https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet2";
 const grid=document.getElementById('grid');
 const status=document.getElementById('status');
 const search=document.getElementById('search');
@@ -30,31 +30,24 @@ function render(){
   if(!list.length){grid.innerHTML='<div class="empty">ไม่พบรายการ</div>';status.textContent='ไม่พบรายการ';return;}
   const frag=document.createDocumentFragment();
   list.forEach(r=>{
-    const a=document.createElement('a');
-    a.className='card';a.href=r.link||'#';
+    const a=document.createElement('a');a.className='card';a.href=r.link||'#';
     const poster=document.createElement('div');poster.className='poster';
-    const img=document.createElement('img');img.loading='lazy';img.alt=r.title||'Anime';img.src=r.image||'';
-    img.onerror=()=>{img.style.display='none';};poster.appendChild(img);
+    const img=document.createElement('img');img.loading='lazy';img.alt=r.title||'Anime';img.src=r.image||'';img.onerror=()=>{img.style.display='none'};poster.appendChild(img);
     const body=document.createElement('div');body.className='body';
     const title=document.createElement('div');title.className='title';title.textContent=r.title||'ไม่มีชื่อ';
     const meta=document.createElement('div');meta.className='meta';meta.textContent=[r.year,r.Show].filter(Boolean).join(' • ')+(r.id?' • #'+r.id:'');
     body.append(title,meta);a.append(poster,body);frag.appendChild(a);
   });
-  grid.appendChild(frag);status.textContent=`แสดง ${list.length} รายการจาก Sheet2`;
+  grid.appendChild(frag);status.textContent=`แสดง ${list.length.toLocaleString()} รายการจากข้อมูลในโค้ด`;
 }
 async function load(){
   try{
-    const res=await fetch(SHEET_URL,{cache:'no-store'});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const data=await res.json();
-    rows=Array.isArray(data)?data.filter(r=>String(r.Show??'').toUpperCase()!=='TRUE'):[];
+    rows=await loadEmbeddedSheet2Data();
+    rows=Array.isArray(rows)?rows.filter(r=>norm(r.Show)!=='true'):[];
     render();
-  }catch(e){
-    console.error(e);status.textContent='โหลด Sheet2 ไม่สำเร็จ';grid.innerHTML='<div class="empty">โหลดข้อมูลไม่สำเร็จ กรุณาตรวจสอบว่า Sheet2 เปิดให้ดูแบบสาธารณะแล้ว</div>';
-  }
+  }catch(e){console.error(e);status.textContent='อ่านข้อมูลในโค้ดไม่สำเร็จ';grid.innerHTML='<div class="empty">ไม่สามารถอ่านข้อมูลที่ฝังไว้ได้</div>'}
 }
-search.addEventListener('input',render);
-load();
+search.addEventListener('input',render);load();
 </script>
 </body>
 </html>

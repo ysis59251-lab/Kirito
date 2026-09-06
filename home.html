@@ -19,7 +19,8 @@
 .af-fav{position:absolute;top:9px;right:9px;width:44px;height:44px;border:0;border-radius:50%;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);color:#fff;font-size:21px;z-index:5;cursor:pointer}
 .af-fav.active{color:#ffd43b;background:rgba(0,0,0,.88)}
 #afFavModal{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);z-index:10000;display:none;padding:18px;overflow:auto}
-#afFavModal.show{display:block}.af-modal{max-width:900px;margin:5vh auto;background:#101010;border:1px solid #292929;border-radius:22px;padding:18px}.af-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.af-modal-head h2{margin:0}.af-close{width:44px;height:44px;border:0;border-radius:50%;background:#242424;color:#fff;font-size:22px}.af-fav-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.af-fav-card{display:flex;gap:10px;align-items:center;background:#191919;border-radius:15px;padding:8px;color:#fff;text-decoration:none;min-width:0}.af-fav-card img{width:58px;height:78px;object-fit:cover;border-radius:10px;flex:none}.af-fav-card b{font-size:14px;line-height:1.35}.af-remove{margin-left:auto;width:40px;height:40px;border:0;border-radius:50%;background:#2b1717;color:#ff7272;flex:none}@media(max-width:600px){.af-fav-grid{grid-template-columns:1fr}.af-modal{margin:2vh auto}.af-fav-card img{width:52px;height:70px}}
+#afFavModal.show{display:block}.af-modal{max-width:900px;margin:5vh auto;background:#101010;border:1px solid #292929;border-radius:22px;padding:18px}.af-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.af-modal-head h2{margin:0}.af-close{width:44px;height:44px;border:0;border-radius:50%;background:#242424;color:#fff;font-size:22px}.af-fav-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.af-fav-card{display:flex;gap:10px;align-items:center;background:#191919;border-radius:15px;padding:8px;color:#fff;text-decoration:none;min-width:0}.af-fav-card img{width:58px;height:78px;object-fit:cover;border-radius:10px;flex:none}.af-fav-card b{font-size:14px;line-height:1.35}.af-remove{margin-left:auto;width:40px;height:40px;border:0;border-radius:50%;background:#2b1717;color:#ff7272;flex:none}
+#sheet2Section{margin:28px 0 12px;padding:0 12px}.sheet2-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.sheet2-head h2{margin:0;font-size:21px}.sheet2-status{color:#aaa;font-size:13px}.sheet2-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.sheet2-card{display:block;color:#fff;text-decoration:none;background:#111;border:1px solid #282828;border-radius:14px;overflow:hidden;min-width:0;position:relative}.sheet2-card .card-img{aspect-ratio:2/3;background:#171717}.sheet2-card img{width:100%;height:100%;display:block;object-fit:cover}.sheet2-card .overlay{position:absolute;left:0;right:0;bottom:0;padding:28px 9px 9px;background:linear-gradient(transparent,rgba(0,0,0,.92));font-size:13px;line-height:1.35}.sheet2-meta{padding:8px 9px;color:#aaa;font-size:12px}.sheet2-pages{display:flex;justify-content:center;align-items:center;gap:7px;flex-wrap:wrap;margin:16px 0}.sheet2-page{min-width:38px;height:38px;padding:0 10px;border:1px solid #333;border-radius:10px;background:#151515;color:#fff;display:grid;place-items:center;cursor:pointer}.sheet2-page.active{background:#fff;color:#000;border-color:#fff}.sheet2-empty{grid-column:1/-1;text-align:center;color:#aaa;padding:30px}.sheet2-top{display:flex;gap:8px;align-items:center}.sheet2-more{color:#fff;text-decoration:none;border:1px solid #333;border-radius:9px;padding:7px 10px;font-size:12px}@media(min-width:700px){.sheet2-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}@media(max-width:600px){.af-fav-grid{grid-template-columns:1fr}.af-modal{margin:2vh auto}.af-fav-card img{width:52px;height:70px}}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
 </head>
@@ -33,6 +34,7 @@
   <a href="index2.html">ซับไทย</a>
   <a href="index3.html">พากย์ไทย</a>
   <a href="#" id="openFavMenu">⭐ รายการโปรด</a>
+  <a href="sheet2.html">📚 Sheet2</a>
   <a href="ระบบควบคุมภายในเว็บ/DMCA.html">DMCA</a>
   <a href="ระบบควบคุมภายในเว็บ/Administrator.html">แอดมิน</a>
 </nav>
@@ -46,6 +48,14 @@
 </section>
 <main class="anime-list" id="animeList" aria-live="polite"></main>
 <div id="numberBox" aria-label="เปลี่ยนหน้า"></div>
+<section id="sheet2Section" aria-labelledby="sheet2Title">
+  <div class="sheet2-head">
+    <div><h2 id="sheet2Title">📚 รายการเพิ่มเติมจาก Sheet2</h2><div id="sheet2Status" class="sheet2-status">กำลังโหลด...</div></div>
+    <div class="sheet2-top"><a class="sheet2-more" href="sheet2.html">ดูทั้งหมด</a></div>
+  </div>
+  <div id="sheet2Grid" class="sheet2-grid"><div class="sheet2-empty">กำลังโหลดรายการ...</div></div>
+  <div id="sheet2Pages" class="sheet2-pages" aria-label="หน้า Sheet2"></div>
+</section>
 <div class="footer"><footer><p>© <span id="year"></span> AnimeFume อนิเมะออนไลน์<br>ดูอนิเมะซับไทย • ดูอนิเมะพากย์ไทย • อัปเดตไว<br><a href="https://kirito00.vercel.app/">kirito-sandy.vercel.app</a></p></footer></div>
 <button id="backTop" type="button" aria-label="กลับขึ้นด้านบน">↑</button>
 <button id="afFavoritesBtn" type="button" aria-label="เปิดรายการโปรด">⭐</button>
@@ -69,6 +79,26 @@
   function renderFavs(){const grid=$('#favGrid');if(!grid)return;const fav=readFav();grid.innerHTML='';if(!fav.length){grid.innerHTML='<p style="color:#aaa;padding:25px;text-align:center;grid-column:1/-1">ยังไม่มีอนิเมะในรายการโปรด</p>';return}fav.forEach(item=>{const a=document.createElement('a');a.className='af-fav-card';a.href=item.link||'#';const img=document.createElement('img');img.src=item.image||'';img.alt=item.title||'';img.loading='lazy';const b=document.createElement('b');b.textContent=item.title||'ไม่มีชื่อ';const rm=document.createElement('button');rm.type='button';rm.className='af-remove';rm.textContent='×';rm.setAttribute('aria-label','ลบรายการโปรด');rm.onclick=e=>{e.preventDefault();e.stopPropagation();writeFav(readFav().filter(x=>keyOf(x)!==keyOf(item)));renderFavs();syncButtons();toast('ลบออกแล้ว')};a.append(img,b,rm);grid.appendChild(a)})}
   function openFav(){renderFavs();$('#afFavModal')?.classList.add('show');document.body.style.overflow='hidden'}
   function closeFav(){$('#afFavModal')?.classList.remove('show');document.body.style.overflow=''}
+
+  const SHEET2_URL='https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet2';
+  let sheet2Rows=[];let sheet2Filtered=[];let sheet2Page=1;const sheet2PerPage=40;
+  const norm=v=>String(v??'').trim().toLowerCase();
+  function sheet2Render(){
+    const q=norm($('#searchInput')?.value||'');
+    sheet2Filtered=sheet2Rows.filter(r=>!q||norm(r.title).includes(q)||norm(r.id).includes(q)||norm(r.year).includes(q));
+    const total=Math.max(1,Math.ceil(sheet2Filtered.length/sheet2PerPage));if(sheet2Page>total)sheet2Page=total;
+    const grid=$('#sheet2Grid');grid.innerHTML='';
+    const start=(sheet2Page-1)*sheet2PerPage;const list=sheet2Filtered.slice(start,start+sheet2PerPage);
+    if(!list.length){grid.innerHTML='<div class="sheet2-empty">ไม่พบรายการใน Sheet2</div>'}
+    else list.forEach(r=>{const a=document.createElement('a');a.className='sheet2-card';a.href=r.link||'#';const wrap=document.createElement('div');wrap.className='card-img';const img=document.createElement('img');img.src=r.image||'';img.alt=r.title||'Anime';img.loading='lazy';img.decoding='async';img.onerror=()=>{img.style.opacity='.25'};const ov=document.createElement('div');ov.className='overlay';ov.textContent=r.title||'ไม่มีชื่อ';wrap.append(img,ov);const meta=document.createElement('div');meta.className='sheet2-meta';meta.textContent=[r.year,r.Show,r.id?'#'+r.id:''].filter(Boolean).join(' • ');a.append(wrap,meta);grid.appendChild(a)});
+    $('#sheet2Status').textContent=`${sheet2Filtered.length.toLocaleString()} รายการ • หน้า ${sheet2Page}/${total}`;
+    const pages=$('#sheet2Pages');pages.innerHTML='';const maxButtons=5;let startPage=Math.max(1,Math.min(sheet2Page-2,total-4));let endPage=Math.min(total,startPage+maxButtons-1);
+    if(sheet2Page>1){const b=document.createElement('button');b.className='sheet2-page';b.textContent='‹';b.onclick=()=>{sheet2Page--;sheet2Render();document.getElementById('sheet2Section')?.scrollIntoView({behavior:'smooth',block:'start'})};pages.appendChild(b)}
+    for(let i=startPage;i<=endPage;i++){const b=document.createElement('button');b.className='sheet2-page'+(i===sheet2Page?' active':'');b.textContent=i;b.onclick=()=>{sheet2Page=i;sheet2Render();document.getElementById('sheet2Section')?.scrollIntoView({behavior:'smooth',block:'start'})};pages.appendChild(b)}
+    if(sheet2Page<total){const b=document.createElement('button');b.className='sheet2-page';b.textContent='›';b.onclick=()=>{sheet2Page++;sheet2Render();document.getElementById('sheet2Section')?.scrollIntoView({behavior:'smooth',block:'start'})};pages.appendChild(b)}
+  }
+  async function loadSheet2(){try{const r=await fetch(SHEET2_URL,{cache:'no-store'});if(!r.ok)throw new Error('HTTP '+r.status);const data=await r.json();sheet2Rows=Array.isArray(data)?data.filter(x=>norm(x.Show)!=='true'):[];sheet2Render()}catch(e){console.error('Sheet2 load error',e);$('#sheet2Status').textContent='โหลด Sheet2 ไม่สำเร็จ';$('#sheet2Grid').innerHTML='<div class="sheet2-empty">โหลด Sheet2 ไม่สำเร็จ กรุณาตรวจสอบว่า Sheet2 เปิดเป็นสาธารณะ</div>'}}
+
   document.addEventListener('DOMContentLoaded',()=>{
     const menu=$('#menuDropdown'),menuBtn=$('#menuBtn');
     menuBtn?.addEventListener('click',e=>{e.stopPropagation();const open=menu.style.display==='flex';menu.style.display=open?'none':'flex';menuBtn.setAttribute('aria-expanded',String(!open))});
@@ -79,7 +109,8 @@
     window.addEventListener('scroll',()=>$('#backTop')?.classList.toggle('show',scrollY>500),{passive:true});$('#backTop')?.addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
     window.addEventListener('online',()=>toast('เชื่อมต่ออินเทอร์เน็ตแล้ว'));window.addEventListener('offline',()=>toast('ขณะนี้ออฟไลน์ ระบบบางส่วนอาจใช้ไม่ได้'));
     const list=$('#animeList');if(list){const observer=new MutationObserver(()=>{syncButtons();document.querySelectorAll('#animeList img').forEach(img=>{img.loading='lazy';img.decoding='async';if(!img.dataset.afErr){img.dataset.afErr='1';img.addEventListener('error',()=>{img.style.background='#171717';img.alt='รูปภาพไม่พร้อมใช้งาน'})}});if(list.querySelector('.anime-card'))$('#siteLoading')?.classList.add('hide')});observer.observe(list,{childList:true,subtree:true});setTimeout(()=>$('#siteLoading')?.classList.add('hide'),8000)}else $('#siteLoading')?.classList.add('hide');
-    renderFavs();
+    const search=$('#searchInput');search?.addEventListener('input',()=>{sheet2Page=1;sheet2Render()});
+    loadSheet2();renderFavs();
   });
 })();
 </script>

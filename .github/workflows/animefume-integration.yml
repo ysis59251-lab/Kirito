@@ -15,104 +15,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Integrate shared core, embedded data and player links
-        shell: python
-        run: |
-          from pathlib import Path
-          import re
+      - name: Run system integration
+        run: python3 system-integrate.py
 
-          changed = []
-
-          def write_if_changed(path, text):
-              old = path.read_text(encoding='utf-8')
-              if old != text:
-                  path.write_text(text, encoding='utf-8')
-                  changed.append(str(path))
-
-          def inject_script(path, src):
-              if not path.exists():
-                  return
-              s = path.read_text(encoding='utf-8')
-              if src in s:
-                  return
-              token = '</head>'
-              if token in s:
-                  s = s.replace(token, f'<script src="{src}"></script>\n{token}', 1)
-                  write_if_changed(path, s)
-
-          root_pages = ['home.html','index2.html','index3.html','search.html','history.html','sheet2.html']
-          for name in root_pages:
-              inject_script(Path(name), 'animefume-core.js')
-
-          player_root = Path('folder-name')
-          if player_root.exists():
-              for path in list(player_root.iterdir()):
-                  if path.suffix.lower() not in {'.html', '.hrml'}:
-                      continue
-                  inject_script(path, '../animefume-core.js')
-
-          # Repair the known typoed player extension.
-          bad = player_root / '243.hrml'
-          good = player_root / '243.html'
-          if bad.exists() and not good.exists():
-              bad.rename(good)
-              changed.append(str(good))
-
-          # Home: switch Sheet2 from the network endpoint to embedded data.
-          home = Path('home.html')
-          if home.exists():
-              s = home.read_text(encoding='utf-8')
-              if 'sheet2-data.js' not in s:
-                  marker = '<script type="module" src="script.js"></script>'
-                  if marker in s:
-                      s = s.replace(marker, '<script src="sheet2-data.js"></script>\n' + marker, 1)
-              s = re.sub(
-                  r"\s*const SHEET2_URL='https://opensheet\.elk\.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet2';\s*",
-                  '\n',
-                  s,
-                  count=1
-              )
-              pattern = re.compile(r"\s*async function loadSheet2\(\)\{.*?\n\s*\}\n", re.S)
-              replacement = '''\nasync function loadSheet2(){
-    try{
-      const data = await loadEmbeddedSheet2Data();
-      sheet2Rows = Array.isArray(data)
-        ? data.filter(r => String(r.Show ?? '').toUpperCase() !== 'TRUE')
-        : [];
-      sheet2Page = 1;
-      sheet2Render();
-    }catch(e){
-      console.error('embedded Sheet2 error', e);
-      sheet2Rows = [];
-      sheet2Filtered = [];
-      const status = document.getElementById('sheet2Status');
-      if(status) status.textContent = 'โหลดข้อมูลไม่สำเร็จ';
-      const grid = document.getElementById('sheet2Grid');
-      if(grid) grid.innerHTML = '<div class="sheet2-empty">ไม่สามารถโหลดรายการได้</div>';
-    }
-  }
-'''
-              s = pattern.sub(replacement, s, count=1)
-              write_if_changed(home, s)
-
-          # History accepts both legacy player records and core records.
-          history = Path('history.html')
-          if history.exists():
-              s = history.read_text(encoding='utf-8')
-              s = s.replace("a.href=x.page||'#';", "a.href=x.page||x.link||'#';")
-              s = s.replace("tm.textContent=x.time?new Date(x.time).toLocaleString('th-TH'):'';", "tm.textContent=(x.time||x.watchedAt)?new Date(x.time||x.watchedAt).toLocaleString('th-TH'):'';")
-              write_if_changed(history, s)
-
-          print('Integrated files:', len(changed))
-          for p in changed:
-              print(' -', p)
-
-      - name: Commit integration
-        shell: bash
+      - name: Commit repaired files
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add home.html index2.html index3.html search.html history.html sheet2.html folder-name
+          git add -A
           if git diff --cached --quiet; then
             echo "No changes"
             exit 0

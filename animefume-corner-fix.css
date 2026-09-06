@@ -1,34 +1,40 @@
 /* AnimeFume corner fix — mobile safe area */
 
-/* Keep the hamburger button from covering the centered AnimeFume title. */
+/* Keep the hamburger button above loading/overlay layers and easy to tap. */
 #menuBtn{
-  top:max(10px,env(safe-area-inset-top,0px));
-  left:max(10px,env(safe-area-inset-left,0px));
-  width:44px;
-  height:44px;
-  min-width:44px;
-  min-height:44px;
-  display:grid;
-  place-items:center;
-  padding:0;
-  border:1px solid rgba(255,255,255,.12);
-  border-radius:12px;
-  background:rgba(12,12,12,.94);
-  color:#fff;
-  line-height:1;
+  position:fixed !important;
+  top:max(10px,env(safe-area-inset-top,0px)) !important;
+  left:max(10px,env(safe-area-inset-left,0px)) !important;
+  width:44px !important;
+  height:44px !important;
+  min-width:44px !important;
+  min-height:44px !important;
+  display:grid !important;
+  place-items:center !important;
+  padding:0 !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-radius:12px !important;
+  background:rgba(12,12,12,.94) !important;
+  color:#fff !important;
+  line-height:1 !important;
   box-shadow:0 8px 22px rgba(0,0,0,.4);
+  z-index:2147483647 !important;
+  pointer-events:auto !important;
+  touch-action:manipulation;
+  cursor:pointer;
 }
 
-#menuBtn:active{
-  transform:scale(.95);
-}
+#menuBtn:active{transform:scale(.95);}
 
 #menuDropdown{
-  top:calc(max(10px,env(safe-area-inset-top,0px)) + 52px);
-  left:max(10px,env(safe-area-inset-left,0px));
-  width:min(250px,calc(100vw - 20px));
-  max-width:calc(100vw - 20px);
+  position:fixed !important;
+  top:calc(max(10px,env(safe-area-inset-top,0px)) + 52px) !important;
+  left:max(10px,env(safe-area-inset-left,0px)) !important;
+  width:min(250px,calc(100vw - 20px)) !important;
+  max-width:calc(100vw - 20px) !important;
   overflow:hidden;
+  z-index:2147483646 !important;
+  pointer-events:auto !important;
 }
 
 #menuDropdown a{
@@ -36,6 +42,8 @@
   padding:11px 14px;
   display:flex;
   align-items:center;
+  pointer-events:auto;
+  touch-action:manipulation;
 }
 
 @media(max-width:480px){
@@ -44,7 +52,6 @@
     padding-left:62px;
     padding-right:62px;
   }
-
   .header h1{
     font-size:clamp(21px,6vw,28px);
     white-space:nowrap;
@@ -52,10 +59,7 @@
 }
 
 @media(min-width:481px){
-  .header{
-    padding-left:72px;
-    padding-right:72px;
-  }
+  .header{padding-left:72px;padding-right:72px;}
 }
 
 @media(prefers-reduced-motion:reduce){

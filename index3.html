@@ -2,71 +2,32 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Anime Fume ดูอนิเมะออนน์</title>
-
-
-<link rel="stylesheet" href="style2.css">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
+<title>AnimeFume | พากย์ไทย</title>
+<link rel="stylesheet" href="style2.css">
+<style>
+#afLoading{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#050505;transition:.3s}.af-load-hide{opacity:0;visibility:hidden;pointer-events:none}.af-ring{width:55px;height:55px;border:4px solid #333;border-top-color:#00ffcc;border-right-color:#ff00aa;border-radius:50%;animation:afsp .8s linear infinite;margin:auto}.af-load{text-align:center}.af-load b{display:block;margin-top:12px}.af-load small{color:#aaa}@keyframes afsp{to{transform:rotate(360deg)}}
+#afTop{position:fixed;right:15px;bottom:75px;width:46px;height:46px;border:0;border-radius:50%;background:#111;color:#fff;font-size:20px;z-index:999;display:none}#afTop.show{display:block}.af-fav{position:absolute;top:8px;right:8px;width:44px;height:44px;border:0;border-radius:50%;background:rgba(0,0,0,.75);color:#fff;font-size:21px;z-index:5}.af-fav.active{color:#ffd43b}.af-fav-panel{position:fixed;right:15px;bottom:20px;width:min(360px,calc(100% - 30px));max-height:70vh;overflow:auto;background:#111;border:1px solid #333;border-radius:18px;padding:15px;z-index:10000;display:none;box-shadow:0 15px 40px #000}.af-fav-panel.show{display:block}.af-fav-row{display:flex;gap:9px;align-items:center;padding:8px;border-radius:12px;background:#1c1c1c;margin-top:8px;color:#fff;text-decoration:none}.af-fav-row img{width:48px;height:64px;object-fit:cover;border-radius:8px}.af-fav-row b{font-size:13px;flex:1}.af-fav-row button{width:38px;height:38px;border:0;border-radius:50%;background:#351919;color:#ff8888}
+</style>
 </head>
-
 <body>
-
+<div id="afLoading"><div class="af-load"><div class="af-ring"></div><b>AnimeFume</b><small>กำลังโหลดพากย์ไทย...</small></div></div>
 <div id="bg"></div>
-<a href="ระบบควบคุมภายในเว็บ/Report a Problem.html" id="reportBtn">⚠</a>
-<div id="menuBtn">☰</div>
-<div id="menuDropdown">
-  <a href="home.html">หน้าแรก</a>
-  <a href="index2.html">ซับไทย</a>
-  <a href="">พากย์ไทย</a>
-  <a href="ระบบควบคุมภายในเว็บ/Administrator.html">เเอดมิน</a>
-  <a href="ระบบควบคุมภายในเว็บDMCA.html">DMCA</a>
-</div>
-
-<header class="header">
-  <h1>AnimeFume</h1>
-  <input class="search" placeholder="ค้นหาอนิเมะ...">
-</header>
-
-<section class="hot-section">
-  <h2>🔥 ยอดฮิต</h2>
-  <div class="hot-slider" id="hotSlider"></div>
-</section>
-
-<div class="anime-list" id="animeList"></div>
-
-
-
-
-</section>
-
-<div class="footer">
-  <footer>
-    <p>
-      © <span id="year"></span> Anime Fume อนิเมะออนไลน์ <br>
-      ดูอนิเมะซับไทย <br>
-      ดูอนิเมะพากย์ไทย <br>
-      อัปเดตไวที่เว็บ <br>
-      <a href="https://kirito00.vercel.app/">kirito-sandy.vercel.app</a>
-    </p>
-  </footer>
-</div>
-
-<!-- ===== NAV ล่างสุด ===== -->
-<div class="bottom-area" id="bottomNav">
-  <div class="center-box" id="numberBox"></div>
-
-  <div class="bottom-nav">
-    <button onclick="prevSet()"/button>
-    <button onclick="nextSet()"/button>
-  </div>
-</div>
-
-<!-- ปุ่มลอย -->
-<button class="fab" onclick="toggleBottom()">☰</button>
-
+<a href="ระบบควบคุมภายในเว็บ/Report a Problem.html" id="reportBtn" aria-label="แจ้งปัญหา">⚠</a>
+<button id="menuBtn" type="button" aria-label="เปิดเมนู">☰</button>
+<div id="menuDropdown"><a href="home.html">หน้าแรก</a><a href="index2.html">ซับไทย</a><a href="index3.html">พากย์ไทย</a><a href="#" id="afFavOpen">⭐ รายการโปรด</a><a href="ระบบควบคุมภายในเว็บ/Administrator.html">แอดมิน</a><a href="ระบบควบคุมภายในเว็บ/DMCA.html">DMCA</a></div>
+<header class="header"><h1>AnimeFume</h1><input class="search" type="search" autocomplete="off" aria-label="ค้นหาอนิเมะ" placeholder="ค้นหาอนิเมะ..."></header>
+<section class="hot-section"><h2>🔥 ยอดฮิต</h2><div class="hot-slider" id="hotSlider"></div></section>
+<main class="anime-list" id="animeList" aria-live="polite"></main>
+<div class="bottom-area" id="bottomNav"><div class="center-box" id="numberBox"></div><div class="bottom-nav"><button type="button" id="prevBtn" aria-label="หน้าก่อน">‹</button><button type="button" id="nextBtn" aria-label="หน้าถัดไป">›</button></div></div>
+<button class="fab" type="button" onclick="toggleBottom()" aria-label="เปิดตัวควบคุม">☰</button>
+<button id="afTop" type="button" aria-label="กลับขึ้นด้านบน">↑</button>
+<div class="af-fav-panel" id="afFavPanel"><b>⭐ รายการโปรด</b><div id="afFavList"></div></div>
+<div class="footer"><footer><p>© <span id="year"></span> AnimeFume • พากย์ไทย • อัปเดตไว</p></footer></div>
 <script type="module" src="script2.js"></script>
-
+<script>
+(()=>{const K='animefume_favorites_v2',q=s=>document.querySelector(s),get=()=>{try{return JSON.parse(localStorage.getItem(K)||'[]')}catch{return[]}},put=x=>localStorage.setItem(K,JSON.stringify(x)),key=x=>String(x.id||x.link||x.title||'');function favButtons(){document.querySelectorAll('#animeList>.anime-card').forEach(c=>{if(c.querySelector('.af-fav'))return;const item={id:c.dataset.id||c.dataset.title,title:c.dataset.title||c.querySelector('.overlay')?.textContent||'ไม่มีชื่อ',image:c.querySelector('img')?.src||'',link:c.href,year:c.dataset.year||''};const b=document.createElement('button');b.type='button';b.className='af-fav';const on=get().some(x=>key(x)===key(item));b.textContent=on?'★':'☆';if(on)b.classList.add('active');b.onclick=e=>{e.preventDefault();e.stopPropagation();let a=get(),i=a.findIndex(x=>key(x)===key(item));if(i>=0){a.splice(i,1);b.textContent='☆';b.classList.remove('active')}else{a.unshift(item);a=a.slice(0,100);b.textContent='★';b.classList.add('active')}put(a);renderFav()};c.appendChild(b)})}function renderFav(){const box=q('#afFavList');if(!box)return;box.innerHTML='';const a=get();if(!a.length){box.innerHTML='<p style="color:#aaa;margin-top:10px">ยังไม่มีรายการโปรด</p>';return}a.forEach(x=>{const row=document.createElement('a');row.href=x.link||'#';row.className='af-fav-row';const im=document.createElement('img');im.src=x.image||'';im.alt=x.title||'';const b=document.createElement('b');b.textContent=x.title||'ไม่มีชื่อ';const rm=document.createElement('button');rm.type='button';rm.textContent='×';rm.onclick=e=>{e.preventDefault();e.stopPropagation();put(get().filter(y=>key(y)!==key(x)));renderFav();favButtons()};row.append(im,b,rm);box.appendChild(row)})}document.addEventListener('DOMContentLoaded',()=>{const list=q('#animeList'),load=q('#afLoading');const ob=new MutationObserver(()=>{favButtons();if(list?.querySelector('.anime-card'))load?.classList.add('af-load-hide')});if(list)ob.observe(list,{childList:true,subtree:true});setTimeout(()=>load?.classList.add('af-load-hide'),8000);const m=q('#menuDropdown'),mb=q('#menuBtn');mb?.addEventListener('click',e=>{e.stopPropagation();m.style.display=m.style.display==='flex'?'none':'flex'});document.addEventListener('click',e=>{if(m?.style.display==='flex'&&!m.contains(e.target)&&e.target!==mb)m.style.display='none'});q('#afFavOpen')?.addEventListener('click',e=>{e.preventDefault();q('#afFavPanel')?.classList.toggle('show');renderFav()});q('#afTop')?.addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));addEventListener('scroll',()=>q('#afTop')?.classList.toggle('show',scrollY>500),{passive:true});renderFav()})})();
+</script>
 </body>
 </html>

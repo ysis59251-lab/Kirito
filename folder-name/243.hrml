@@ -2,41 +2,40 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>AnimeFume - Dead Mount Death Play</title>
 <style>
 #nowEp{text-align:center;margin-top:12px;font-size:16px;font-weight:bold;color:#ff3b3b}
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
-body{color:#fff;background:linear-gradient(rgba(0,0,0,.7),rgba(0,0,0,.9)),url("https://img.freepik.com/free-photo/anime-night-sky-illustration_23-2151684372.jpg") center/cover fixed;min-height:100vh;line-height:1.5}
-.header{padding:16px;text-align:center;font-size:24px;font-weight:800;letter-spacing:.5px;background:linear-gradient(90deg,#e50914,#b20710);box-shadow:0 6px 20px rgba(0,0,0,.6)}
-.player{max-width:900px;margin:24px auto;aspect-ratio:16/9;background:#000;border-radius:18px;overflow:hidden;box-shadow:0 0 0 1px rgba(255,255,255,.05),0 20px 50px rgba(0,0,0,.85)}
+body{color:#fff;background:#080808;min-height:100vh;line-height:1.5}
+.header{padding:16px;text-align:center;font-size:24px;font-weight:800;background:linear-gradient(90deg,#e50914,#b20710);box-shadow:0 6px 20px rgba(0,0,0,.6)}
+.player{max-width:900px;margin:24px auto;aspect-ratio:16/9;background:#000;border-radius:18px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.85)}
 .video-box{position:relative;width:100%;height:100%}.video-box iframe{width:100%;height:100%;border:none}
-.control{display:flex;flex-direction:row;justify-content:center;align-items:center;gap:10px;flex-wrap:wrap;padding:0 16px}.control button{padding:10px 16px;font-size:14px;border-radius:30px;background:linear-gradient(135deg,#e50914,#b20710);color:#fff;border:none;cursor:pointer;transition:.2s}.control button:hover{transform:translateY(-2px)}
-.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:10;padding:20px}.modal-content{background:linear-gradient(180deg,#111,#0b0b0b);max-width:520px;margin:60px auto;padding:16px;border-radius:18px;max-height:70vh;overflow-y:auto;box-shadow:0 20px 50px rgba(0,0,0,.8)}
-.ep{padding:14px;margin-bottom:8px;border-radius:12px;cursor:pointer;background:rgba(255,255,255,.03);transition:.2s;font-size:16px}.ep:hover{background:rgba(255,255,255,.08)}.ep.active{background:linear-gradient(135deg,#e50914,#b20710);font-weight:700;box-shadow:0 0 10px rgba(229,9,20,.7)}.ep.watched{background:rgba(255,255,255,.08);color:#bbb}.ep.watched::after{content:" ✔";color:#00ffcc}
-.container{max-width:540px;margin:24px auto;padding:0 16px}.anime-img{width:100%;max-width:280px;display:block;margin:24px auto;border-radius:16px;filter:drop-shadow(0 12px 30px rgba(0,0,0,.8))}.card-wrap{margin-top:16px}.card{border-radius:16px;overflow:hidden;margin-bottom:16px}.card img{width:100%;max-width:300px;display:block;margin:0 auto;border-radius:16px;box-shadow:0 8px 20px rgba(0,0,0,.5)}
-@media(max-width:600px){.header{font-size:20px}.control button{flex:1;min-width:100px;padding:13px 8px}.desc{font-size:15px}.player{margin:16px 0;border-radius:12px}}
+.control{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:10px;padding:0 16px}.control button{min-height:46px;padding:10px 12px;font-size:14px;border-radius:30px;background:linear-gradient(135deg,#e50914,#b20710);color:#fff;border:none;cursor:pointer}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:10;padding:20px}.modal-content{background:#111;max-width:520px;margin:60px auto;padding:16px;border-radius:18px;max-height:70vh;overflow-y:auto}.ep{padding:14px;margin-bottom:8px;border-radius:12px;cursor:pointer;background:rgba(255,255,255,.05);font-size:16px}.ep.active{background:linear-gradient(135deg,#e50914,#b20710);font-weight:700}.ep.watched{color:#aaa}.ep.watched::after{content:" ✔";color:#00ffcc}
+.container{max-width:540px;margin:24px auto;padding:0 16px}.anime-img{width:100%;max-width:280px;display:block;margin:24px auto;border-radius:16px}.card img{width:100%;max-width:300px;display:block;margin:0 auto;border-radius:16px}.desc{margin-top:12px}
+@media(max-width:600px){.header{font-size:20px;padding:14px}.control{grid-template-columns:1fr 1fr 1fr;padding:0 8px;gap:6px}.control button{font-size:13px;padding:12px 4px;min-height:48px}.player{margin:12px 0;border-radius:10px}.modal{padding:10px}.modal-content{margin:30px auto;max-height:80vh}.ep{padding:15px}}
 </style>
 </head>
 <body>
 <div class="header">🎬 AnimeFume</div>
 <div class="container">
 <h2 id="animeName"></h2>
-<div class="card-wrap"><div class="card"><img id="coverImg"></div><p class="desc" id="desc"></p></div>
-<div class="player"><div class="video-box"><iframe id="video" allowfullscreen></iframe></div></div>
+<div class="card"><img id="coverImg" loading="lazy" alt="ปกอนิเมะ"></div><p class="desc" id="desc"></p>
+<div class="player"><div class="video-box"><iframe id="video" allowfullscreen loading="lazy"></iframe></div></div>
 <div id="nowEp">🎬 กำลังโหลด...</div>
 <div class="control"><button onclick="prevEp()">⏮ ก่อนหน้า</button><button onclick="openModal()">📺 เลือกตอน</button><button onclick="nextEp()">⏭ ถัดไป</button></div>
-<img class="anime-img" src="https://www.pngarts.com/files/12/Manga-Anime-Girl-Transparent-Image.png" alt="Anime Girl">
 <div class="modal" id="modal"><div class="modal-content" id="episodeList"></div></div>
 <script>
 const SHEET_ID="1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
 const API=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 const currentAnime="Dark Beginning";
-let episodes=[];let currentIndex=0;let watched=JSON.parse(localStorage.getItem("watchedEpisodes")||"[]");
-fetch(API).then(res=>{if(!res.ok)throw new Error('โหลดข้อมูลไม่สำเร็จ');return res.text()}).then(text=>{const json=JSON.parse(text.substring(47).slice(0,-2));episodes=json.table.rows.map(r=>({anime:r.c[0]?.v,name:r.c[1]?.v,ep:r.c[2]?.v,title:r.c[3]?.v,url:r.c[4]?.v,desc:r.c[6]?.v,cover:r.c[7]?.v})).filter(e=>e.anime===currentAnime);if(!episodes.length){document.getElementById('animeName').innerText='ไม่พบข้อมูลตอน';return}const info=episodes.find(e=>e.cover||e.desc)||episodes[0];document.getElementById('animeName').innerText=info.name||'';document.getElementById('desc').innerHTML='<b>📖 เรื่องย่อ</b><br><br>'+(info.desc||'').replace(/\n/g,'<br><br>');document.getElementById('coverImg').src=info.cover||'';renderEpisodes();const last=localStorage.getItem('lastEpisode');if(last){const i=episodes.findIndex(e=>e.url===last);currentIndex=i!==-1?i:0}play(episodes[currentIndex].url)}).catch(()=>{document.getElementById('animeName').innerText='⚠️ โหลดข้อมูลไม่สำเร็จ';document.getElementById('nowEp').innerText='กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่'});
-function renderEpisodes(){const box=document.getElementById('episodeList');box.innerHTML='';episodes.forEach((e,i)=>{const div=document.createElement('div');div.className='ep';div.innerText=`ตอนที่ ${e.ep}`;if(watched.includes(e.url))div.classList.add('watched');div.onclick=()=>play(e.url);box.appendChild(div)});highlight()}
-function play(url){if(!url)return;const video=document.getElementById('video');if(url.includes('drive.google.com')){const m=url.match(/\/d\/(.+?)\//);if(m)url=`https://drive.google.com/file/d/${m[1]}/preview`}video.src=url;const found=episodes.findIndex(e=>e.url===url||url.includes(e.url));if(found>=0)currentIndex=found;const current=episodes[currentIndex];if(!current)return;localStorage.setItem('lastEpisode',current.url);if(!watched.includes(current.url)){watched.push(current.url);localStorage.setItem('watchedEpisodes',JSON.stringify(watched))}highlight();renderEpisodes();closeModal();document.getElementById('nowEp').innerText=`🎬 กำลังดู: ตอนที่ ${current.ep} • ${current.title||''}`}
-function nextEp(){if(currentIndex<episodes.length-1)play(episodes[currentIndex+1].url)}function prevEp(){if(currentIndex>0)play(episodes[currentIndex-1].url)}function highlight(){document.querySelectorAll('.ep').forEach((el,i)=>el.classList.toggle('active',i===currentIndex))}function openModal(){document.getElementById('modal').style.display='block'}function closeModal(){document.getElementById('modal').style.display='none'}document.getElementById('modal').onclick=e=>{if(e.target.id==='modal')closeModal()};
+const key=s=>`animefume_${s}_${encodeURIComponent(currentAnime)}`;
+let episodes=[],currentIndex=0,watched=JSON.parse(localStorage.getItem(key('watched'))||'[]');
+fetch(API).then(r=>{if(!r.ok)throw Error();return r.text()}).then(text=>{const json=JSON.parse(text.substring(47).slice(0,-2));episodes=json.table.rows.map(r=>({anime:r.c[0]?.v,name:r.c[1]?.v,ep:r.c[2]?.v,title:r.c[3]?.v,url:r.c[4]?.v,desc:r.c[6]?.v,cover:r.c[7]?.v})).filter(e=>e.anime===currentAnime);if(!episodes.length){animeName.innerText='ไม่พบข้อมูลตอน';return}const info=episodes.find(e=>e.cover||e.desc)||episodes[0];animeName.innerText=info.name||'';desc.innerHTML='<b>📖 เรื่องย่อ</b><br><br>'+String(info.desc||'').replace(/\n/g,'<br><br>');coverImg.src=info.cover||'';const last=localStorage.getItem(key('last'));const i=episodes.findIndex(e=>e.url===last);currentIndex=i>=0?i:0;renderEpisodes();play(currentIndex,false)}).catch(()=>{animeName.innerText='⚠️ โหลดข้อมูลไม่สำเร็จ';nowEp.innerText='กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่'});
+function renderEpisodes(){episodeList.innerHTML='';episodes.forEach((e,i)=>{const d=document.createElement('div');d.className='ep'+(watched.includes(e.url)?' watched':'');d.innerText=`ตอนที่ ${e.ep}`;d.onclick=()=>play(i);episodeList.appendChild(d)});highlight()}
+function play(i,mark=true){if(!episodes[i])return;currentIndex=i;let url=episodes[i].url;const m=url.match(/drive\.google\.com\/file\/d\/([^/]+)/);if(m)url=`https://drive.google.com/file/d/${m[1]}/preview`;video.src=url;localStorage.setItem(key('last'),episodes[i].url);if(mark&&!watched.includes(episodes[i].url)){watched.push(episodes[i].url);localStorage.setItem(key('watched'),JSON.stringify(watched))}highlight();nowEp.innerText=`🎬 กำลังดู: ตอนที่ ${episodes[i].ep} • ${episodes[i].title||''}`;closeModal()}
+function nextEp(){if(currentIndex<episodes.length-1)play(currentIndex+1)}function prevEp(){if(currentIndex>0)play(currentIndex-1)}function highlight(){document.querySelectorAll('.ep').forEach((e,i)=>e.classList.toggle('active',i===currentIndex))}function openModal(){modal.style.display='block'}function closeModal(){modal.style.display='none'}modal.onclick=e=>{if(e.target===modal)closeModal()};document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')nextEp();if(e.key==='ArrowLeft')prevEp()});
 </script>
 <script src="../player-system.js"></script>
 </body></html>

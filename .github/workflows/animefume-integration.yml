@@ -24,7 +24,8 @@ jobs:
           changed = []
 
           def write_if_changed(path, text):
-              if path.read_text(encoding='utf-8') != text:
+              old = path.read_text(encoding='utf-8')
+              if old != text:
                   path.write_text(text, encoding='utf-8')
                   changed.append(str(path))
 
@@ -39,26 +40,25 @@ jobs:
                   s = s.replace(token, f'<script src="{src}"></script>\n{token}', 1)
                   write_if_changed(path, s)
 
-          # Shared core on the public/root pages.
-          for name in ['home.html','index2.html','index3.html','search.html','history.html','sheet2.html']:
+          root_pages = ['home.html','index2.html','index3.html','search.html','history.html','sheet2.html']
+          for name in root_pages:
               inject_script(Path(name), 'animefume-core.js')
 
-          # Shared core on every player page. Player pages live one directory deeper.
-          root = Path('folder-name')
-          if root.exists():
-              for path in list(root.iterdir()):
+          player_root = Path('folder-name')
+          if player_root.exists():
+              for path in list(player_root.iterdir()):
                   if path.suffix.lower() not in {'.html', '.hrml'}:
                       continue
                   inject_script(path, '../animefume-core.js')
 
-          # Repair the single typoed player extension so links such as folder-name/243.html work.
-          bad = root / '243.hrml'
-          good = root / '243.html'
+          # Repair the known typoed player extension.
+          bad = player_root / '243.hrml'
+          good = player_root / '243.html'
           if bad.exists() and not good.exists():
               bad.rename(good)
               changed.append(str(good))
 
-          # Home: use the embedded Sheet2 data instead of the Sheet2 network endpoint.
+          # Home: switch Sheet2 from the network endpoint to embedded data.
           home = Path('home.html')
           if home.exists():
               s = home.read_text(encoding='utf-8')
@@ -92,17 +92,14 @@ jobs:
     }
   }
 '''
-              s2 = pattern.sub(replacement, s, count=1)
-              if s2 != s:
-                  s = s2
+              s = pattern.sub(replacement, s, count=1)
               write_if_changed(home, s)
 
-          # History accepts both the legacy player format and the new core format.
+          # History accepts both legacy player records and core records.
           history = Path('history.html')
           if history.exists():
               s = history.read_text(encoding='utf-8')
               s = s.replace("a.href=x.page||'#';", "a.href=x.page||x.link||'#';")
-              s = s.replace("e.textContent=x.episode||'เปิดเรื่อง';", "e.textContent=x.episode||'เปิดเรื่อง';")
               s = s.replace("tm.textContent=x.time?new Date(x.time).toLocaleString('th-TH'):'';", "tm.textContent=(x.time||x.watchedAt)?new Date(x.time||x.watchedAt).toLocaleString('th-TH'):'';")
               write_if_changed(history, s)
 
@@ -115,7 +112,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add home.html history.html folder-name
+          git add home.html index2.html index3.html search.html history.html sheet2.html folder-name
           if git diff --cached --quiet; then
             echo "No changes"
             exit 0

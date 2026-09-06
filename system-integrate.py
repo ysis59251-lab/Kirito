@@ -22,9 +22,11 @@ def inject(path: Path, src: str):
     save(path, text.replace('</head>', f'<script src="{src}"></script>\n</head>', 1))
 
 
-# Shared core on public pages.
+# Shared core + shared mobile navigation on public pages.
 for name in ('home.html', 'index2.html', 'index3.html', 'search.html', 'history.html', 'sheet2.html'):
-    inject(Path(name), 'animefume-core.js')
+    path = Path(name)
+    inject(path, 'animefume-core.js')
+    inject(path, 'animefume-menu-fix.js')
 
 # Shared core on player pages.
 player_root = Path('folder-name')

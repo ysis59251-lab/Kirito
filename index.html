@@ -2,96 +2,22 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ดูอนิเมะ</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#050505">
+<title>AnimeFume</title>
 <style>
-body{
-  margin:0;
-  height:100vh;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  background: radial-gradient(circle at center,#111 0%,#000 70%);
-  font-family:sans-serif;
-  overflow:hidden;
-  color:#fff;
-}
-
-/* แสงพื้นหลังขยับเบา ๆ */
-body::before{
-  content:"";
-  position:absolute;
-  width:400px;
-  height:400px;
-  background:radial-gradient(circle,rgba(0,255,200,0.3),transparent);
-  filter:blur(80px);
-  animation:floatGlow 4s ease-in-out infinite alternate;
-}
-
-@keyframes floatGlow{
-  from{ transform:translateY(-20px); }
-  to{ transform:translateY(20px); }
-}
-
-/* กล่องโหลด */
-#loading{
-  position:relative;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  z-index:2;
-}
-
-/* วงโหลดไฮเทค */
-.loader{
-  width:70px;
-  height:70px;
-  border-radius:50%;
-  border:4px solid rgba(255,255,255,0.1);
-  border-top:4px solid #00ffcc;
-  border-right:4px solid #ff00aa;
-  animation:spin 1s linear infinite;
-  box-shadow:0 0 25px rgba(0,255,200,0.5);
-}
-
-@keyframes spin{
-  to{ transform:rotate(360deg); }
-}
-
-/* ชื่อเว็บ */
-.title{
-  margin-top:25px;
-  font-size:26px;
-  font-weight:bold;
-  background:linear-gradient(90deg,#00ffcc,#ff00aa);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  letter-spacing:2px;
-}
-
-/* ข้อความโหลด */
-.text{
-  margin-top:10px;
-  font-size:14px;
-  opacity:0.7;
-}
+*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden}body{display:grid;place-items:center;background:radial-gradient(circle at 50% 45%,#151515 0,#050505 48%,#000 100%);font-family:system-ui,sans-serif;color:#fff}.bg{position:fixed;inset:-20%;background:radial-gradient(circle,rgba(0,255,204,.14),transparent 28%),radial-gradient(circle at 75% 25%,rgba(255,0,170,.12),transparent 30%);filter:blur(25px);animation:float 5s ease-in-out infinite alternate}.loading{position:relative;z-index:2;text-align:center}.ring{width:72px;height:72px;margin:auto;border-radius:50%;border:4px solid rgba(255,255,255,.1);border-top-color:#00ffcc;border-right-color:#ff00aa;box-shadow:0 0 28px rgba(0,255,204,.35);animation:spin .8s linear infinite}.title{margin-top:20px;font-size:28px;font-weight:900;letter-spacing:2px;background:linear-gradient(90deg,#00ffcc,#ff00aa);-webkit-background-clip:text;color:transparent}.text{margin-top:8px;color:#aaa;font-size:14px}.fallback{display:inline-block;margin-top:18px;color:#fff;text-decoration:none;border:1px solid #333;padding:10px 16px;border-radius:12px;background:#151515}@keyframes spin{to{transform:rotate(360deg)}}@keyframes float{from{transform:translate3d(-2%,-1%,0) scale(1)}to{transform:translate3d(2%,1%,0) scale(1.05)}}@media(prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
 </head>
-
 <body>
-
-<div id="loading">
-  <div class="loader"></div>
-  <div class="title">AnimeFume</div>
-  <div class="text">กำลังโหลดเว็บไซต์...</div>
-</div>
-
+<div class="bg"></div>
+<main class="loading" aria-live="polite"><div class="ring"></div><div class="title">AnimeFume</div><div class="text" id="status">กำลังเปิดเว็บไซต์...</div><a class="fallback" href="home.html">เข้าเว็บทันที</a></main>
 <script>
-setTimeout(()=>{
-  window.location.href = "home.html";
-}, 2500);
+const status=document.getElementById('status');
+const started=Date.now();
+const go=()=>{status.textContent='กำลังเข้าสู่หน้าแรก...';location.replace('home.html')};
+setTimeout(go,1200);
+setTimeout(()=>{if(Date.now()-started>5000)status.textContent='ใช้ปุ่มด้านบนเพื่อเข้าเว็บได้ทันที'},5000);
 </script>
-
 </body>
 </html>

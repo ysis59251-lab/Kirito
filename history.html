@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080808">
+<title>AnimeFume • ประวัติการรับชม</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#080808;color:#fff;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;min-height:100vh}.wrap{max-width:900px;margin:auto;padding:18px}.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.top h1{font-size:22px;margin:0}.btn{border:1px solid #333;background:#151515;color:#fff;border-radius:12px;padding:10px 14px;text-decoration:none;cursor:pointer}.danger{color:#ff7777}.empty{text-align:center;color:#999;padding:60px 20px;border:1px dashed #333;border-radius:18px}.history{display:grid;gap:10px}.item{display:flex;align-items:center;gap:12px;padding:12px;background:#121212;border:1px solid #252525;border-radius:16px;text-decoration:none;color:#fff}.item:hover{background:#191919}.icon{width:52px;height:52px;border-radius:13px;background:linear-gradient(135deg,#e50914,#222);display:grid;place-items:center;flex:none;font-size:22px}.info{min-width:0;flex:1}.title{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ep{font-size:13px;color:#aaa;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.time{font-size:11px;color:#777;margin-top:3px}.remove{width:40px;height:40px;border:0;border-radius:10px;background:#241515;color:#ff7777;cursor:pointer;flex:none}@media(max-width:600px){.wrap{padding:12px}.item{padding:10px}.top{align-items:flex-start}.top h1{font-size:19px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>🕘 ประวัติการรับชม</h1><div><a class="btn" href="home.html">หน้าแรก</a> <button class="btn danger" id="clear" type="button">ล้างทั้งหมด</button></div></div>
+  <div id="list" class="history"></div>
+</div>
+<script>
+const KEY='animefume_watch_history_v2';
+const list=document.getElementById('list');
+function read(){try{return JSON.parse(localStorage.getItem(KEY)||'[]')}catch{return[]}}
+function render(){const data=read();list.innerHTML='';if(!data.length){list.innerHTML='<div class="empty">ยังไม่มีประวัติการรับชม<br><small>เมื่อเลือกตอน ระบบจะบันทึกไว้ที่เครื่องนี้</small></div>';return}data.forEach((x,i)=>{const a=document.createElement('a');a.className='item';a.href=x.page||'#';const icon=document.createElement('div');icon.className='icon';icon.textContent='▶';const info=document.createElement('div');info.className='info';const t=document.createElement('div');t.className='title';t.textContent=x.title||'AnimeFume';const e=document.createElement('div');e.className='ep';e.textContent=x.episode||'เปิดเรื่อง';const tm=document.createElement('div');tm.className='time';tm.textContent=x.time?new Date(x.time).toLocaleString('th-TH'):'';info.append(t,e,tm);const rm=document.createElement('button');rm.className='remove';rm.type='button';rm.textContent='×';rm.setAttribute('aria-label','ลบรายการ');rm.onclick=ev=>{ev.preventDefault();ev.stopPropagation();const d=read();d.splice(i,1);localStorage.setItem(KEY,JSON.stringify(d));render()};a.append(icon,info,rm);list.appendChild(a)})}
+document.getElementById('clear').onclick=()=>{if(!read().length)return;if(confirm('ล้างประวัติการรับชมทั้งหมดใช่ไหม?')){localStorage.removeItem(KEY);render()}};
+render();
+</script>
+</body>
+</html>

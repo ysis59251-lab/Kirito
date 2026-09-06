@@ -1,80 +1,17 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"><meta name="theme-color" content="#0f172a">
 <title>ค้นหาอนิเมะ | AnimeFume</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{min-height:100vh;font-family:system-ui,sans-serif;background:linear-gradient(180deg,#0f172a,#020617);color:#fff;padding:20px}
-body:before{content:"";position:fixed;inset:0;background:radial-gradient(circle at top,rgba(59,130,246,.18),transparent 40%);pointer-events:none}
-.container{position:relative;z-index:1;max-width:1100px;margin:auto}
-.title{text-align:center;font-size:34px;font-weight:800;margin:10px 0 22px}
-.search-box{display:flex;gap:10px;margin-bottom:18px}
-.search-box input{flex:1;height:55px;border:1px solid rgba(255,255,255,.08);outline:none;border-radius:16px;padding:0 18px;font-size:16px;background:#1e293b;color:#fff}
-.search-box input:focus{background:#334155;box-shadow:0 0 0 3px rgba(59,130,246,.25)}
-.search-box button{height:55px;border:0;padding:0 25px;border-radius:16px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:16px;font-weight:700;cursor:pointer}
-.status{min-height:24px;margin:0 4px 14px;color:#94a3b8;font-size:14px}
-.result-card{background:rgba(30,41,59,.75);border:1px solid rgba(255,255,255,.06);border-radius:24px;padding:22px;backdrop-filter:blur(10px);box-shadow:0 10px 30px rgba(0,0,0,.35)}
-#result{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:20px}
-.anime-card{display:block;background:#1e293b;border-radius:18px;overflow:hidden;text-decoration:none;color:#fff;transition:.2s;border:1px solid rgba(255,255,255,.05)}
-.anime-card:hover{transform:translateY(-5px);border-color:rgba(96,165,250,.4)}
-.anime-card img{width:100%;height:260px;object-fit:cover;display:block;background:#0f172a}
-.info{padding:14px}.info h3{font-size:16px;line-height:1.4;margin-bottom:7px}.info span{color:#94a3b8;font-size:14px}
-.empty{text-align:center;padding:50px 15px;font-size:20px;color:#f87171;grid-column:1/-1}.loading{text-align:center;padding:45px;color:#94a3b8;grid-column:1/-1}
-.back-btn{display:inline-flex;align-items:center;justify-content:center;margin-top:22px;height:50px;padding:0 24px;border-radius:14px;text-decoration:none;color:#fff;background:#1e293b}
-@media(max-width:600px){body{padding:14px}.title{font-size:28px}.search-box{flex-direction:column}.search-box button{width:100%}.result-card{padding:14px}#result{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.anime-card img{height:220px}.info{padding:10px}.info h3{font-size:14px}}
+*{box-sizing:border-box;margin:0;padding:0}body{min-height:100vh;font-family:system-ui,sans-serif;background:linear-gradient(180deg,#0f172a,#020617);color:#fff;padding:16px}body:before{content:"";position:fixed;inset:0;background:radial-gradient(circle at top,rgba(59,130,246,.18),transparent 40%);pointer-events:none}.container{position:relative;z-index:1;max-width:1100px;margin:auto}.title{text-align:center;font-size:32px;font-weight:900;margin:10px 0 20px}.search-box{display:flex;gap:10px;margin-bottom:12px}.search-box input{flex:1;height:54px;border:1px solid rgba(255,255,255,.08);outline:none;border-radius:16px;padding:0 18px;font-size:16px;background:#1e293b;color:#fff}.search-box input:focus{background:#334155;box-shadow:0 0 0 3px rgba(59,130,246,.25)}.search-box button{height:54px;border:0;padding:0 24px;border-radius:16px;background:linear-gradient(135deg,#3b82f6,#2563eb);color:#fff;font-size:16px;font-weight:800}.status{min-height:24px;margin:0 4px 14px;color:#94a3b8;font-size:14px}.result-card{background:rgba(30,41,59,.75);border:1px solid rgba(255,255,255,.06);border-radius:24px;padding:20px;backdrop-filter:blur(10px);box-shadow:0 10px 30px rgba(0,0,0,.35)}#result{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:18px}.anime-card{position:relative;display:block;background:#1e293b;border-radius:18px;overflow:hidden;text-decoration:none;color:#fff;border:1px solid rgba(255,255,255,.05);transition:.2s}.anime-card:hover{transform:translateY(-4px);border-color:rgba(96,165,250,.4)}.anime-card img{width:100%;height:260px;object-fit:cover;display:block;background:#0f172a}.info{padding:12px}.info h3{font-size:15px;line-height:1.4;margin-bottom:6px}.info span{color:#94a3b8;font-size:13px}.empty,.loading{text-align:center;padding:50px 15px;grid-column:1/-1;color:#94a3b8}.empty{color:#f87171}.fav{position:absolute;top:8px;right:8px;width:44px;height:44px;border:0;border-radius:50%;background:rgba(0,0,0,.75);color:#fff;font-size:21px;z-index:3}.fav.active{color:#ffd43b}.back-btn{display:inline-flex;align-items:center;justify-content:center;margin-top:18px;height:50px;padding:0 24px;border-radius:14px;text-decoration:none;color:#fff;background:#1e293b}.fav-link{float:right;margin-top:18px;height:50px;padding:0 18px;border-radius:14px;border:0;background:#2b1b08;color:#ffd43b;font-weight:700}@media(max-width:600px){body{padding:12px}.title{font-size:27px}.search-box{flex-direction:column}.search-box button{width:100%}.result-card{padding:12px}#result{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.anime-card img{height:220px}.info{padding:9px}.info h3{font-size:14px}}
 </style>
 </head>
-<body>
-<div class="container">
-<h1 class="title">🔎 ค้นหาอนิเมะ</h1>
-<form class="search-box" id="searchForm">
-<input type="search" id="searchInput" autocomplete="off" placeholder="พิมพ์ชื่ออนิเมะ..." aria-label="ค้นหาอนิเมะ">
-<button type="submit">ค้นหา</button>
-</form>
-<div class="status" id="status">กำลังโหลดข้อมูล...</div>
-<div class="result-card"><div id="result"><div class="loading">กำลังโหลด...</div></div></div>
-<a href="home.html" class="back-btn">← กลับหน้าเดิม</a>
-</div>
+<body><div class="container"><h1 class="title">🔎 ค้นหาอนิเมะ</h1><form class="search-box" id="searchForm"><input type="search" id="searchInput" autocomplete="off" placeholder="พิมพ์ชื่ออนิเมะ..." aria-label="ค้นหาอนิเมะ"><button type="submit">ค้นหา</button></form><div class="status" id="status">กำลังโหลดข้อมูล...</div><div class="result-card"><div id="result"><div class="loading">กำลังโหลด...</div></div></div><a href="home.html" class="back-btn">← กลับหน้าแรก</a><button class="fav-link" id="showFav" type="button">⭐ โปรด</button></div>
 <script>
-const API_URL="https://script.google.com/macros/s/AKfycbw23F39mdzWkHkpw88GRP9il4sRF9mmnb1xiVAYottpyjBY_JGNLEK9ETNkBSKj2u97/exec";
-const input=document.getElementById("searchInput"),result=document.getElementById("result"),status=document.getElementById("status"),form=document.getElementById("searchForm");
-let animeData=[];
-function normalize(v){return String(v??"").normalize("NFC").trim().toLocaleLowerCase("th-TH")}
-function setQuery(q){history.replaceState(null,"",q?`${location.pathname}?q=${encodeURIComponent(q)}`:location.pathname)}
-function renderAnime(data){
- result.innerHTML="";
- if(!data.length){result.innerHTML='<div class="empty">ไม่พบอนิเมะที่ค้นหา</div>';status.textContent="ไม่พบผลลัพธ์";return}
- status.textContent=`พบ ${data.length} รายการ`;
- const frag=document.createDocumentFragment();
- data.forEach(row=>{
-  const card=document.createElement("a");card.className="anime-card";card.href=row.link||"#";
-  const img=document.createElement("img");img.src=row.image||"";img.alt=row.title||"ไม่มีชื่อ";img.loading="lazy";img.onerror=()=>{img.style.visibility="hidden"};
-  const info=document.createElement("div");info.className="info";
-  const h=document.createElement("h3");h.textContent=row.title||"ไม่มีชื่อ";
-  const span=document.createElement("span");span.textContent=row.year||"";
-  info.append(h,span);card.append(img,info);frag.appendChild(card);
- });
- result.appendChild(frag);
-}
-function searchAnime(updateURL=true){
- const q=normalize(input.value);if(updateURL)setQuery(q);
- if(!q){renderAnime(animeData);return}
- const words=q.split(/\s+/).filter(Boolean);
- const filtered=animeData.filter(row=>{const title=normalize(row.title);return words.every(w=>title.includes(w))});
- renderAnime(filtered);
-}
-async function loadAnime(){
- try{
-  const res=await fetch(API_URL,{cache:"no-store"});if(!res.ok)throw new Error(`HTTP ${res.status}`);
-  const data=await res.json();animeData=Array.isArray(data)?data.filter(Boolean):[];
-  const q=new URLSearchParams(location.search).get("q")||"";input.value=q;searchAnime(false)
- }catch(err){console.error(err);result.innerHTML='<div class="empty">โหลดข้อมูลไม่ได้ กรุณาลองใหม่อีกครั้ง</div>';status.textContent="เกิดข้อผิดพลาดในการโหลดข้อมูล"}
-}
-form.addEventListener("submit",e=>{e.preventDefault();searchAnime()});
-input.addEventListener("input",()=>searchAnime());
-loadAnime();
-</script>
-</body>
-</html>
+const API_URL="https://script.google.com/macros/s/AKfycbw23F39mdzWkHkpw88GRP9il4sRF9mmnb1xiVAYottpyjBY_JGNLEK9ETNkBSKj2u97/exec";const input=document.getElementById('searchInput'),result=document.getElementById('result'),status=document.getElementById('status'),form=document.getElementById('searchForm'),FAV='animefume_favorites_v2';let animeData=[];const norm=v=>String(v??'').normalize('NFC').trim().toLocaleLowerCase('th-TH');const favs=()=>{try{return JSON.parse(localStorage.getItem(FAV)||'[]')}catch{return[]}};const saveFav=v=>localStorage.setItem(FAV,JSON.stringify(v));const key=x=>String(x.id||x.link||x.title||'');
+function renderAnime(data){result.innerHTML='';if(!data.length){result.innerHTML='<div class="empty">ไม่พบอนิเมะที่ค้นหา</div>';status.textContent='ไม่พบผลลัพธ์';return}status.textContent=`พบ ${data.length} รายการ`;const frag=document.createDocumentFragment();data.forEach(row=>{const card=document.createElement('a');card.className='anime-card';card.href=row.link||'#';const img=document.createElement('img');img.src=row.image||'';img.alt=row.title||'ไม่มีชื่อ';img.loading='lazy';img.decoding='async';img.onerror=()=>img.style.opacity='.25';const info=document.createElement('div');info.className='info';const h=document.createElement('h3');h.textContent=row.title||'ไม่มีชื่อ';const span=document.createElement('span');span.textContent=row.year||'';info.append(h,span);const b=document.createElement('button');b.type='button';b.className='fav';const item={id:row.id||row.title,title:row.title||'ไม่มีชื่อ',image:row.image||'',link:row.link||'#',year:row.year||''};const on=favs().some(x=>key(x)===key(item));b.textContent=on?'★':'☆';if(on)b.classList.add('active');b.setAttribute('aria-label','รายการโปรด');b.onclick=e=>{e.preventDefault();e.stopPropagation();let a=favs(),i=a.findIndex(x=>key(x)===key(item));if(i>=0){a.splice(i,1);b.textContent='☆';b.classList.remove('active')}else{a.unshift(item);a=a.slice(0,100);b.textContent='★';b.classList.add('active')}saveFav(a)};card.append(img,info,b);frag.appendChild(card)});result.appendChild(frag)}
+function searchAnime(update=true){const q=norm(input.value);if(update)history.replaceState(null,'',q?`${location.pathname}?q=${encodeURIComponent(q)}`:location.pathname);if(!q)return renderAnime(animeData);const words=q.split(/\s+/).filter(Boolean);renderAnime(animeData.filter(r=>{const t=norm(r.title);return words.every(w=>t.includes(w))}))}
+async function loadAnime(){try{const res=await fetch(API_URL,{cache:'no-store'});if(!res.ok)throw Error(`HTTP ${res.status}`);const data=await res.json();animeData=Array.isArray(data)?data.filter(Boolean):[];const q=new URLSearchParams(location.search).get('q')||'';input.value=q;searchAnime(false)}catch(e){console.error(e);result.innerHTML='<div class="empty">โหลดข้อมูลไม่ได้ กรุณาลองใหม่อีกครั้ง</div>';status.textContent='เกิดข้อผิดพลาดในการโหลดข้อมูล'}}
+form.addEventListener('submit',e=>{e.preventDefault();searchAnime()});input.addEventListener('input',()=>searchAnime());document.getElementById('showFav').onclick=()=>{const a=favs();if(!a.length){status.textContent='ยังไม่มีรายการโปรด';return}renderAnime(a)};loadAnime();
+</script></body></html>

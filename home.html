@@ -2,67 +2,86 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ดูอนิเมะออนน์ไลฟ์</title>
-
-
-<link rel="stylesheet" href="style.css">
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#000000">
+<meta name="color-scheme" content="dark">
+<title>AnimeFume | ดูอนิเมะออนไลน์</title>
+<link rel="stylesheet" href="style.css">
+<style>
+#siteLoading{position:fixed;inset:0;z-index:9999;display:grid;place-items:center;background:#050505;transition:opacity .35s,visibility .35s}
+#siteLoading.hide{opacity:0;visibility:hidden;pointer-events:none}
+.loader-box{text-align:center}.loader-ring{width:58px;height:58px;border:4px solid #333;border-top-color:#00ffcc;border-right-color:#ff00aa;border-radius:50%;animation:afspin .8s linear infinite;margin:auto}.loader-box b{display:block;margin-top:14px;font-size:18px}.loader-box span{display:block;margin-top:6px;color:#aaa;font-size:13px}@keyframes afspin{to{transform:rotate(360deg)}}
+#siteToast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;pointer-events:none;z-index:10001;background:rgba(15,15,15,.94);border:1px solid rgba(255,255,255,.12);padding:11px 16px;border-radius:14px;box-shadow:0 10px 30px #000;color:#fff;font-size:14px;transition:.25s;max-width:90%;text-align:center}
+#siteToast.show{opacity:1;transform:translate(-50%,0)}
+#backTop{position:fixed;right:16px;bottom:78px;width:46px;height:46px;border:0;border-radius:50%;background:#111;color:#fff;font-size:20px;z-index:999;display:none;box-shadow:0 8px 24px #000;cursor:pointer}
+#backTop.show{display:block}
+#afFavoritesBtn{position:fixed;right:16px;bottom:20px;width:46px;height:46px;border:0;border-radius:50%;background:linear-gradient(135deg,#ff4d6d,#ff8a00);color:#fff;font-size:20px;z-index:999;box-shadow:0 8px 24px #000;cursor:pointer}
+.af-fav{position:absolute;top:9px;right:9px;width:44px;height:44px;border:0;border-radius:50%;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);color:#fff;font-size:21px;z-index:5;cursor:pointer}
+.af-fav.active{color:#ffd43b;background:rgba(0,0,0,.88)}
+#afFavModal{position:fixed;inset:0;background:rgba(0,0,0,.78);backdrop-filter:blur(8px);z-index:10000;display:none;padding:18px;overflow:auto}
+#afFavModal.show{display:block}.af-modal{max-width:900px;margin:5vh auto;background:#101010;border:1px solid #292929;border-radius:22px;padding:18px}.af-modal-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px}.af-modal-head h2{margin:0}.af-close{width:44px;height:44px;border:0;border-radius:50%;background:#242424;color:#fff;font-size:22px}.af-fav-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.af-fav-card{display:flex;gap:10px;align-items:center;background:#191919;border-radius:15px;padding:8px;color:#fff;text-decoration:none;min-width:0}.af-fav-card img{width:58px;height:78px;object-fit:cover;border-radius:10px;flex:none}.af-fav-card b{font-size:14px;line-height:1.35}.af-remove{margin-left:auto;width:40px;height:40px;border:0;border-radius:50%;background:#2b1717;color:#ff7272;flex:none}@media(max-width:600px){.af-fav-grid{grid-template-columns:1fr}.af-modal{margin:2vh auto}.af-fav-card img{width:52px;height:70px}}
+@media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+</style>
 </head>
-
 <body>
-
+<div id="siteLoading"><div class="loader-box"><div class="loader-ring"></div><b>AnimeFume</b><span>กำลังโหลดรายการอนิเมะ...</span></div></div>
 <div id="bg"></div>
-<a href="ระบบควบคุมภายในเว็บ/Report a Problem.html" id="reportBtn">⚠</a>
-<div id="menuBtn">☰</div>
-<div id="menuDropdown">
-  <a href="#">หน้าแรก</a>
+<a href="ระบบควบคุมภายในเว็บ/Report a Problem.html" id="reportBtn" aria-label="แจ้งปัญหา">⚠</a>
+<button id="menuBtn" type="button" aria-label="เปิดเมนู" aria-expanded="false">☰</button>
+<nav id="menuDropdown" aria-label="เมนูหลัก">
+  <a href="home.html">หน้าแรก</a>
   <a href="index2.html">ซับไทย</a>
   <a href="index3.html">พากย์ไทย</a>
+  <a href="#" id="openFavMenu">⭐ รายการโปรด</a>
   <a href="ระบบควบคุมภายในเว็บ/DMCA.html">DMCA</a>
-  <a href="ระบบควบคุมภายในเว็บ/Administrator.html">เเอดมิน</a>
-
-</div>
-
+  <a href="ระบบควบคุมภายในเว็บ/Administrator.html">แอดมิน</a>
+</nav>
 <header class="header">
   <h1>AnimeFume</h1>
-<input 
-  type="text"
-  id="searchInput"
-  class="search"
-  placeholder="ค้นหาอนิเมะ..."
->
-
-<section class="hot-section">
-  <h2>🔥 ยอดฮิต</h2>
+  <input type="search" id="searchInput" class="search" autocomplete="off" aria-label="ค้นหาอนิเมะ" placeholder="ค้นหาอนิเมะ...">
+</header>
+<section class="hot-section" aria-labelledby="hotTitle">
+  <h2 id="hotTitle">🔥 ยอดฮิต</h2>
   <div class="hot-slider" id="hotSlider"></div>
 </section>
-
-<div class="anime-list" id="animeList"></div>
-
-
-
-
-</section>
-
-<div id="numberBox"></div>
-
-<div class="footer">
-  <footer>
-    <p>
-      © <span id="year"></span> Anime Fume อนิเมะออนไลน์ <br>
-      ดูอนิเมะซับไทย <br>
-      ดูอนิเมะพากย์ไทย <br>
-      อัปเดตไวที่เว็บ <br>
-      <a href="https://kirito00.vercel.app/">kirito-sandy.vercel.app</a>
-    </p>
-  </footer>
+<main class="anime-list" id="animeList" aria-live="polite"></main>
+<div id="numberBox" aria-label="เปลี่ยนหน้า"></div>
+<div class="footer"><footer><p>© <span id="year"></span> AnimeFume อนิเมะออนไลน์<br>ดูอนิเมะซับไทย • ดูอนิเมะพากย์ไทย • อัปเดตไว<br><a href="https://kirito00.vercel.app/">kirito-sandy.vercel.app</a></p></footer></div>
+<button id="backTop" type="button" aria-label="กลับขึ้นด้านบน">↑</button>
+<button id="afFavoritesBtn" type="button" aria-label="เปิดรายการโปรด">⭐</button>
+<div id="siteToast" role="status" aria-live="polite"></div>
+<div id="afFavModal" role="dialog" aria-modal="true" aria-labelledby="favTitle">
+  <div class="af-modal">
+    <div class="af-modal-head"><h2 id="favTitle">⭐ รายการโปรด</h2><button class="af-close" id="closeFav" type="button" aria-label="ปิด">×</button></div>
+    <div class="af-fav-grid" id="favGrid"></div>
+  </div>
 </div>
-
-
-
 <script type="module" src="script.js"></script>
-
+<script>
+(() => {
+  const FAV_KEY='animefume_favorites_v2';
+  const $=s=>document.querySelector(s);
+  const toast=(msg)=>{const el=$('#siteToast');if(!el)return;el.textContent=msg;el.classList.add('show');clearTimeout(window.__afToast);window.__afToast=setTimeout(()=>el.classList.remove('show'),1800)};
+  const readFav=()=>{try{return JSON.parse(localStorage.getItem(FAV_KEY)||'[]')}catch{return[]}};
+  const writeFav=v=>localStorage.setItem(FAV_KEY,JSON.stringify(v));
+  const keyOf=x=>String(x.id||x.link||x.title||'').trim();
+  function syncButtons(){document.querySelectorAll('#animeList > .anime-card').forEach(card=>{if(card.querySelector('.af-fav'))return;const title=card.dataset.title||card.querySelector('.overlay')?.textContent||'ไม่มีชื่อ';const item={id:card.dataset.id||title,title,image:card.querySelector('img')?.src||'',link:card.href,year:card.dataset.year||''};const b=document.createElement('button');b.type='button';b.className='af-fav';b.setAttribute('aria-label','เพิ่มในรายการโปรด');const active=readFav().some(x=>keyOf(x)===keyOf(item));b.textContent=active?'★':'☆';if(active)b.classList.add('active');b.onclick=e=>{e.preventDefault();e.stopPropagation();let fav=readFav();const i=fav.findIndex(x=>keyOf(x)===keyOf(item));if(i>=0){fav.splice(i,1);b.textContent='☆';b.classList.remove('active');toast('ลบออกจากรายการโปรดแล้ว')}else{fav.unshift(item);fav=fav.slice(0,100);b.textContent='★';b.classList.add('active');toast('เพิ่มในรายการโปรดแล้ว')}writeFav(fav);renderFavs()};card.appendChild(b)})}
+  function renderFavs(){const grid=$('#favGrid');if(!grid)return;const fav=readFav();grid.innerHTML='';if(!fav.length){grid.innerHTML='<p style="color:#aaa;padding:25px;text-align:center;grid-column:1/-1">ยังไม่มีอนิเมะในรายการโปรด</p>';return}fav.forEach(item=>{const a=document.createElement('a');a.className='af-fav-card';a.href=item.link||'#';const img=document.createElement('img');img.src=item.image||'';img.alt=item.title||'';img.loading='lazy';const b=document.createElement('b');b.textContent=item.title||'ไม่มีชื่อ';const rm=document.createElement('button');rm.type='button';rm.className='af-remove';rm.textContent='×';rm.setAttribute('aria-label','ลบรายการโปรด');rm.onclick=e=>{e.preventDefault();e.stopPropagation();writeFav(readFav().filter(x=>keyOf(x)!==keyOf(item)));renderFavs();syncButtons();toast('ลบออกแล้ว')};a.append(img,b,rm);grid.appendChild(a)})}
+  function openFav(){renderFavs();$('#afFavModal')?.classList.add('show');document.body.style.overflow='hidden'}
+  function closeFav(){$('#afFavModal')?.classList.remove('show');document.body.style.overflow=''}
+  document.addEventListener('DOMContentLoaded',()=>{
+    const menu=$('#menuDropdown'),menuBtn=$('#menuBtn');
+    menuBtn?.addEventListener('click',e=>{e.stopPropagation();const open=menu.style.display==='flex';menu.style.display=open?'none':'flex';menuBtn.setAttribute('aria-expanded',String(!open))});
+    document.addEventListener('click',e=>{if(menu&&menu.style.display==='flex'&&!menu.contains(e.target)&&e.target!==menuBtn){menu.style.display='none';menuBtn?.setAttribute('aria-expanded','false')}});
+    $('#openFavMenu')?.addEventListener('click',e=>{e.preventDefault();openFav();menu.style.display='none'});
+    $('#afFavoritesBtn')?.addEventListener('click',openFav);$('#closeFav')?.addEventListener('click',closeFav);$('#afFavModal')?.addEventListener('click',e=>{if(e.target.id==='afFavModal')closeFav()});
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeFav();if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)){e.preventDefault();$('#searchInput')?.focus()}});
+    window.addEventListener('scroll',()=>$('#backTop')?.classList.toggle('show',scrollY>500),{passive:true});$('#backTop')?.addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
+    window.addEventListener('online',()=>toast('เชื่อมต่ออินเทอร์เน็ตแล้ว'));window.addEventListener('offline',()=>toast('ขณะนี้ออฟไลน์ ระบบบางส่วนอาจใช้ไม่ได้'));
+    const list=$('#animeList');if(list){const observer=new MutationObserver(()=>{syncButtons();document.querySelectorAll('#animeList img').forEach(img=>{img.loading='lazy';img.decoding='async';if(!img.dataset.afErr){img.dataset.afErr='1';img.addEventListener('error',()=>{img.style.background='#171717';img.alt='รูปภาพไม่พร้อมใช้งาน'})}});if(list.querySelector('.anime-card'))$('#siteLoading')?.classList.add('hide')});observer.observe(list,{childList:true,subtree:true});setTimeout(()=>$('#siteLoading')?.classList.add('hide'),8000)}else $('#siteLoading')?.classList.add('hide');
+    renderFavs();
+  });
+})();
+</script>
 </body>
 </html>

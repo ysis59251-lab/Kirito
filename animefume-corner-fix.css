@@ -1,0 +1,63 @@
+/* AnimeFume corner fix — mobile safe area */
+
+/* Keep the hamburger button from covering the centered AnimeFume title. */
+#menuBtn{
+  top:max(10px,env(safe-area-inset-top,0px));
+  left:max(10px,env(safe-area-inset-left,0px));
+  width:44px;
+  height:44px;
+  min-width:44px;
+  min-height:44px;
+  display:grid;
+  place-items:center;
+  padding:0;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:12px;
+  background:rgba(12,12,12,.94);
+  color:#fff;
+  line-height:1;
+  box-shadow:0 8px 22px rgba(0,0,0,.4);
+}
+
+#menuBtn:active{
+  transform:scale(.95);
+}
+
+#menuDropdown{
+  top:calc(max(10px,env(safe-area-inset-top,0px)) + 52px);
+  left:max(10px,env(safe-area-inset-left,0px));
+  width:min(250px,calc(100vw - 20px));
+  max-width:calc(100vw - 20px);
+  overflow:hidden;
+}
+
+#menuDropdown a{
+  min-height:46px;
+  padding:11px 14px;
+  display:flex;
+  align-items:center;
+}
+
+@media(max-width:480px){
+  .header{
+    padding-top:calc(10px + env(safe-area-inset-top,0px));
+    padding-left:62px;
+    padding-right:62px;
+  }
+
+  .header h1{
+    font-size:clamp(21px,6vw,28px);
+    white-space:nowrap;
+  }
+}
+
+@media(min-width:481px){
+  .header{
+    padding-left:72px;
+    padding-right:72px;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  #menuBtn{transition:none!important;}
+}

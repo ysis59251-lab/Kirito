@@ -1,0 +1,42 @@
+name: AnimeFume UI 2.0
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  apply-ui:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Apply UI layer
+        shell: bash
+        run: |
+          set -e
+          marker='/* AnimeFume UI 2.0 — mobile-first visual layer */'
+          for css in style.css style1.css style2.css; do
+            if [ -f "$css" ] && ! grep -qF "$marker" "$css"; then
+              printf '\n\n' >> "$css"
+              cat animefume-ui2.css >> "$css"
+              echo "Updated $css"
+            fi
+          done
+
+      - name: Commit UI changes
+        shell: bash
+        run: |
+          if git diff --quiet -- style.css style1.css style2.css; then
+            echo 'No UI changes needed.'
+            exit 0
+          fi
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add style.css style1.css style2.css
+          git commit -m 'ปรับหน้าตา AnimeFume UI 2.0'
+          git push

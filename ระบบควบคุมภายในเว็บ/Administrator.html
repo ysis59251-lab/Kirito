@@ -2,124 +2,83 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-
-<!-- สำคัญมาก แก้ปัญหาเล็กในมือถือ -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<meta name="theme-color" content="#111111">
+<meta name="robots" content="noindex,nofollow,noarchive">
 <title>เข้าสู่ระบบแอดมิน</title>
-
 <style>
 *{box-sizing:border-box}
-
-body{
-  margin:0;
-  min-height:100vh;
-  background:radial-gradient(circle at top,#1b1b1b,#0a0a0a);
-  font-family:system-ui,-apple-system,'Segoe UI',sans-serif;
-  color:#fff;
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-
-/* กล่องล็อกอิน */
-.login-box{
-  background:rgba(30,30,30,.96);
-  width:94%;
-  max-width:420px;
-  padding:36px;
-  border-radius:20px;
-  box-shadow:
-    0 25px 50px rgba(0,0,0,.7),
-    inset 0 0 0 1px rgba(255,255,255,.05);
-}
-
-h2{
-  text-align:center;
-  margin:0 0 6px;
-  font-size:24px;
-}
-
-.warn{
-  text-align:center;
-  font-size:14px;
-  color:#ff8080;
-  margin-bottom:18px;
-}
-
-/* input */
-input{
-  width:100%;
-  padding:16px;
-  margin:12px 0;
-  font-size:16px;
-  border-radius:12px;
-  border:1px solid #333;
-  background:#111;
-  color:#fff;
-}
-
-input:focus{
-  outline:none;
-  border-color:#ff4d4d;
-  box-shadow:0 0 0 3px rgba(255,77,77,.25);
-}
-
-/* ปุ่ม */
-button{
-  width:100%;
-  padding:16px;
-  margin-top:18px;
-  font-size:17px;
-  font-weight:600;
-  border-radius:14px;
-  border:none;
-  color:#fff;
-  background:linear-gradient(135deg,#ff4d4d,#ff1f1f);
-}
-
-button:active{
-  transform:scale(.97);
-}
-
-#error{
-  text-align:center;
-  font-size:14px;
-  color:#ff4d4d;
-  margin-top:14px;
-}
+body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#1b1b1b,#0a0a0a);font-family:system-ui,-apple-system,'Segoe UI',sans-serif;color:#fff;display:flex;justify-content:center;align-items:center;padding:18px}
+.login-box{background:rgba(30,30,30,.96);width:100%;max-width:420px;padding:30px 24px;border-radius:20px;box-shadow:0 25px 50px rgba(0,0,0,.7),inset 0 0 0 1px rgba(255,255,255,.05)}
+h2{text-align:center;margin:0 0 6px;font-size:24px}.warn{text-align:center;font-size:14px;color:#ff8080;margin-bottom:18px}
+input{width:100%;padding:16px;margin:10px 0;font-size:16px;border-radius:12px;border:1px solid #333;background:#111;color:#fff}input:focus{outline:none;border-color:#ff4d4d;box-shadow:0 0 0 3px rgba(255,77,77,.25)}
+button{width:100%;padding:16px;margin-top:18px;font-size:17px;font-weight:600;border-radius:14px;border:none;color:#fff;background:linear-gradient(135deg,#ff4d4d,#ff1f1f);cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}button:active{transform:scale(.97)}
+#error{text-align:center;font-size:14px;color:#ff4d4d;margin-top:14px;min-height:21px}.hint{text-align:center;color:#888;font-size:12px;margin-top:14px}
 </style>
 </head>
-
 <body>
-
 <div class="login-box">
   <h2>เข้าสู่ระบบแอดมิน</h2>
-  <div class="warn">⚠️ ห้ามบุคคลทั่วไปเข้าใช้งาน</div>
-
-  <form onsubmit="return checkLogin()">
-    <input id="username" placeholder="Username">
-    <input id="password" type="password" placeholder="Password">
-    <button type="submit">เข้าสู่ระบบ</button>
-    <p id="error"></p>
+  <div class="warn">⚠️ พื้นที่สำหรับผู้ดูแลระบบเท่านั้น</div>
+  <form id="loginForm" autocomplete="off">
+    <input id="username" name="username" placeholder="Username" autocomplete="username" required>
+    <input id="password" name="password" type="password" placeholder="Password" autocomplete="current-password" required>
+    <button id="loginBtn" type="submit">เข้าสู่ระบบ</button>
+    <p id="error" role="alert" aria-live="polite"></p>
   </form>
+  <div class="hint">เซสชันผู้ดูแลจะหมดอายุอัตโนมัติเมื่อไม่ได้ใช้งาน</div>
 </div>
-
 <script>
-function checkLogin(){
-  const user = username.value.trim();
-  const pass = password.value.trim();
-  const error = document.getElementById("error");
+const SESSION_KEY="adminLoggedIn";
+const SESSION_TIME_KEY="adminLoginTime";
+const MAX_SESSION=30*60*1000;
+const LOCK_KEY="adminLoginLock";
+const MAX_ATTEMPTS=5;
+const LOCK_TIME=5*60*1000;
+
+function getLock(){try{return JSON.parse(localStorage.getItem(LOCK_KEY)||"{}")}catch{return {}}}
+function setError(msg){document.getElementById("error").textContent=msg}
+function isSessionValid(){
+  const ok=localStorage.getItem(SESSION_KEY)==="true";
+  const t=Number(localStorage.getItem(SESSION_TIME_KEY)||0);
+  if(ok && t && Date.now()-t<MAX_SESSION) return true;
+  localStorage.removeItem(SESSION_KEY);localStorage.removeItem(SESSION_TIME_KEY);return false;
+}
+
+if(isSessionValid()) location.replace("admin/admin.html");
+
+document.getElementById("loginForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  const user=document.getElementById("username").value.trim();
+  const pass=document.getElementById("password").value;
+  const btn=document.getElementById("loginBtn");
+  const now=Date.now();
+  const lock=getLock();
+
+  if(lock.until && now<lock.until){
+    const sec=Math.ceil((lock.until-now)/1000);
+    setError(`ลองใหม่อีกครั้งใน ${sec} วินาที`);return;
+  }
 
   if(user === "kirito" && pass === "12345678"){
-    localStorage.setItem("adminLoggedIn","true");
-    location.href = "admin/admin.html";
-  }else{
-    error.textContent = "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง";
+    localStorage.setItem(SESSION_KEY,"true");
+    localStorage.setItem(SESSION_TIME_KEY,String(now));
+    localStorage.removeItem(LOCK_KEY);
+    btn.disabled=true;
+    btn.textContent="กำลังเข้าสู่ระบบ...";
+    location.replace("admin/admin.html");
+    return;
   }
-  return false;
-}
-</script>
 
+  const attempts=(Number(lock.attempts)||0)+1;
+  if(attempts>=MAX_ATTEMPTS){
+    localStorage.setItem(LOCK_KEY,JSON.stringify({attempts:0,until:now+LOCK_TIME}));
+    setError("เข้าสู่ระบบผิดหลายครั้ง ระบบล็อกชั่วคราว 5 นาที");
+  }else{
+    localStorage.setItem(LOCK_KEY,JSON.stringify({attempts,until:0}));
+    setError(`ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง (${attempts}/${MAX_ATTEMPTS})`);
+  }
+});
+</script>
 </body>
 </html>

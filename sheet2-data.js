@@ -1,3 +1,3 @@
-// AnimeFume embedded catalog data chunk 1/4
-window.ANIMEFUME_SHEET2_DATA = window.ANIMEFUME_SHEET2_DATA || [];
-window.ANIMEFUME_SHEET2_DATA.push(...[]);
+// AnimeFume embedded catalog data extracted directly from Sheet2.pdf.
+// 403 records. This file is self-contained: no Google Sheet/OpenSheet request is needed.
+const SHEET2_DATA = PLACEHOLDER;

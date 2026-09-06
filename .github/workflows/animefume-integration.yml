@@ -1,0 +1,42 @@
+name: AnimeFume System Integration
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Connect embedded Sheet2 to home
+        shell: python
+        run: |
+          from pathlib import Path
+          import re
+          p = Path('home.html')
+          s = p.read_text(encoding='utf-8')
+          if 'sheet2-data.js' not in s:
+              marker = '<script type="module" src="script.js"></script>'
+              s = s.replace(marker, '<script src="sheet2-data.js"></script>\n' + marker, 1)
+          s = s.replace("  const SHEET2_URL='https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet2';\n", "")
+          pattern = re.compile(r"  async function loadSheet2\(\)\{.*?\n  \}\n", re.S)
+          replacement = '''  async function loadSheet2(){\n    try{\n      const data=await loadEmbeddedSheet2Data();\n      sheet2Rows=Array.isArray(data)?data.filter(r=>String(r.Show??'').toUpperCase()!=='TRUE'):[];\n      sheet2Page=1;\n      sheet2Render();\n    }catch(e){\n      console.error('embedded Sheet2 error',e);\n      sheet2Rows=[];\n      sheet2Filtered=[];\n      const status=$('#sheet2Status');\n      if(status) status.textContent='โหลดข้อมูลไม่สำเร็จ';\n      const grid=$('#sheet2Grid');\n      if(grid) grid.innerHTML='<div class="sheet2-empty">ไม่สามารถโหลดรายการได้</div>';\n    }\n  }\n'''
+          s2 = pattern.sub(replacement, s, count=1)
+          if s2 == s and 'loadEmbeddedSheet2Data()' not in s:
+              raise SystemExit('ไม่พบ loadSheet2 block ที่คาดไว้ใน home.html')
+          p.write_text(s2, encoding='utf-8')
+      - name: Commit integration
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add home.html
+          if git diff --cached --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git commit -m "เชื่อมระบบ Sheet2 เข้ากับหน้าแรก"
+          git push

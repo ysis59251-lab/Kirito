@@ -1,4 +1,4 @@
-/* AnimeFume corner fix — mobile safe area */
+/* AnimeFume corner fix — preserve existing menu toggle */
 
 #menuBtn{
   position:fixed !important;
@@ -7,56 +7,41 @@
   width:44px !important;height:44px !important;
   min-width:44px !important;min-height:44px !important;
   display:grid !important;place-items:center !important;padding:0 !important;
-  border:1px solid rgba(255,255,255,.12) !important;border-radius:12px !important;
-  background:rgba(12,12,12,.94) !important;color:#fff !important;line-height:1 !important;
-  box-shadow:0 8px 22px rgba(0,0,0,.4);z-index:2147483647 !important;
-  pointer-events:auto !important;touch-action:manipulation;cursor:pointer;
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-radius:12px !important;
+  background:rgba(12,12,12,.94) !important;color:#fff !important;
+  line-height:1 !important;box-shadow:0 8px 22px rgba(0,0,0,.4);
+  z-index:2147483647 !important;pointer-events:auto !important;
+  touch-action:manipulation;cursor:pointer;
 }
 #menuBtn:active{transform:scale(.95)}
 
+/* Keep the original JS display:none/flex toggle intact. */
 #menuDropdown{
   position:fixed !important;
-  top:max(10px,env(safe-area-inset-top,0px)) !important;
-  left:0 !important;
-  width:min(290px,88vw) !important;
+  top:calc(max(10px,env(safe-area-inset-top,0px)) + 52px) !important;
+  left:max(10px,env(safe-area-inset-left,0px)) !important;
+  width:min(290px,calc(100vw - 20px)) !important;
   max-width:290px !important;
-  height:100dvh !important;
-  padding:70px 14px 24px !important;
-  margin:0 !important;
-  display:flex !important;
-  flex-direction:column !important;
-  gap:7px !important;
+  max-height:calc(100dvh - 72px) !important;
+  padding:10px !important;margin:0 !important;
+  flex-direction:column !important;gap:7px !important;
   background:rgba(10,10,10,.98) !important;
-  border-right:1px solid rgba(255,255,255,.12) !important;
-  border-radius:0 20px 20px 0 !important;
-  box-shadow:18px 0 45px rgba(0,0,0,.55) !important;
-  overflow-y:auto !important;
-  z-index:2147483646 !important;
-  pointer-events:auto !important;
-  transform:translateX(-105%) !important;
-  visibility:hidden !important;
-  opacity:0 !important;
-  transition:transform .25s ease,opacity .2s ease,visibility .25s ease !important;
-}
-
-#menuDropdown.af-menu-open{
-  transform:translateX(0) !important;
-  visibility:visible !important;
-  opacity:1 !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  border-radius:16px !important;
+  box-shadow:0 18px 45px rgba(0,0,0,.55) !important;
+  overflow-y:auto !important;z-index:2147483646 !important;
+  pointer-events:auto !important;touch-action:manipulation;
 }
 
 #menuDropdown::before{
-  content:'☰  AnimeFume';
-  display:block;color:#fff;font-size:21px;font-weight:700;
-  padding:0 10px 16px;border-bottom:1px solid rgba(255,255,255,.1);
-  margin-bottom:4px;
+  content:'☰  AnimeFume';display:block;color:#fff;font-size:20px;font-weight:700;
+  padding:4px 8px 12px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:2px;
 }
-
 #menuDropdown a{
   min-height:50px !important;padding:12px 15px !important;
-  display:flex !important;align-items:center !important;
-  border-radius:12px !important;color:#fff !important;
-  text-decoration:none !important;background:#171717 !important;
+  display:flex !important;align-items:center !important;border-radius:12px !important;
+  color:#fff !important;text-decoration:none !important;background:#171717 !important;
   pointer-events:auto !important;touch-action:manipulation;
 }
 #menuDropdown a:active,#menuDropdown a:hover{background:#262626 !important}
@@ -66,4 +51,4 @@
   .header h1{font-size:clamp(21px,6vw,28px);white-space:nowrap}
 }
 @media(min-width:481px){.header{padding-left:72px;padding-right:72px}}
-@media(prefers-reduced-motion:reduce){#menuDropdown{transition:none!important}#menuBtn{transition:none!important}}
+@media(prefers-reduced-motion:reduce){#menuBtn{transition:none!important}}

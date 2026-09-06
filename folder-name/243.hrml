@@ -29,7 +29,7 @@ body{color:#fff;background:#080808;min-height:100vh;line-height:1.5}
 <script>
 const SHEET_ID="1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
 const API=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
-const currentAnime="Dark Beginning";
+const currentAnime = 'Dead Mount Death Play';
 const key=s=>`animefume_${s}_${encodeURIComponent(currentAnime)}`;
 let episodes=[],currentIndex=0,watched=JSON.parse(localStorage.getItem(key('watched'))||'[]');
 fetch(API).then(r=>{if(!r.ok)throw Error();return r.text()}).then(text=>{const json=JSON.parse(text.substring(47).slice(0,-2));episodes=json.table.rows.map(r=>({anime:r.c[0]?.v,name:r.c[1]?.v,ep:r.c[2]?.v,title:r.c[3]?.v,url:r.c[4]?.v,desc:r.c[6]?.v,cover:r.c[7]?.v})).filter(e=>e.anime===currentAnime);if(!episodes.length){animeName.innerText='ไม่พบข้อมูลตอน';return}const info=episodes.find(e=>e.cover||e.desc)||episodes[0];animeName.innerText=info.name||'';desc.innerHTML='<b>📖 เรื่องย่อ</b><br><br>'+String(info.desc||'').replace(/\n/g,'<br><br>');coverImg.src=info.cover||'';const last=localStorage.getItem(key('last'));const i=episodes.findIndex(e=>e.url===last);currentIndex=i>=0?i:0;renderEpisodes();play(currentIndex,false)}).catch(()=>{animeName.innerText='⚠️ โหลดข้อมูลไม่สำเร็จ';nowEp.innerText='กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่'});

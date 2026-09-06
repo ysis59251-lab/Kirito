@@ -1,0 +1,70 @@
+name: Fix AnimeFume Players
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Repair player anime mapping
+        shell: python
+        run: |
+          import pathlib, re
+
+          root = pathlib.Path('folder-name')
+          changed = []
+
+          for path in root.iterdir():
+              if path.suffix.lower() not in {'.html', '.hrml'}:
+                  continue
+              try:
+                  text = path.read_text(encoding='utf-8')
+              except Exception:
+                  continue
+
+              if 'const currentAnime' not in text:
+                  continue
+
+              title = re.search(r'<title>\s*AnimeFume\s*-\s*(.*?)\s*</title>', text, re.I | re.S)
+              if not title:
+                  continue
+
+              anime = re.sub(r'\s+', ' ', title.group(1)).strip()
+              if not anime or anime.lower() == 'animefume':
+                  continue
+
+              replacement = f'const currentAnime = {anime!r};'
+              new_text, count = re.subn(
+                  r'const\s+currentAnime\s*=\s*([\"\']).*?\1\s*;[^\n]*',
+                  replacement,
+                  text,
+                  count=1
+              )
+              if count and new_text != text:
+                  path.write_text(new_text, encoding='utf-8')
+                  changed.append(str(path))
+
+          print(f'Repaired {len(changed)} player files')
+          for p in changed:
+              print(p)
+
+      - name: Commit repaired players
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add folder-name
+          if git diff --cached --quiet; then
+            echo "No player changes"
+            exit 0
+          fi
+          git commit -m "Fix player anime mappings"
+          git push

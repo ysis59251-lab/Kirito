@@ -20,11 +20,17 @@ jobs:
         run: |
           set -e
           marker='/* AnimeFume UI 2.0 — mobile-first visual layer */'
+          corner_marker='/* AnimeFume corner fix — mobile safe area */'
           for css in style.css style1.css style2.css; do
             if [ -f "$css" ] && ! grep -qF "$marker" "$css"; then
               printf '\n\n' >> "$css"
               cat animefume-ui2.css >> "$css"
-              echo "Updated $css"
+              echo "Updated $css with UI 2.0"
+            fi
+            if [ -f "$css" ] && ! grep -qF "$corner_marker" "$css"; then
+              printf '\n\n' >> "$css"
+              cat animefume-corner-fix.css >> "$css"
+              echo "Updated $css with corner fix"
             fi
           done
 
@@ -38,5 +44,5 @@ jobs:
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add style.css style1.css style2.css
-          git commit -m 'ปรับหน้าตา AnimeFume UI 2.0'
+          git commit -m 'แก้ปัญหามุมซ้ายบนมือถือ'
           git push

@@ -45,6 +45,7 @@
   tools.innerHTML = `
     <button class="primary" data-af="episodes">📺 เลือกตอน</button>
     <button data-af="fullscreen">⛶ เต็มจอ</button>
+    <button data-af="history">🕘 ประวัติ</button>
     <button data-af="back">↩ กลับหน้าก่อน</button>
     <button data-af="share">🔗 แชร์</button>
     <button data-af="copy">📋 คัดลอกลิงก์</button>
@@ -78,6 +79,8 @@
     else location.href = '../home.html';
   }
 
+  function openHistory(){ location.href = '../history.html'; }
+
   async function share(){
     const data = {title, text:`ดู ${title} บน AnimeFume`, url:location.href};
     try {
@@ -99,6 +102,7 @@
     const action = button.dataset.af;
     if (action === 'episodes') openEpisodes();
     if (action === 'fullscreen') fullscreen();
+    if (action === 'history') openHistory();
     if (action === 'back') goBack();
     if (action === 'share') share();
     if (action === 'copy') copyLink();
@@ -132,10 +136,11 @@
     if (e.key === 'Escape' && modal) modal.style.display = 'none';
     if (e.key === 'f' || e.key === 'F') fullscreen();
     if (e.key === 'e' || e.key === 'E') openEpisodes();
+    if (e.key === 'h' || e.key === 'H') openHistory();
     if (e.key === 's' || e.key === 'S') share();
     if (e.key === 'ArrowRight' && typeof window.nextEp === 'function') window.nextEp();
     if (e.key === 'ArrowLeft' && typeof window.prevEp === 'function') window.prevEp();
   });
 
-  setState('คีย์ลัด: F เต็มจอ • E เลือกตอน • ←/→ เปลี่ยนตอน');
+  setState('คีย์ลัด: F เต็มจอ • E เลือกตอน • H ประวัติ • ←/→ เปลี่ยนตอน');
 })();

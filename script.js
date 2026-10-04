@@ -382,7 +382,7 @@ function initHot(){
         c.href,
 
         views:
-        data[c.dataset.id] || 0
+        Number(views[c.dataset.id]) || 0
 
       }));
 

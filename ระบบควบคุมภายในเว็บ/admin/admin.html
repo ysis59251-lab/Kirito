@@ -159,6 +159,32 @@ body{
 </div>
 
 <script type="module">
+const SESSION_KEY = "adminLoggedIn";
+const SESSION_TIME_KEY = "adminLoginTime";
+const MAX_SESSION = 30 * 60 * 1000;
+
+function validAdminSession(){
+  if(localStorage.getItem(SESSION_KEY) !== "true") return false;
+  const loginTime = Number(localStorage.getItem(SESSION_TIME_KEY) || 0);
+  return !!loginTime && Date.now() - loginTime < MAX_SESSION;
+}
+
+if(!validAdminSession()){
+  location.replace("../Administrator.html");
+  throw new Error("Admin session required");
+}
+
+// ต่ออายุ session เฉพาะขณะมีการใช้งานหน้าแอดมิน
+let lastActivity = Date.now();
+const touchSession = () => {
+  if(Date.now() - lastActivity < 30000) return;
+  lastActivity = Date.now();
+  localStorage.setItem(SESSION_TIME_KEY, String(Date.now()));
+};
+["click","keydown","touchstart","scroll"].forEach(type => {
+  window.addEventListener(type, touchSession, {passive:true});
+});
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import {
   getDatabase,

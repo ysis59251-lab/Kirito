@@ -68,6 +68,7 @@ UI CONTROL
 function toggleBottom(){
   document.getElementById("bottomNav")?.classList.toggle("show");
 }
+window.toggleBottom = toggleBottom;
 
 /* =========================
 MENU
@@ -140,7 +141,9 @@ function initHot(){
 
   onValue(ref(db,"animeViews"), snap => {
     const data = snap.val();
-    if(!data || cards.length === 0) return;
+    if(cards.length === 0) return;
+
+    const views = data && typeof data === "object" ? data : {};
 
     // 🔥 รวมข้อมูลทั้งเว็บจริง
     const arr = cards.map(c => ({
@@ -148,7 +151,7 @@ function initHot(){
       title: c.dataset.title,
       image: c.querySelector("img")?.src || "",
       link: c.href,
-      views: data[c.dataset.id] || 0
+      views: Number(views[c.dataset.id]) || 0
     }));
 
     // 👑 เรียงยอดวิวมาก → น้อย
@@ -390,7 +393,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const saved = localStorage.getItem("searchText");
     if(saved) savedSearch = saved.toLowerCase();
   } else {
-    localStorage.clear();
+    localStorage.removeItem("scrollY");
+    localStorage.removeItem("lastPage");
+    localStorage.removeItem("searchText");
+    localStorage.removeItem("lastTime");
   }
 
   loadFromSheet();

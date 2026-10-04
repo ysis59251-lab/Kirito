@@ -97,23 +97,24 @@ let sheet2Rows=[];let sheet2Filtered=[];let sheet2Page=1;const sheet2PerPage=40;
     for(let i=startPage;i<=endPage;i++){const b=document.createElement('button');b.className='sheet2-page'+(i===sheet2Page?' active':'');b.textContent=i;b.onclick=()=>{sheet2Page=i;sheet2Render();document.getElementById('sheet2Section')?.scrollIntoView({behavior:'smooth',block:'start'})};pages.appendChild(b)}
     if(sheet2Page<total){const b=document.createElement('button');b.className='sheet2-page';b.textContent='›';b.onclick=()=>{sheet2Page++;sheet2Render();document.getElementById('sheet2Section')?.scrollIntoView({behavior:'smooth',block:'start'})};pages.appendChild(b)}
   }
-  async function loadSheet2(){
+async function loadSheet2(){
     try{
       const data = await loadEmbeddedSheet2Data();
       sheet2Rows = Array.isArray(data)
-        ? data.filter(x => String(x.Show ?? '').toUpperCase() !== 'TRUE')
+        ? data.filter(r => String(r.Show ?? '').toUpperCase() !== 'TRUE')
         : [];
       sheet2Page = 1;
       sheet2Render();
-    }catch(error){
-      console.error('Embedded Sheet2 load error:', error);
+    }catch(e){
+      console.error('embedded Sheet2 error', e);
       sheet2Rows = [];
       sheet2Filtered = [];
       const status = document.getElementById('sheet2Status');
-      const grid = document.getElementById('sheet2Grid');
       if(status) status.textContent = 'โหลดข้อมูลไม่สำเร็จ';
-      if(grid) grid.innerHTML = '<div class="sheet2-empty">ไม่สามารถโหลดรายการ Sheet2 ได้</div>';
+      const grid = document.getElementById('sheet2Grid');
+      if(grid) grid.innerHTML = '<div class="sheet2-empty">ไม่สามารถโหลดรายการได้</div>';
     }
+  }
   }
 
   document.addEventListener('DOMContentLoaded',()=>{

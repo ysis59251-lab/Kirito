@@ -71,6 +71,18 @@ button{
   text-align:center;
 }
 </style>
+<script>
+(() => {
+  const ok = localStorage.getItem("adminLoggedIn") === "true";
+  const t = Number(localStorage.getItem("adminLoginTime") || 0);
+  const max = 30 * 60 * 1000;
+  if(!ok || !t || Date.now() - t > max){
+    localStorage.removeItem("adminLoggedIn");
+    localStorage.removeItem("adminLoginTime");
+    location.replace("../Administrator.html");
+  }
+})();
+</script>
 </head>
 
 <body>
@@ -98,6 +110,11 @@ button{
 const API = "https://script.google.com/macros/s/XXXXX/exec";
 
 async function send(){
+
+  if(!API || API.includes("XXXXX")){
+    show("⚠️ ยังไม่ได้ตั้งค่า Google Apps Script API");
+    return;
+  }
 
   const popup = document.getElementById("popup");
   const text = document.getElementById("popupText");

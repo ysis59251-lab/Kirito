@@ -7,8 +7,9 @@
 
     btn.dataset.afMenuFix = '1';
     menu.classList.remove('af-menu-open');
-    menu.style.display = 'flex';
+    menu.style.removeProperty('display');
     menu.setAttribute('aria-hidden', 'true');
+    btn.setAttribute('aria-expanded', 'false');
 
     const backdrop = document.createElement('button');
     backdrop.type = 'button';
@@ -60,6 +61,8 @@
     style.textContent = `
       #afMenuBackdrop{position:fixed;inset:0;border:0;padding:0;margin:0;background:rgba(0,0,0,.58);backdrop-filter:blur(2px);z-index:2147483645;cursor:pointer}
       #afMenuBackdrop[hidden]{display:none!important}
+      #menuDropdown{display:none!important}
+      #menuDropdown.af-menu-open{display:flex!important;z-index:2147483646!important}
       body.af-menu-lock{overflow:hidden!important}
     `;
     document.head.appendChild(style);

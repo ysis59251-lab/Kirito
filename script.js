@@ -104,24 +104,12 @@ function clearState(){
 MENU
 ========================= */
 function initMenu(){
-
-  const btn =
-  document.getElementById("menuBtn");
-
-  const menu =
-  document.getElementById("menuDropdown");
-
+  // เมนูถูกควบคุมจาก animefume-menu-fix.js เพียงจุดเดียว
+  const btn = document.getElementById("menuBtn");
+  const menu = document.getElementById("menuDropdown");
   if(!btn || !menu) return;
-
-  btn.onclick = () => {
-
-    menu.style.display =
-    menu.style.display === "flex"
-    ? "none"
-    : "flex";
-
-  };
-
+  btn.setAttribute("aria-expanded","false");
+  menu.setAttribute("aria-hidden","true");
 }
 
 /* =========================
@@ -355,15 +343,9 @@ function initHot(){
 
     snap => {
 
-      const data =
-      snap.val();
-
-      if(
-        !data ||
-        cards.length === 0
-      ){
-        return;
-      }
+      const data = snap.val();
+      if(cards.length === 0) return;
+      const views = data && typeof data === "object" ? data : {};
 
       const arr =
       cards.map(c => ({

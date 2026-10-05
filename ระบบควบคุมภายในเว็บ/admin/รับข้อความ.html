@@ -68,6 +68,18 @@ button{
   align-items:center;
 }
 </style>
+<script>
+(() => {
+  const ok = localStorage.getItem("adminLoggedIn") === "true";
+  const t = Number(localStorage.getItem("adminLoginTime") || 0);
+  const max = 30 * 60 * 1000;
+  if(!ok || !t || Date.now() - t > max){
+    localStorage.removeItem("adminLoggedIn");
+    localStorage.removeItem("adminLoginTime");
+    location.replace("../Administrator.html");
+  }
+})();
+</script>
 </head>
 
 <body>
@@ -119,35 +131,43 @@ onValue(ref(db,"reports"), snap=>{
     const div = document.createElement("div");
     div.className = "report";
 
-    div.innerHTML = `
-      <div class="topbar">
-        <b>${r.page || "unknown"}</b>
-        <small>${new Date(r.time).toLocaleString()}</small>
-      </div>
+    const topbar = document.createElement("div");
+    topbar.className = "topbar";
+    const page = document.createElement("b");
+    page.textContent = r.page || "unknown";
+    const time = document.createElement("small");
+    time.textContent = r.time ? new Date(r.time).toLocaleString() : "-";
+    topbar.append(page,time);
 
-      <div style="margin-top:6px">
-        📝 ${r.detail}
-      </div>
+    const detail = document.createElement("div");
+    detail.style.marginTop = "6px";
+    detail.textContent = "📝 " + (r.detail || "-");
 
-      <small style="color:#888">
-        🌐 ${r.language || "-"} | 📱 ${r.screen || "-"}
-      </small>
+    const meta = document.createElement("small");
+    meta.style.color = "#888";
+    meta.textContent = "🌐 " + (r.language || "-") + " | 📱 " + (r.screen || "-");
 
-      <div class="actions">
-        <button class="read">✔ อ่านแล้ว</button>
-        <button class="delete">🗑 ลบ</button>
-      </div>
-    `;
+    const actions = document.createElement("div");
+    actions.className = "actions";
+    const readBtn = document.createElement("button");
+    readBtn.className = "read";
+    readBtn.textContent = "✔ อ่านแล้ว";
+    const deleteBtn = document.createElement("button");
+    deleteBtn.className = "delete";
+    deleteBtn.textContent = "🗑 ลบ";
+    actions.append(readBtn,deleteBtn);
+
+    div.append(topbar,detail,meta,actions);
 
     /* ===== MARK READ ===== */
-    div.querySelector(".read").onclick = () => {
+    readBtn.onclick = () => {
       update(ref(db,"reports/"+id), {
         read:true
       });
     };
 
     /* ===== DELETE ===== */
-    div.querySelector(".delete").onclick = () => {
+    deleteBtn.onclick = () => {
       remove(ref(db,"reports/"+id));
     };
 

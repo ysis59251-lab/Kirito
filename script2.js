@@ -74,12 +74,12 @@ window.toggleBottom = toggleBottom;
 MENU
 ========================= */
 function initMenu(){
+  // เมนูถูกควบคุมจาก animefume-menu-fix.js เพียงจุดเดียว
   const btn = document.getElementById("menuBtn");
   const menu = document.getElementById("menuDropdown");
   if(!btn || !menu) return;
-  btn.onclick = ()=>{
-    menu.style.display = menu.style.display === "flex" ? "none" : "flex";
-  };
+  btn.setAttribute("aria-expanded","false");
+  menu.setAttribute("aria-hidden","true");
 }
 
 /* =========================

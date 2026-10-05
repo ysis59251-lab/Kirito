@@ -116,6 +116,18 @@ button{
   border-radius:14px;
 }
 </style>
+<script>
+(() => {
+  const ok = localStorage.getItem("adminLoggedIn") === "true";
+  const t = Number(localStorage.getItem("adminLoginTime") || 0);
+  const max = 30 * 60 * 1000;
+  if(!ok || !t || Date.now() - t > max){
+    localStorage.removeItem("adminLoggedIn");
+    localStorage.removeItem("adminLoginTime");
+    location.replace("../Administrator.html");
+  }
+})();
+</script>
 </head>
 
 <body>
@@ -207,6 +219,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const langs = getLangs();
 
+      if(!animeInput.value.trim() || !nameInput.value.trim() || !episodeInput.value || !videoInput.value.trim()){
+        throw new Error("missing required fields");
+      }
+
       if(langs.length === 0){
         throw new Error("no lang");
       }
@@ -230,6 +246,9 @@ document.addEventListener("DOMContentLoaded", () => {
               "Content-Type": "application/json"
             },
             body: JSON.stringify(data)
+          }).then(res => {
+            if(!res.ok) throw new Error("HTTP " + res.status);
+            return res;
           });
 
         })

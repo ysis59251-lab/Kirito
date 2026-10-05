@@ -28,12 +28,15 @@ for name in ('home.html', 'index2.html', 'index3.html', 'search.html', 'history.
     inject(path, 'animefume-core.js')
     inject(path, 'animefume-menu-fix.js')
 
-# Shared core on player pages.
+# Shared core + shared player tools on every anime page.
 player_root = Path('folder-name')
 if player_root.exists():
     for path in player_root.iterdir():
         if path.is_file() and path.suffix.lower() in {'.html', '.hrml'}:
             inject(path, '../animefume-core.js')
+            text = path.read_text(encoding='utf-8')
+            if '../player-system.js' not in text and '</body>' in text:
+                save(path, text.replace('</body>', '<script src="../player-system.js"></script>\n</body>', 1))
 
 # Repair the known typo that breaks the Sheet2 link for id 243.
 bad = player_root / '243.hrml'

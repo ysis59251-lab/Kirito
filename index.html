@@ -16,7 +16,7 @@
 const status=document.getElementById('status');
 const started=Date.now();
 const go=()=>{status.textContent='กำลังเข้าสู่หน้าแรก...';location.replace('home.html')};
-setTimeout(go,1200);
+setTimeout(go,500);
 setTimeout(()=>{if(Date.now()-started>5000)status.textContent='ใช้ปุ่มด้านบนเพื่อเข้าเว็บได้ทันที'},5000);
 </script>
 </body>

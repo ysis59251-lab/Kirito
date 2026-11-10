@@ -20,25 +20,25 @@ FIREBASE CONFIG
 ========================= */
 const firebaseConfig = {
 
-  apiKey: "AIzaSyCUxv...",
+  apiKey: "AIzaSyC_eG_drnzYDUSyNBapN7kJ7XaYsbkhCwA",
 
   authDomain:
-  "reader-4a13f.firebaseapp.com",
+  "mpmp-5864a.firebaseapp.com",
 
   databaseURL:
-  "https://reader-4a13f-default-rtdb.firebaseio.com",
+  "https://mpmp-5864a-default-rtdb.firebaseio.com",
 
   projectId:
-  "reader-4a13f",
+  "mpmp-5864a",
 
   storageBucket:
-  "reader-4a13f.firebasestorage.app",
+  "mpmp-5864a.firebasestorage.app",
 
   messagingSenderId:
   "220776049054",
 
   appId:
-  "1:220776049054:web:53524fb1e90ba83a12ce8f"
+  "1:1071327366091:web:53524fb1e90ba83a12ce8f"
 
 };
 

@@ -8,13 +8,13 @@ import { getDatabase, ref, onValue, runTransaction, set, onDisconnect, push } fr
 FIREBASE CONFIG
 ========================= */
 const firebaseConfig = {
-  apiKey: "AIzaSyCUxv...",
-  authDomain: "reader-4a13f.firebaseapp.com",
-  databaseURL: "https://reader-4a13f-default-rtdb.firebaseio.com",
-  projectId: "reader-4a13f",
-  storageBucket: "reader-4a13f.firebasestorage.app",
+  apiKey: "AIzaSyC_eG_drnzYDUSyNBapN7kJ7XaYsbkhCwA",
+  authDomain: "mpmp-5864a.firebaseapp.com",
+  databaseURL: "https://mpmp-5864a-default-rtdb.firebaseio.com",
+  projectId: "mpmp-5864a",
+  storageBucket: "mpmp-5864a.firebasestorage.app",
   messagingSenderId: "220776049054",
-  appId: "1:220776049054:web:53524fb1e90ba83a12ce8f"
+  appId: "1:1071327366091:web:53524fb1e90ba83a12ce8f"
 };
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);

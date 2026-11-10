@@ -68,17 +68,9 @@ button{
   align-items:center;
 }
 </style>
-<script>
-(() => {
-  const ok = localStorage.getItem("adminLoggedIn") === "true";
-  const t = Number(localStorage.getItem("adminLoginTime") || 0);
-  const max = 30 * 60 * 1000;
-  if(!ok || !t || Date.now() - t > max){
-    localStorage.removeItem("adminLoggedIn");
-    localStorage.removeItem("adminLoginTime");
-    location.replace("../Administrator.html");
-  }
-})();
+<script type="module">
+import { requireAdmin } from "../../admin-auth.js";
+await requireAdmin("../Administrator.html");
 </script>
 </head>
 

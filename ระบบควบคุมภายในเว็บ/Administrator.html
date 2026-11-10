@@ -21,65 +21,56 @@ button{width:100%;padding:16px;margin-top:18px;font-size:17px;font-weight:600;bo
   <h2>เข้าสู่ระบบแอดมิน</h2>
   <div class="warn">⚠️ พื้นที่สำหรับผู้ดูแลระบบเท่านั้น</div>
   <form id="loginForm" autocomplete="off">
-    <input id="username" name="username" placeholder="Username" autocomplete="username" required>
+    <input id="username" name="username" type="email" placeholder="อีเมลผู้ดูแล" autocomplete="username" required>
     <input id="password" name="password" type="password" placeholder="Password" autocomplete="current-password" required>
     <button id="loginBtn" type="submit">เข้าสู่ระบบ</button>
     <p id="error" role="alert" aria-live="polite"></p>
   </form>
-  <div class="hint">เซสชันผู้ดูแลจะหมดอายุอัตโนมัติเมื่อไม่ได้ใช้งาน</div>
+  <div class="hint">การเข้าสู่ระบบและสิทธิ์ผู้ดูแลตรวจสอบผ่าน Firebase โดยตรง</div>
 </div>
-<script>
-const SESSION_KEY="adminLoggedIn";
-const SESSION_TIME_KEY="adminLoginTime";
-const MAX_SESSION=30*60*1000;
-const LOCK_KEY="adminLoginLock";
-const MAX_ATTEMPTS=5;
-const LOCK_TIME=5*60*1000;
+<script type="module">
+import { auth, signInAdmin, verifyAdmin } from "../admin-auth.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-function getLock(){try{return JSON.parse(localStorage.getItem(LOCK_KEY)||"{}")}catch{return {}}}
-function setError(msg){document.getElementById("error").textContent=msg}
-function isSessionValid(){
-  const ok=localStorage.getItem(SESSION_KEY)==="true";
-  const t=Number(localStorage.getItem(SESSION_TIME_KEY)||0);
-  if(ok && t && Date.now()-t<MAX_SESSION) return true;
-  localStorage.removeItem(SESSION_KEY);localStorage.removeItem(SESSION_TIME_KEY);return false;
-}
+const form = document.getElementById("loginForm");
+const button = document.getElementById("loginBtn");
+const error = document.getElementById("error");
 
-if(isSessionValid()) location.replace("admin/admin.html");
+const showError = (message) => { error.textContent = message; };
+const goToDashboard = () => location.replace("admin/admin.html");
 
-document.getElementById("loginForm").addEventListener("submit",function(e){
-  e.preventDefault();
-  const user=document.getElementById("username").value.trim();
-  const pass=document.getElementById("password").value;
-  const btn=document.getElementById("loginBtn");
-  const now=Date.now();
-  const lock=getLock();
-
-  if(lock.until && now<lock.until){
-    const sec=Math.ceil((lock.until-now)/1000);
-    setError(`ลองใหม่อีกครั้งใน ${sec} วินาที`);return;
+onAuthStateChanged(auth, async (user) => {
+  if (!user) return;
+  try {
+    if (await verifyAdmin(user)) goToDashboard();
+  } catch (_) {
+    // Keep the login form available if the authorization check is unavailable.
   }
+});
 
-  if(user === "kirito" && pass === "12345678"){
-    localStorage.setItem(SESSION_KEY,"true");
-    localStorage.setItem(SESSION_TIME_KEY,String(now));
-    localStorage.removeItem(LOCK_KEY);
-    btn.disabled=true;
-    btn.textContent="กำลังเข้าสู่ระบบ...";
-    location.replace("admin/admin.html");
-    return;
-  }
-
-  const attempts=(Number(lock.attempts)||0)+1;
-  if(attempts>=MAX_ATTEMPTS){
-    localStorage.setItem(LOCK_KEY,JSON.stringify({attempts:0,until:now+LOCK_TIME}));
-    setError("เข้าสู่ระบบผิดหลายครั้ง ระบบล็อกชั่วคราว 5 นาที");
-  }else{
-    localStorage.setItem(LOCK_KEY,JSON.stringify({attempts,until:0}));
-    setError(`ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง (${attempts}/${MAX_ATTEMPTS})`);
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  showError("");
+  button.disabled = true;
+  button.textContent = "กำลังตรวจสอบ...";
+  try {
+    await signInAdmin(
+      document.getElementById("username").value,
+      document.getElementById("password").value
+    );
+    goToDashboard();
+  } catch (err) {
+    const messages = {
+      "auth/invalid-credential": "อีเมลหรือรหัสผ่านไม่ถูกต้อง",
+      "auth/invalid-email": "รูปแบบอีเมลไม่ถูกต้อง",
+      "auth/too-many-requests": "พยายามเข้าสู่ระบบบ่อยเกินไป กรุณารอสักครู่",
+      "admin/not-authorized": "บัญชีนี้ยังไม่ได้รับสิทธิ์ผู้ดูแลระบบ"
+    };
+    showError(messages[err.code] || "เข้าสู่ระบบไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
+    button.disabled = false;
+    button.textContent = "เข้าสู่ระบบ";
   }
 });
 </script>
-<script type="module" src="../animefume-realtime.js"></script>
 </body>
 </html>

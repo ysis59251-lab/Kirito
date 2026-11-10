@@ -25,6 +25,25 @@ const sid = sessionStorage.getItem(sidKey) || crypto.randomUUID();
 sessionStorage.setItem(sidKey, sid);
 const userRef = ref(db, `onlineUsers/${sid}`);
 
+const renderMaintenance = (snapshot) => {
+  const enabled = snapshot.val() === true;
+  let overlay = document.getElementById("animefume-maintenance");
+  if (!enabled) {
+    overlay?.remove();
+    document.documentElement.style.overflow = "";
+    return;
+  }
+  if (!overlay) {
+    overlay = document.createElement("main");
+    overlay.id = "animefume-maintenance";
+    overlay.setAttribute("role", "alert");
+    overlay.style.cssText = "position:fixed;z-index:10000;inset:0;display:grid;place-items:center;padding:24px;background:radial-gradient(circle at 50% 30%,#182a32 0,#080b10 55%,#000 100%);color:#fff;font:16px/1.6 system-ui,sans-serif;text-align:center";
+    overlay.innerHTML = '<section style="max-width:520px;padding:32px;border:1px solid rgba(53,224,193,.35);border-radius:24px;background:rgba(21,27,36,.92);box-shadow:0 20px 70px rgba(0,0,0,.45)"><div style="font-size:52px">⚙</div><h1 style="margin:12px 0;color:#35e0c1;font-size:28px">กำลังปรับปรุงเว็บไซต์</h1><p style="margin:0;color:#c7d0d9">ระบบกำลังปรับปรุงชั่วคราว โปรดลองกลับมาใหม่อีกครั้ง</p><p style="margin:18px 0 0;color:#9aa7b5;font-size:13px">AnimeFume</p></section>';
+    document.body.appendChild(overlay);
+  }
+  document.documentElement.style.overflow = "hidden";
+};
+
 const renderAnnouncement = (snapshot) => {
   const data = snapshot.val();
   let banner = document.getElementById("animefume-announcement");
@@ -70,6 +89,7 @@ try {
   onDisconnect(userRef).remove();
   await heartbeat();
   onValue(ref(db, "siteConfig/announcement"), renderAnnouncement);
+  onValue(ref(db, "settings/maintenanceMode"), renderMaintenance);
   window.setInterval(heartbeat, 8000);
   window.addEventListener("pagehide", () => { remove(userRef).catch(() => {}); }, { once: true });
 } catch (error) {

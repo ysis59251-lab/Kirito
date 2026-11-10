@@ -135,7 +135,7 @@ private fun AdminConsole(session: AdminSession, onSignOut: () -> Unit) {
     Scaffold(topBar = { TopAppBar(title = { Column { Text("AnimeFume Admin", fontWeight = FontWeight.Bold); Text("${session.role} • ${session.email}", color = Muted, style = MaterialTheme.typography.labelSmall) } }, actions = { IconButton(onClick = onSignOut) { Icon(Icons.Default.Logout, "ออกจากระบบ") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Bg)) }, bottomBar = { NavigationBar(containerColor = Panel) { tabs.forEachIndexed { index, label -> NavigationBarItem(selected = tab == index, onClick = { tab = index }, icon = { Icon(listOf(Icons.Default.Dashboard, Icons.Default.ReportProblem, Icons.Default.Campaign, Icons.Default.VideoLibrary, Icons.Default.GroupAdd)[index], null) }, label = { Text(label) }) } } }, containerColor = Bg) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
             when (tab) {
-                0 -> OverviewScreen()
+                0 -> OverviewScreen(session)
                 1 -> ReportsScreen()
                 2 -> AnnouncementScreen(session.role)
                 3 -> AddEpisodeScreen(session.uid)
@@ -146,14 +146,16 @@ private fun AdminConsole(session: AdminSession, onSignOut: () -> Unit) {
 }
 
 @Composable
-private fun OverviewScreen() {
+private fun OverviewScreen(session: AdminSession) {
     val database = remember { FirebaseDatabase.getInstance(RTDB_URL) }
     var online by remember { mutableStateOf<List<OnlineUser>>(emptyList()) }
     var reports by remember { mutableIntStateOf(0) }
+    var maintenanceMode by remember { mutableStateOf(false) }
     var lastSync by remember { mutableLongStateOf(0L) }
     DisposableEffect(Unit) {
         val onlineRef = database.getReference("onlineUsers")
         val reportsRef = database.getReference("reports")
+        val maintenanceRef = database.getReference("settings/maintenanceMode")
         val onlineListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val now = System.currentTimeMillis()
@@ -170,13 +172,31 @@ private fun OverviewScreen() {
             override fun onDataChange(snapshot: DataSnapshot) { reports = snapshot.children.count { it.child("read").getValue(Boolean::class.java) != true } }
             override fun onCancelled(error: DatabaseError) {}
         }
-        onlineRef.addValueEventListener(onlineListener); reportsRef.addValueEventListener(reportsListener)
-        onDispose { onlineRef.removeEventListener(onlineListener); reportsRef.removeEventListener(reportsListener) }
+        val maintenanceListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) { maintenanceMode = snapshot.getValue(Boolean::class.java) == true }
+            override fun onCancelled(error: DatabaseError) {}
+        }
+        onlineRef.addValueEventListener(onlineListener); reportsRef.addValueEventListener(reportsListener); maintenanceRef.addValueEventListener(maintenanceListener)
+        onDispose { onlineRef.removeEventListener(onlineListener); reportsRef.removeEventListener(reportsListener); maintenanceRef.removeEventListener(maintenanceListener) }
     }
     LazyColumn(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(bottom = 20.dp)) {
         item { Text("ศูนย์ควบคุมแบบเรียลไทม์", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("ข้อมูลอัปเดตทันทีจาก AnimeFume", color = Muted) }
         item { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) { MetricCard("ออนไลน์", online.size.toString(), Mint, Modifier.weight(1f)); MetricCard("รายงานใหม่", reports.toString(), Danger, Modifier.weight(1f)) } }
         item { StatusCard("การเชื่อมต่อ", if (lastSync > 0) "เชื่อมต่อแล้ว • ${online.size} คนกำลังใช้งาน" else "กำลังเชื่อมต่อ…", lastSync > 0) }
+        if (session.role == "owner") item {
+            Card(colors = CardDefaults.cardColors(containerColor = if (maintenanceMode) Color(0xFF3A252A) else Panel), shape = RoundedCornerShape(18.dp)) {
+                Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("ควบคุมหน้าจอผู้ชม", fontWeight = FontWeight.Bold)
+                        Text(if (maintenanceMode) "เว็บไซต์กำลังแสดงหน้าปิดปรับปรุง" else "เว็บไซต์กำลังเปิดให้ผู้ชมใช้งาน", color = if (maintenanceMode) Warning else Muted, style = MaterialTheme.typography.bodySmall)
+                    }
+                    Switch(checked = maintenanceMode, onCheckedChange = { enabled ->
+                        database.getReference("settings/maintenanceMode").setValue(enabled)
+                            .addOnSuccessListener { database.getReference("settings").updateChildren(mapOf("updatedAt" to System.currentTimeMillis(), "updatedBy" to session.email)) }
+                    })
+                }
+            }
+        }
         item { Text("ผู้ใช้ออนไลน์ล่าสุด", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
         if (online.isEmpty()) item { EmptyCard("ยังไม่มีผู้ใช้งานออนไลน์") }
         items(online.take(20), key = { it.id }) { OnlineRow(it) }

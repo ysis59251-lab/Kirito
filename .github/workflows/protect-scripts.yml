@@ -48,4 +48,5 @@ jobs:
             exit 0
           fi
           git commit -m 'Build obfuscated browser scripts'
+          git pull --rebase origin main
           git push origin main

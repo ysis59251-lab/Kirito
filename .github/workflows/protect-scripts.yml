@@ -32,7 +32,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p protected
-          for file in animefume-core.js animefume-menu-fix.js script.js script1.js script2.js; do
+          for file in animefume-core.js animefume-menu-fix.js script.js script1.js script2.js continue-watching.js; do
             npx --yes javascript-obfuscator@4.1.1 "$file" --output "protected/$file" --compact true --control-flow-flattening true --control-flow-flattening-threshold 0.15 --string-array true --string-array-encoding base64 --string-array-threshold 0.7 --rename-globals false --self-defending false --source-map false
           done
 

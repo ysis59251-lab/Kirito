@@ -39,4 +39,5 @@ function play(i,mark=true){if(!episodes[i])return;currentIndex=i;let url=episode
 function nextEp(){if(currentIndex<episodes.length-1)play(currentIndex+1)}function prevEp(){if(currentIndex>0)play(currentIndex-1)}function highlight(){document.querySelectorAll('.ep').forEach((e,i)=>e.classList.toggle('active',i===currentIndex))}function openModal(){modal.style.display='block'}function closeModal(){modal.style.display='none'}modal.onclick=e=>{if(e.target===modal)closeModal()};document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')nextEp();if(e.key==='ArrowLeft')prevEp()});
 </script>
 <script src="../player-system.js"></script>
+<script type="module" src="../animefume-realtime.js"></script>
 </body></html>

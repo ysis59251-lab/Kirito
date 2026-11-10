@@ -17,4 +17,5 @@ function renderAnime(data){result.innerHTML='';if(!data.length){result.innerHTML
 function searchAnime(update=true){const q=norm(input.value);if(update)history.replaceState(null,'',q?`${location.pathname}?q=${encodeURIComponent(q)}`:location.pathname);if(!q)return renderAnime(animeData);const words=q.split(/\s+/).filter(Boolean);renderAnime(animeData.filter(r=>{const t=norm(r.title);return words.every(w=>t.includes(w))}))}
 async function loadAnime(){try{const res=await fetch(API_URL,{cache:'no-store'});if(!res.ok)throw Error(`HTTP ${res.status}`);const data=await res.json();animeData=Array.isArray(data)?data.filter(Boolean):[];const q=new URLSearchParams(location.search).get('q')||'';input.value=q;searchAnime(false)}catch(e){console.error(e);result.innerHTML='<div class="empty">โหลดข้อมูลไม่ได้ กรุณาลองใหม่อีกครั้ง</div>';status.textContent='เกิดข้อผิดพลาดในการโหลดข้อมูล'}}
 form.addEventListener('submit',e=>{e.preventDefault();searchAnime()});input.addEventListener('input',()=>searchAnime());document.getElementById('showFav').onclick=()=>{const a=favs();if(!a.length){status.textContent='ยังไม่มีรายการโปรด';return}renderAnime(a)};loadAnime();
-</script></body></html>
+</script><script type="module" src="animefume-realtime.js"></script>
+</body></html>

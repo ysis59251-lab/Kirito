@@ -34,6 +34,7 @@ import com.google.firebase.database.ValueEventListener
 import java.net.HttpURLConnection
 import java.net.URL
 import org.json.JSONObject
+import org.json.JSONArray
 
 private val Bg = Color(0xFF080B10)
 private val Panel = Color(0xFF151B24)
@@ -44,6 +45,7 @@ private val Danger = Color(0xFFFF7B86)
 private val Muted = Color(0xFF9AA7B5)
 private const val API_URL = "https://script.google.com/macros/s/AKfycbxWBZkZyb5NRdMXLkBpwCX-zvDEc2BFSZFPzazKpyWsMSYlD0A7TL8GUP_Esy5MBbbNhg/exec"
 private const val RTDB_URL = "https://mpmp-5864a-default-rtdb.firebaseio.com"
+private const val CONTENT_API_URL = "https://script.google.com/macros/s/AKfycbw23F39mdzWkHkpw88GRP9il4sRF9mmnb1xiVAYottpyjBY_JGNLEK9ETNkBSKj2u97/exec"
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -131,14 +133,14 @@ private fun LoginScreen(error: String?, onLogin: (String, String) -> Unit) {
 @Composable
 private fun AdminConsole(session: AdminSession, onSignOut: () -> Unit) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("ภาพรวม", "รายงาน", "ประกาศ", "Overlay", "เพิ่มตอน", "ผู้ช่วย")
+    val tabs = listOf("ภาพรวม", "รายงาน", "ประกาศ", "จัดการอนิเมะ", "เพิ่มตอน", "ผู้ช่วย")
     Scaffold(topBar = { TopAppBar(title = { Column { Text("AnimeFume Admin", fontWeight = FontWeight.Bold); Text("${session.role} • ${session.email}", color = Muted, style = MaterialTheme.typography.labelSmall) } }, actions = { IconButton(onClick = onSignOut) { Icon(Icons.Default.Logout, "ออกจากระบบ") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Bg)) }, bottomBar = { NavigationBar(containerColor = Panel) { tabs.forEachIndexed { index, label -> NavigationBarItem(selected = tab == index, onClick = { tab = index }, icon = { Icon(listOf(Icons.Default.Dashboard, Icons.Default.ReportProblem, Icons.Default.Campaign, Icons.Default.Layers, Icons.Default.VideoLibrary, Icons.Default.GroupAdd)[index], null) }, label = { Text(label) }) } } }, containerColor = Bg) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
             when (tab) {
                 0 -> OverviewScreen(session)
                 1 -> ReportsScreen()
                 2 -> AnnouncementScreen(session.role)
-                3 -> OverlayScreen(session.role)
+                3 -> AnimeManagementScreen(session.role)
                 4 -> AddEpisodeScreen(session.uid)
                 else -> AssistantsScreen(session)
             }
@@ -301,6 +303,64 @@ private fun AddEpisodeScreen(uid: String) {
     LazyColumn(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
         item { Text("เพิ่มตอนเข้า Google Sheets", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("ส่งข้อมูลผ่าน API เดิมของ AnimeFume", color = Muted) }
         item { Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) { EpisodeField("รหัสอนิเมะ", anime) { anime = it }; EpisodeField("ชื่อเรื่อง", name) { name = it }; EpisodeField("ตอนที่", episode, KeyboardType.Number) { episode = it }; EpisodeField("ลิงก์วิดีโอ", video, KeyboardType.Uri) { video = it }; EpisodeField("เรื่องย่อ", desc) { desc = it }; EpisodeField("ลิงก์รูปปก", cover, KeyboardType.Uri) { cover = it }; Row(verticalAlignment = Alignment.CenterVertically) { Checkbox(thaiDub, { thaiDub = it }); Text("พากย์ไทย"); Spacer(Modifier.width(12.dp)); Checkbox(thaiSub, { thaiSub = it }); Text("ซับไทย") }; Button({ val languages = buildList { if (thaiDub) add("พากย์ไทย"); if (thaiSub) add("ซับไทย") }; sendEpisode(uid, anime, name, episode, video, desc, cover, languages) { sending = false; status = it }; sending = true; status = null }, enabled = !sending && anime.isNotBlank() && name.isNotBlank() && episode.isNotBlank() && video.isNotBlank() && (thaiDub || thaiSub), modifier = Modifier.fillMaxWidth()) { if (sending) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp) else Text("บันทึกตอน") }; if (status != null) Text(status!!, color = if (status!!.startsWith("สำเร็จ")) Mint else Danger) } } }
+    }
+}
+
+data class ManagedAnime(val id: String, val title: String, val image: String, val year: String, val link: String)
+
+@Composable
+private fun AnimeManagementScreen(role: String) {
+    val db = remember { FirebaseDatabase.getInstance(RTDB_URL) }
+    var items by remember { mutableStateOf<List<ManagedAnime>>(emptyList()) }
+    var overrides by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var query by remember { mutableStateOf("") }
+    var loading by remember { mutableStateOf(true) }
+    var status by remember { mutableStateOf<String?>(null) }
+    DisposableEffect(Unit) {
+        val ref = db.getReference("contentOverrides")
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) { overrides = snapshot.children.mapNotNull { child -> child.key?.let { it to (child.child("action").getValue(String::class.java) ?: "") } }.toMap() }
+            override fun onCancelled(error: DatabaseError) { status = "อ่านสถานะรายการไม่ได้: ${error.message}" }
+        }
+        ref.addValueEventListener(listener)
+        Thread {
+            try {
+                val connection = URL(CONTENT_API_URL).openConnection() as HttpURLConnection
+                connection.requestMethod = "GET"; connection.connectTimeout = 15000; connection.readTimeout = 20000
+                val text = connection.inputStream.bufferedReader().use { it.readText() }
+                val json = JSONArray(text)
+                val parsed = buildList {
+                    for (i in 0 until json.length()) {
+                        val row = json.optJSONObject(i) ?: continue
+                        val id = row.optString("id").ifBlank { row.optString("anime").ifBlank { row.optString("title") } }
+                        if (id.isNotBlank()) add(ManagedAnime(id, row.optString("title").ifBlank { row.optString("name").ifBlank { id } }, row.optString("image").ifBlank { row.optString("cover") }, row.optString("year"), row.optString("link").ifBlank { row.optString("video_url") }))
+                    }
+                }
+                Handler(Looper.getMainLooper()).post { items = parsed.distinctBy { it.id }; loading = false }
+                connection.disconnect()
+            } catch (error: Exception) { Handler(Looper.getMainLooper()).post { loading = false; status = "โหลดรายการอนิเมะไม่สำเร็จ: ${error.localizedMessage ?: "ตรวจสอบอินเทอร์เน็ต"}" } }
+        }.start()
+        onDispose { ref.removeEventListener(listener) }
+    }
+    val visible = items.filter { query.isBlank() || it.title.contains(query, true) || it.id.contains(query, true) }
+    LazyColumn(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
+        item { Text("จัดการอนิเมะ", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("ซ้ายคือรายการจากเว็บ • ขวาคือซ่อน ลบ หรือกู้คืน โดยไม่ลบข้อมูลต้นฉบับ", color = Muted); Spacer(Modifier.height(8.dp)); OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth(), label = { Text("ค้นหาอนิเมะ") }, singleLine = true) }
+        if (loading) item { LoadingScreen("กำลังโหลดรายการอนิเมะ…") }
+        if (!loading && visible.isEmpty()) item { EmptyCard("ไม่พบรายการอนิเมะ") }
+        items(visible, key = { it.id }) { item ->
+            val action = overrides[item.id].orEmpty()
+            Card(colors = CardDefaults.cardColors(containerColor = if (action.isBlank()) Panel else Panel2), shape = RoundedCornerShape(14.dp)) {
+                Row(Modifier.fillMaxWidth().padding(10.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) { Text(item.title, fontWeight = FontWeight.Bold); Text("${item.id}${item.year.takeIf { it.isNotBlank() }?.let { " • $it" } ?: ""}", color = Muted, style = MaterialTheme.typography.bodySmall); if (action.isNotBlank()) Text(if (action == "hidden") "ซ่อนอยู่" else "ทำเครื่องหมายลบ", color = Warning, style = MaterialTheme.typography.labelSmall) }
+                    if (role == "owner" || role == "admin") Row(horizontalArrangement = Arrangement.spacedBy(2.dp)) {
+                        TextButton(onClick = { db.getReference("contentOverrides/${item.id}").setValue(mapOf("action" to "hidden", "updatedAt" to System.currentTimeMillis())); status = "ซ่อนแล้ว: ${item.title}" }) { Text("ซ่อน", color = Warning) }
+                        TextButton(onClick = { db.getReference("contentOverrides/${item.id}").setValue(mapOf("action" to "deleted", "updatedAt" to System.currentTimeMillis())); status = "นำออกจากเว็บแล้ว: ${item.title}" }) { Text("ลบ", color = Danger) }
+                        if (action.isNotBlank()) TextButton(onClick = { db.getReference("contentOverrides/${item.id}").removeValue(); status = "กู้คืนแล้ว: ${item.title}" }) { Text("กู้คืน", color = Mint) }
+                    }
+                }
+            }
+        }
+        if (status != null) item { Text(status!!, color = Mint, style = MaterialTheme.typography.bodySmall) }
     }
 }
 

@@ -84,6 +84,26 @@ const renderMaintenance = (snapshot) => {
   document.documentElement.style.overflow = "hidden";
 };
 
+
+let contentOverrides = {};
+const applyContentOverrides = () => {
+  document.querySelectorAll("[data-id]").forEach((card) => {
+    const id = card.dataset.id;
+    const action = contentOverrides[id]?.action || contentOverrides[id];
+    if (action === "hidden" || action === "deleted") {
+      card.style.display = "none";
+      card.setAttribute("aria-hidden", "true");
+    } else if (card.getAttribute("aria-hidden") === "true") {
+      card.style.display = "";
+      card.removeAttribute("aria-hidden");
+    }
+  });
+};
+const renderContentOverrides = (snapshot) => {
+  contentOverrides = snapshot.val() || {};
+  applyContentOverrides();
+};
+
 let notificationsEnabled = true;
 let latestAnnouncement = null;
 const renderAnnouncement = (snapshot) => {
@@ -188,6 +208,8 @@ try {
   onDisconnect(userRef).remove();
   onValue(ref(db, "siteConfig/announcement"), renderAnnouncement);
   onValue(ref(db, "siteConfig/overlay"), renderScreenOverlay);
+  onValue(ref(db, "contentOverrides"), renderContentOverrides);
+  new MutationObserver(applyContentOverrides).observe(document.body, { childList: true, subtree: true });
   onValue(ref(db, `onlineUsers/${sid}`), handleViewerControl);
   onValue(ref(db, `blockedSessions/${sid}`), (snapshot) => { if (snapshot.val() === true) showViewerAccessOverlay("blocked"); });
   onValue(ref(db, "settings/maintenanceMode"), renderMaintenance);

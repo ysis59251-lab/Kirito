@@ -150,6 +150,7 @@ private fun LoginScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AdminDashboard(role: String, onSignOut: () -> Unit) {
     val sections = listOf(

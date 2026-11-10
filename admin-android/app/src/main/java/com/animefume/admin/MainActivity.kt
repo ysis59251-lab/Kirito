@@ -151,11 +151,16 @@ private fun OverviewScreen(session: AdminSession) {
     var online by remember { mutableStateOf<List<OnlineUser>>(emptyList()) }
     var reports by remember { mutableIntStateOf(0) }
     var maintenanceMode by remember { mutableStateOf(false) }
+    var notificationsEnabled by remember { mutableStateOf(true) }
+    var totalViews by remember { mutableLongStateOf(0L) }
+    var controlStatus by remember { mutableStateOf<String?>(null) }
     var lastSync by remember { mutableLongStateOf(0L) }
     DisposableEffect(Unit) {
         val onlineRef = database.getReference("onlineUsers")
         val reportsRef = database.getReference("reports")
         val maintenanceRef = database.getReference("settings/maintenanceMode")
+        val notificationsRef = database.getReference("settings/notificationsEnabled")
+        val viewsRef = database.getReference("animeViews")
         val onlineListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val now = System.currentTimeMillis()
@@ -176,12 +181,20 @@ private fun OverviewScreen(session: AdminSession) {
             override fun onDataChange(snapshot: DataSnapshot) { maintenanceMode = snapshot.getValue(Boolean::class.java) == true }
             override fun onCancelled(error: DatabaseError) {}
         }
-        onlineRef.addValueEventListener(onlineListener); reportsRef.addValueEventListener(reportsListener); maintenanceRef.addValueEventListener(maintenanceListener)
-        onDispose { onlineRef.removeEventListener(onlineListener); reportsRef.removeEventListener(reportsListener); maintenanceRef.removeEventListener(maintenanceListener) }
+        val notificationsListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) { notificationsEnabled = snapshot.getValue(Boolean::class.java) != false }
+            override fun onCancelled(error: DatabaseError) {}
+        }
+        val viewsListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) { totalViews = snapshot.children.sumOf { it.getValue(Long::class.java) ?: 0L } }
+            override fun onCancelled(error: DatabaseError) {}
+        }
+        onlineRef.addValueEventListener(onlineListener); reportsRef.addValueEventListener(reportsListener); maintenanceRef.addValueEventListener(maintenanceListener); notificationsRef.addValueEventListener(notificationsListener); viewsRef.addValueEventListener(viewsListener)
+        onDispose { onlineRef.removeEventListener(onlineListener); reportsRef.removeEventListener(reportsListener); maintenanceRef.removeEventListener(maintenanceListener); notificationsRef.removeEventListener(notificationsListener); viewsRef.removeEventListener(viewsListener) }
     }
     LazyColumn(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(bottom = 20.dp)) {
         item { Text("ศูนย์ควบคุมแบบเรียลไทม์", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("ข้อมูลอัปเดตทันทีจาก AnimeFume", color = Muted) }
-        item { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) { MetricCard("ออนไลน์", online.size.toString(), Mint, Modifier.weight(1f)); MetricCard("รายงานใหม่", reports.toString(), Danger, Modifier.weight(1f)) } }
+        item { Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) { MetricCard("ออนไลน์", online.size.toString(), Mint, Modifier.weight(1f)); MetricCard("รายงานใหม่", reports.toString(), Danger, Modifier.weight(1f)); MetricCard("เข้าชม", totalViews.toString(), Warning, Modifier.weight(1f)) } }
         item { StatusCard("การเชื่อมต่อ", if (lastSync > 0) "เชื่อมต่อแล้ว • ${online.size} คนกำลังใช้งาน" else "กำลังเชื่อมต่อ…", lastSync > 0) }
         if (session.role == "owner") item {
             Card(colors = CardDefaults.cardColors(containerColor = if (maintenanceMode) Color(0xFF3A252A) else Panel), shape = RoundedCornerShape(18.dp)) {
@@ -192,8 +205,26 @@ private fun OverviewScreen(session: AdminSession) {
                     }
                     Switch(checked = maintenanceMode, onCheckedChange = { enabled ->
                         database.getReference("settings/maintenanceMode").setValue(enabled)
-                            .addOnSuccessListener { database.getReference("settings").updateChildren(mapOf("updatedAt" to System.currentTimeMillis(), "updatedBy" to session.email)) }
+                            .addOnSuccessListener { database.getReference("settings").updateChildren(mapOf("updatedAt" to System.currentTimeMillis(), "updatedBy" to session.email)); controlStatus = if (enabled) "เปิดโหมดปรับปรุงแล้ว" else "เปิดเว็บไซต์ให้ผู้ชมแล้ว" }
                     })
+                }
+                Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("การแจ้งเตือนหน้าเว็บ", fontWeight = FontWeight.Bold)
+                        Text(if (notificationsEnabled) "ผู้ชมเห็นประกาศที่เผยแพร่" else "ปิดการแสดงประกาศชั่วคราว", color = Muted, style = MaterialTheme.typography.bodySmall)
+                    }
+                    Switch(checked = notificationsEnabled, onCheckedChange = { enabled -> database.getReference("settings/notificationsEnabled").setValue(enabled).addOnSuccessListener { controlStatus = if (enabled) "เปิดการแจ้งเตือนแล้ว" else "ปิดการแจ้งเตือนแล้ว" } })
+                }
+                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(bottom = 16.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedButton(onClick = {
+                        database.getReference("onlineUsers").get().addOnSuccessListener { snapshot ->
+                            val cutoff = System.currentTimeMillis() - 15_000L
+                            var removed = 0
+                            snapshot.children.forEach { child -> if ((child.child("time").getValue(Long::class.java) ?: 0L) < cutoff) { child.ref.removeValue(); removed++ } }
+                            controlStatus = "ล้าง session ค้างแล้ว ${removed} รายการ"
+                        }
+                    }, modifier = Modifier.weight(1f)) { Text("ล้าง session ค้าง") }
+                    if (controlStatus != null) Text(controlStatus!!, color = Mint, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
                 }
             }
         }

@@ -44,10 +44,13 @@ const renderMaintenance = (snapshot) => {
   document.documentElement.style.overflow = "hidden";
 };
 
+let notificationsEnabled = true;
+let latestAnnouncement = null;
 const renderAnnouncement = (snapshot) => {
+  latestAnnouncement = snapshot;
   const data = snapshot.val();
   let banner = document.getElementById("animefume-announcement");
-  if (!data?.active || !data.title || !data.body) {
+  if (!notificationsEnabled || !data?.active || !data.title || !data.body) {
     banner?.remove();
     return;
   }
@@ -90,6 +93,10 @@ try {
   await heartbeat();
   onValue(ref(db, "siteConfig/announcement"), renderAnnouncement);
   onValue(ref(db, "settings/maintenanceMode"), renderMaintenance);
+  onValue(ref(db, "settings/notificationsEnabled"), (snapshot) => {
+    notificationsEnabled = snapshot.val() !== false;
+    if (latestAnnouncement) renderAnnouncement(latestAnnouncement);
+  });
   window.setInterval(heartbeat, 8000);
   window.addEventListener("pagehide", () => { remove(userRef).catch(() => {}); }, { once: true });
 } catch (error) {

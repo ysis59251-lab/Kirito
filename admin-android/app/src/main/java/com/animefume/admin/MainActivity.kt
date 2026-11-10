@@ -155,6 +155,7 @@ private fun OverviewScreen(session: AdminSession) {
     var notificationsEnabled by remember { mutableStateOf(true) }
     var totalViews by remember { mutableLongStateOf(0L) }
     var controlStatus by remember { mutableStateOf<String?>(null) }
+    var blockedSessions by remember { mutableStateOf<List<String>>(emptyList()) }
     var lastSync by remember { mutableLongStateOf(0L) }
     DisposableEffect(Unit) {
         val onlineRef = database.getReference("onlineUsers")
@@ -162,6 +163,7 @@ private fun OverviewScreen(session: AdminSession) {
         val maintenanceRef = database.getReference("settings/maintenanceMode")
         val notificationsRef = database.getReference("settings/notificationsEnabled")
         val viewsRef = database.getReference("animeViews")
+        val blockedRef = database.getReference("blockedSessions")
         val onlineListener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val now = System.currentTimeMillis()
@@ -190,8 +192,12 @@ private fun OverviewScreen(session: AdminSession) {
             override fun onDataChange(snapshot: DataSnapshot) { totalViews = snapshot.children.sumOf { it.getValue(Long::class.java) ?: 0L } }
             override fun onCancelled(error: DatabaseError) {}
         }
-        onlineRef.addValueEventListener(onlineListener); reportsRef.addValueEventListener(reportsListener); maintenanceRef.addValueEventListener(maintenanceListener); notificationsRef.addValueEventListener(notificationsListener); viewsRef.addValueEventListener(viewsListener)
-        onDispose { onlineRef.removeEventListener(onlineListener); reportsRef.removeEventListener(reportsListener); maintenanceRef.removeEventListener(maintenanceListener); notificationsRef.removeEventListener(notificationsListener); viewsRef.removeEventListener(viewsListener) }
+        val blockedListener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) { blockedSessions = snapshot.children.filter { it.getValue(Boolean::class.java) == true }.mapNotNull { it.key }.sorted() }
+            override fun onCancelled(error: DatabaseError) {}
+        }
+        onlineRef.addValueEventListener(onlineListener); reportsRef.addValueEventListener(reportsListener); maintenanceRef.addValueEventListener(maintenanceListener); notificationsRef.addValueEventListener(notificationsListener); viewsRef.addValueEventListener(viewsListener); blockedRef.addValueEventListener(blockedListener)
+        onDispose { onlineRef.removeEventListener(onlineListener); reportsRef.removeEventListener(reportsListener); maintenanceRef.removeEventListener(maintenanceListener); notificationsRef.removeEventListener(notificationsListener); viewsRef.removeEventListener(viewsListener); blockedRef.removeEventListener(blockedListener) }
     }
     LazyColumn(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(bottom = 20.dp)) {
         item { Text("ศูนย์ควบคุมแบบเรียลไทม์", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("ข้อมูลอัปเดตทันทีจาก AnimeFume", color = Muted) }
@@ -232,6 +238,18 @@ private fun OverviewScreen(session: AdminSession) {
         item { Text("ผู้ใช้ออนไลน์ล่าสุด", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
         if (online.isEmpty()) item { EmptyCard("ยังไม่มีผู้ใช้งานออนไลน์") }
         items(online.take(20), key = { it.id }) { OnlineRow(it, database, session.role == "owner" || session.role == "admin") }
+        if (session.role == "owner") {
+            item { Text("ผู้ชมที่ถูกบล็อก", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
+            if (blockedSessions.isEmpty()) item { EmptyCard("ยังไม่มี session ที่ถูกบล็อก") }
+            items(blockedSessions, key = { it }) { blockedId ->
+                Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) {
+                    Row(Modifier.fillMaxWidth().padding(13.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) { Text(blockedId, fontWeight = FontWeight.Bold); Text("บล็อกอยู่ • ต้องให้ผู้ชมรีเฟรชหลังปลดบล็อก", color = Muted, style = MaterialTheme.typography.bodySmall) }
+                        TextButton(onClick = { database.getReference("blockedSessions/$blockedId").removeValue(); database.getReference("onlineUsers/$blockedId").removeValue(); controlStatus = "ปลดบล็อกแล้ว: $blockedId" }) { Text("ปลดบล็อก", color = Mint) }
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -329,7 +347,7 @@ private fun AssistantsScreen(session: AdminSession) {
     }
     LazyColumn(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(bottom = 20.dp)) {
         item { Text("ผู้ช่วยแอดมิน", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("จัดการเฉพาะบัญชีที่มีอยู่ใน Firebase Authentication", color = Muted) }
-        if (session.role == "owner") item { Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) { EpisodeField("Firebase UID", uid) { uid = it }; EpisodeField("อีเมลสำหรับแสดงผล", email, KeyboardType.Email) { email = it }; Button({ db.getReference("adminUsers/${uid.trim()}").updateChildren(mapOf("active" to true, "role" to "admin", "email" to email.trim())).addOnSuccessListener { status = "เพิ่มผู้ช่วยแล้ว" }.addOnFailureListener { status = "เพิ่มไม่สำเร็จ: ${it.localizedMessage}" }; uid = ""; email = "" }, enabled = uid.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("เพิ่มผู้ช่วย") }; if (status != null) Text(status!!, color = Mint) } } }
+        if (session.role == "owner") item { Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) { EpisodeField("Firebase UID", uid) { uid = it }; EpisodeField("อีเมลสำหรับแสดงผล", email, KeyboardType.Email) { email = it }; Button({ val cleanUid = uid.trim(); try { db.getReference("adminUsers/$cleanUid").updateChildren(mapOf("active" to true, "role" to "admin", "email" to email.trim())).addOnSuccessListener { status = "เพิ่มผู้ช่วยแล้ว" }.addOnFailureListener { status = "เพิ่มไม่สำเร็จ: ${it.localizedMessage ?: "ตรวจสอบสิทธิ์ Firebase"}" }; uid = ""; email = "" } catch (error: IllegalArgumentException) { status = "UID ไม่ถูกต้อง: ห้ามมี . # $ [ ] หรือ /" } }, enabled = uid.isNotBlank() && uid.none { it == '.' || it == '#' || it == '$' || it == '[' || it == ']' || it == '/' }, modifier = Modifier.fillMaxWidth()) { Text("เพิ่มผู้ช่วย") }; if (status != null) Text(status!!, color = Mint) } } }
         items(assistants, key = { it.uid }) { assistant -> Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) { Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) { Icon(if (assistant.role == "owner") Icons.Default.VerifiedUser else Icons.Default.Person, null, tint = if (assistant.role == "owner") Warning else Mint); Spacer(Modifier.width(10.dp)); Column(Modifier.weight(1f)) { Text(assistant.email.ifBlank { assistant.uid }, fontWeight = FontWeight.Bold); Text("${assistant.role} • active", color = Muted, style = MaterialTheme.typography.bodySmall) }; if (session.role == "owner" && assistant.uid != session.uid) TextButton({ db.getReference("adminUsers/${assistant.uid}").updateChildren(mapOf("active" to false)) }) { Text("ปิดสิทธิ์", color = Danger) } } } }
     }
 }

@@ -1,0 +1,51 @@
+name: Build protected browser scripts
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*.js'
+      - '*.html'
+      - '.github/workflows/protect-scripts.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  obfuscate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Obfuscate browser JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p protected
+          for file in animefume-core.js animefume-menu-fix.js script.js script1.js script2.js; do
+            npx --yes javascript-obfuscator@4.1.1 "$file" --output "protected/$file" --compact true --control-flow-flattening true --control-flow-flattening-threshold 0.15 --string-array true --string-array-encoding base64 --string-array-threshold 0.7 --rename-globals false --self-defending false --source-map false
+          done
+
+      - name: Commit protected assets
+        shell: bash
+        run: |
+          set -e
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add protected/
+          if git diff --cached --quiet; then
+            echo 'Protected assets are already up to date.'
+            exit 0
+          fi
+          git commit -m 'Build obfuscated browser scripts'
+          git push origin main

@@ -856,3 +856,43 @@ body{
 @media(prefers-reduced-motion:reduce){
   #menuBtn{transition:none!important;}
 }
+
+
+/* AnimeFume responsive polish */
+:root{
+  --af-accent:#00d9c0;
+  --af-accent-2:#ff477e;
+  --af-panel:rgba(17,19,24,.92);
+  --af-border:rgba(255,255,255,.10);
+  --af-muted:#a6aab4;
+}
+html{scroll-padding-top:100px;scrollbar-color:#444 #090909}
+body{background:#050608;color:#f7f7fa;padding-bottom:env(safe-area-inset-bottom,0px)}
+#bg{opacity:.28;background-attachment:fixed}
+.header{padding-top:calc(14px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--af-border);background:rgba(5,6,8,.84);box-shadow:0 8px 28px rgba(0,0,0,.22)}
+.header h1{letter-spacing:.3px;text-shadow:0 2px 18px rgba(0,217,192,.18)}
+.search{width:100%;min-height:46px;border:1px solid var(--af-border);border-radius:14px;background:rgba(255,255,255,.08);transition:border-color .2s,box-shadow .2s}
+.search:focus{border-color:var(--af-accent);box-shadow:0 0 0 3px rgba(0,217,192,.12)}
+#animeList,.anime-list{grid-template-columns:repeat(auto-fill,minmax(min(100%,145px),1fr));gap:14px;padding:16px}
+.anime-card,.sheet2-card,.af-fav-card{border:1px solid var(--af-border);border-radius:16px;background:rgba(18,20,25,.88);box-shadow:0 8px 22px rgba(0,0,0,.18);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.anime-card:active,.sheet2-card:active,.af-fav-card:active{transform:scale(.98)}
+.anime-card img,.sheet2-card img,.af-fav-card img{display:block;width:100%;object-fit:cover;background:#15171c}
+.hot-section,#sheet2Section{margin:18px 12px;padding:16px;border:1px solid var(--af-border);border-radius:18px;background:rgba(10,12,16,.78);backdrop-filter:blur(12px)}
+.hot-section h2,#sheet2Title{font-size:clamp(18px,4vw,22px);line-height:1.35}
+.af-continue{background:linear-gradient(145deg,rgba(18,22,28,.96),rgba(10,12,16,.92));border-color:var(--af-border);box-shadow:0 10px 28px rgba(0,0,0,.2)}
+.af-continue-card{border-color:var(--af-border);transition:transform .2s,border-color .2s}
+.af-continue-card:active{transform:scale(.98)}
+#menuBtn{display:grid;place-items:center;width:46px;height:46px;border:1px solid var(--af-border);border-radius:14px;background:rgba(12,14,18,.92);color:#fff}
+#menuDropdown{border:1px solid var(--af-border);border-radius:16px;background:rgba(14,16,21,.98);box-shadow:0 18px 45px rgba(0,0,0,.5);backdrop-filter:blur(16px)}
+#menuDropdown a{border-bottom:1px solid rgba(255,255,255,.05)}
+#menuDropdown a:last-child{border-bottom:0}
+button,a,input{-webkit-tap-highlight-color:transparent}
+button:focus-visible,a:focus-visible{outline:2px solid var(--af-accent);outline-offset:3px}
+#backTop,#afFavoritesBtn{bottom:calc(18px + env(safe-area-inset-bottom,0px));box-shadow:0 8px 24px rgba(0,0,0,.42)}
+#backTop{right:72px}
+#siteToast{bottom:calc(78px + env(safe-area-inset-bottom,0px));z-index:10010}
+#afFavModal{padding: max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom))}
+.af-modal{max-height:90dvh;overflow:auto}
+@media(min-width:760px){#animeList,.anime-list{grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:18px;padding:22px}.hot-section,#sheet2Section{max-width:1200px;margin:22px auto;padding:20px}.af-continue{max-width:1200px;margin:20px auto}}
+@media(max-width:520px){#animeList,.anime-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:10px}.hot-section,#sheet2Section{margin:12px 10px;padding:12px}.af-continue{margin:12px 10px;padding:12px}.af-continue-list{grid-template-columns:1fr}.header{padding-left:58px;padding-right:12px;text-align:left}.search{font-size:16px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}}

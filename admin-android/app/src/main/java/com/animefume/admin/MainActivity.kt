@@ -45,7 +45,7 @@ private val Danger = Color(0xFFFF7B86)
 private val Muted = Color(0xFF9AA7B5)
 private const val API_URL = "https://script.google.com/macros/s/AKfycbxWBZkZyb5NRdMXLkBpwCX-zvDEc2BFSZFPzazKpyWsMSYlD0A7TL8GUP_Esy5MBbbNhg/exec"
 private const val RTDB_URL = "https://mpmp-5864a-default-rtdb.firebaseio.com"
-private const val CONTENT_API_URL = "https://script.google.com/macros/s/AKfycbw23F39mdzWkHkpw88GRP9il4sRF9mmnb1xiVAYottpyjBY_JGNLEK9ETNkBSKj2u97/exec"
+private const val CONTENT_API_URL = "https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1"
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -326,14 +326,16 @@ private fun AnimeManagementScreen(role: String) {
         Thread {
             try {
                 val connection = URL(CONTENT_API_URL).openConnection() as HttpURLConnection
-                connection.requestMethod = "GET"; connection.connectTimeout = 15000; connection.readTimeout = 20000
+                connection.requestMethod = "GET"; connection.connectTimeout = 15000; connection.readTimeout = 20000; connection.setRequestProperty("User-Agent", "Mozilla/5.0 AnimeFumeAdmin/3.0")
                 val text = connection.inputStream.bufferedReader().use { it.readText() }
                 val json = JSONArray(text)
                 val parsed = buildList {
                     for (i in 0 until json.length()) {
                         val row = json.optJSONObject(i) ?: continue
-                        val id = row.optString("id").ifBlank { row.optString("anime").ifBlank { row.optString("title") } }
-                        if (id.isNotBlank()) add(ManagedAnime(id, row.optString("title").ifBlank { row.optString("name").ifBlank { id } }, row.optString("image").ifBlank { row.optString("cover") }, row.optString("year"), row.optString("link").ifBlank { row.optString("video_url") }))
+                        val id = row.optString("id").trim().ifBlank { row.optString("anime").trim() }
+                        val title = row.optString("title").trim().ifBlank { row.optString("name").trim() }
+                        val hiddenInSheet = row.optString("Show").equals("TRUE", ignoreCase = true)
+                        if (id.isNotBlank() && title.isNotBlank() && !hiddenInSheet) add(ManagedAnime(id, title, row.optString("image").ifBlank { row.optString("cover") }, row.optString("year"), row.optString("link").ifBlank { row.optString("video_url") }))
                     }
                 }
                 Handler(Looper.getMainLooper()).post { items = parsed.distinctBy { it.id }; loading = false }

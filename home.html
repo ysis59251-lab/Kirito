@@ -23,7 +23,7 @@
 #sheet2Section{margin:28px 0 12px;padding:0 12px}.sheet2-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}.sheet2-head h2{margin:0;font-size:21px}.sheet2-status{color:#aaa;font-size:13px}.sheet2-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.sheet2-card{display:block;color:#fff;text-decoration:none;background:#111;border:1px solid #282828;border-radius:14px;overflow:hidden;min-width:0;position:relative}.sheet2-card .card-img{aspect-ratio:2/3;background:#171717}.sheet2-card img{width:100%;height:100%;display:block;object-fit:cover}.sheet2-card .overlay{position:absolute;left:0;right:0;bottom:0;padding:28px 9px 9px;background:linear-gradient(transparent,rgba(0,0,0,.92));font-size:13px;line-height:1.35}.sheet2-meta{padding:8px 9px;color:#aaa;font-size:12px}.sheet2-pages{display:flex;justify-content:center;align-items:center;gap:7px;flex-wrap:wrap;margin:16px 0}.sheet2-page{min-width:38px;height:38px;padding:0 10px;border:1px solid #333;border-radius:10px;background:#151515;color:#fff;display:grid;place-items:center;cursor:pointer}.sheet2-page.active{background:#fff;color:#000;border-color:#fff}.sheet2-empty{grid-column:1/-1;text-align:center;color:#aaa;padding:30px}.sheet2-top{display:flex;gap:8px;align-items:center}.sheet2-more{color:#fff;text-decoration:none;border:1px solid #333;border-radius:9px;padding:7px 10px;font-size:12px}@media(min-width:700px){.sheet2-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}@media(max-width:600px){.af-fav-grid{grid-template-columns:1fr}.af-modal{margin:2vh auto}.af-fav-card img{width:52px;height:70px}}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
 </style>
-<script src="animefume-core.js"></script>
+<script src="protected/animefume-core.js"></script>
 </head>
 <body>
 <div id="siteLoading"><div class="loader-box"><div class="loader-ring"></div><b>AnimeFume</b><span>กำลังโหลดรายการอนิเมะ...</span></div></div>
@@ -68,7 +68,7 @@
   </div>
 </div>
 <script src="sheet2-data.js"></script>
-<script type="module" src="script.js"></script>
+<script type="module" src="protected/script.js"></script>
 <script>
 (() => {
   const FAV_KEY='animefume_favorites_v2';
@@ -130,6 +130,6 @@ async function loadSheet2(){
   });
 })();
 </script>
-<script src="animefume-menu-fix.js"></script>
+<script src="protected/animefume-menu-fix.js"></script>
 </body>
 </html>

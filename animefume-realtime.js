@@ -24,14 +24,52 @@ const sidKey = "animefume_live_session_id";
 const sid = sessionStorage.getItem(sidKey) || crypto.randomUUID();
 sessionStorage.setItem(sidKey, sid);
 const userRef = ref(db, `onlineUsers/${sid}`);
+let maintenanceActive = false;
+let heartbeatTimer = null;
+let interactionBlockerInstalled = false;
+
+const stopViewerActivity = () => {
+  if (heartbeatTimer) {
+    clearInterval(heartbeatTimer);
+    heartbeatTimer = null;
+  }
+  remove(userRef).catch(() => {});
+  document.querySelectorAll("video, audio").forEach((media) => {
+    try { media.pause(); media.currentTime = media.currentTime; } catch (_) {}
+  });
+  document.querySelectorAll("iframe").forEach((frame) => { frame.style.pointerEvents = "none"; });
+};
+
+const startViewerActivity = () => {
+  if (maintenanceActive || heartbeatTimer) return;
+  heartbeat().catch(() => {});
+  heartbeatTimer = window.setInterval(heartbeat, 8000);
+  document.querySelectorAll("iframe").forEach((frame) => { frame.style.pointerEvents = ""; });
+};
 
 const renderMaintenance = (snapshot) => {
   const enabled = snapshot.val() === true;
+  maintenanceActive = enabled;
   let overlay = document.getElementById("animefume-maintenance");
   if (!enabled) {
     overlay?.remove();
     document.documentElement.style.overflow = "";
+    startViewerActivity();
     return;
+  }
+  stopViewerActivity();
+  if (!interactionBlockerInstalled) {
+    document.addEventListener("click", (event) => {
+      if (!maintenanceActive) return;
+      const target = event.target;
+      if (target && target.closest && target.closest("#animefume-maintenance")) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+    }, true);
+    document.addEventListener("submit", (event) => {
+      if (maintenanceActive) { event.preventDefault(); event.stopImmediatePropagation(); }
+    }, true);
+    interactionBlockerInstalled = true;
   }
   if (!overlay) {
     overlay = document.createElement("main");
@@ -90,14 +128,12 @@ const heartbeat = async () => {
 
 try {
   onDisconnect(userRef).remove();
-  await heartbeat();
   onValue(ref(db, "siteConfig/announcement"), renderAnnouncement);
   onValue(ref(db, "settings/maintenanceMode"), renderMaintenance);
   onValue(ref(db, "settings/notificationsEnabled"), (snapshot) => {
     notificationsEnabled = snapshot.val() !== false;
     if (latestAnnouncement) renderAnnouncement(latestAnnouncement);
   });
-  window.setInterval(heartbeat, 8000);
   window.addEventListener("pagehide", () => { remove(userRef).catch(() => {}); }, { once: true });
 } catch (error) {
   console.warn("AnimeFume realtime heartbeat unavailable", error);

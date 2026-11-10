@@ -16,8 +16,11 @@ Open this `admin-android` folder in AndroidIDE, sync Gradle, then build `app:ass
 ## Security status
 Firebase Authentication verifies identity only. The app additionally reads `adminUsers/{uid}`, but **Firestore Security Rules must enforce admin permissions server-side** before connecting any management/write operations. Do not rely on hiding screens in the APK. Do not put service-account keys, private API secrets, or admin passwords in the app.
 
-## Current scope
-- Email/password sign-in and sign-out.
-- Active admin allow-list / role check.
-- Separate dashboard shell with sections for catalogue, episodes, users, announcements, analytics, audit log and settings.
-- Management screens are intentionally marked as pending until backend rules and existing AnimeFume data schema are confirmed.
+## Current scope (v3)
+- Email/password sign-in and sign-out with an active-admin allow-list check.
+- Real-time overview of online viewers from `onlineUsers`, excluding admin sessions and stale heartbeats.
+- Real-time reports inbox backed by the website's `reports` Realtime Database path, with mark-read and delete actions.
+- Announcement management backed by Realtime Database `siteConfig/announcement`, including publish and live on/off controls for owners; the website listens to the same path.
+- Episode submission from Android to the existing Google Apps Script endpoint used by the website, including Thai dub/sub options.
+- Owner-only assistant management through Firestore `adminUsers/{uid}` with active/role/email fields.
+- Role-aware navigation with a dedicated overview, reports, announcements, episode entry and assistants workspace.

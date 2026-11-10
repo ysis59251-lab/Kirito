@@ -121,9 +121,6 @@ async function loadSheet2(){
     }
   }
   }
-  }
-  }
-  }
 
   document.addEventListener('DOMContentLoaded',()=>{
     const menu=$('#menuDropdown');
@@ -132,7 +129,7 @@ async function loadSheet2(){
     document.addEventListener('keydown',e=>{if(e.key==='Escape')closeFav();if(e.key==='/'&&!['INPUT','TEXTAREA'].includes(document.activeElement?.tagName)){e.preventDefault();$('#searchInput')?.focus()}});
     window.addEventListener('scroll',()=>$('#backTop')?.classList.toggle('show',scrollY>500),{passive:true});$('#backTop')?.addEventListener('click',()=>scrollTo({top:0,behavior:'smooth'}));
     window.addEventListener('online',()=>toast('เชื่อมต่ออินเทอร์เน็ตแล้ว'));window.addEventListener('offline',()=>toast('ขณะนี้ออฟไลน์ ระบบบางส่วนอาจใช้ไม่ได้'));
-    const list=$('#animeList');if(list){const observer=new MutationObserver(()=>{syncButtons();document.querySelectorAll('#animeList img').forEach(img=>{img.loading='lazy';img.decoding='async';if(!img.dataset.afErr){img.dataset.afErr='1';img.addEventListener('error',()=>{img.style.background='#171717';img.alt='รูปภาพไม่พร้อมใช้งาน'})}});if(list.querySelector('.anime-card'))void 0});observer.observe(list,{childList:true,subtree:true});setTimeout(()=>void 0,8000)}else void 0;
+    const list=$('#animeList');if(list){const observer=new MutationObserver(()=>{syncButtons();document.querySelectorAll('#animeList img').forEach(img=>{img.loading='lazy';img.decoding='async';if(!img.dataset.afErr){img.dataset.afErr='1';img.addEventListener('error',()=>{img.style.background='#171717';img.alt='รูปภาพไม่พร้อมใช้งาน'})}});});observer.observe(list,{childList:true,subtree:true})}
     const search=$('#searchInput');search?.addEventListener('input',()=>{sheet2Page=1;sheet2Render()});
     loadSheet2();renderFavs();
   });

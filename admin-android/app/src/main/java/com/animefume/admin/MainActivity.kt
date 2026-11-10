@@ -6,6 +6,7 @@ import android.os.Looper
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -19,6 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -102,8 +105,10 @@ private fun AnimeFumeAdminApp() {
 private fun LoginScreen(error: String?, onLogin: (String, String) -> Unit) {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(Color(0xFF101D26), Bg, Color(0xFF1C1020)))).padding(24.dp), contentAlignment = Alignment.Center) {
-        Column(Modifier.fillMaxWidth().widthIn(max = 440.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Image(painterResource(R.drawable.admin_cover), "ภาพปก AnimeFume Admin", Modifier.fillMaxSize(), contentScale = ContentScale.Crop, alpha = 0.34f)
+        Box(Modifier.fillMaxSize().background(Brush.linearGradient(listOf(Color(0xDD101D26), Color(0xE6080B10), Color(0xDD1C1020)))))
+        Column(Modifier.fillMaxWidth().widthIn(max = 440.dp).padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(Icons.Default.AdminPanelSettings, null, tint = Mint, modifier = Modifier.size(58.dp))
             Spacer(Modifier.height(12.dp))
             Text("ANIMEFUME", style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Black)

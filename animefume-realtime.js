@@ -5,7 +5,8 @@ import {
   set,
   onValue,
   onDisconnect,
-  remove
+  remove,
+  update
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 const firebaseConfig = {
@@ -27,6 +28,7 @@ const userRef = ref(db, `onlineUsers/${sid}`);
 let maintenanceActive = false;
 let heartbeatTimer = null;
 let interactionBlockerInstalled = false;
+let viewerBlocked = false;
 
 const stopViewerActivity = () => {
   if (heartbeatTimer) {
@@ -41,7 +43,7 @@ const stopViewerActivity = () => {
 };
 
 const startViewerActivity = () => {
-  if (maintenanceActive || heartbeatTimer) return;
+  if (maintenanceActive || viewerBlocked || heartbeatTimer) return;
   heartbeat().catch(() => {});
   heartbeatTimer = window.setInterval(heartbeat, 8000);
   document.querySelectorAll("iframe").forEach((frame) => { frame.style.pointerEvents = ""; });
@@ -115,8 +117,64 @@ const renderAnnouncement = (snapshot) => {
   banner.append(title, body, close);
 };
 
+
+const showViewerAccessOverlay = (reason) => {
+  viewerBlocked = true;
+  stopViewerActivity();
+  let box = document.getElementById("animefume-access-control");
+  if (!box) {
+    box = document.createElement("main");
+    box.id = "animefume-access-control";
+    box.style.cssText = "position:fixed;z-index:10001;inset:0;display:grid;place-items:center;padding:24px;background:rgba(0,0,0,.96);color:#fff;font:16px/1.6 system-ui,sans-serif;text-align:center";
+    document.body.appendChild(box);
+  }
+  box.innerHTML = "";
+  const section = document.createElement("section");
+  section.style.cssText = "max-width:480px;padding:30px;border:1px solid rgba(255,104,104,.5);border-radius:22px;background:#19151a";
+  const heading = document.createElement("h1");
+  heading.textContent = reason === "blocked" ? "บัญชี/อุปกรณ์ถูกบล็อก" : "ถูกนำออกจากเว็บไซต์";
+  heading.style.color = "#ff8585";
+  const text = document.createElement("p");
+  text.textContent = "กรุณาติดต่อผู้ดูแลระบบหากคิดว่าเป็นความผิดพลาด";
+  text.style.color = "#c7d0d9";
+  section.append(heading, text);
+  box.appendChild(section);
+  document.documentElement.style.overflow = "hidden";
+};
+
+const handleViewerControl = (snapshot) => {
+  const control = snapshot.val() || {};
+  if (control.blocked === true) showViewerAccessOverlay("blocked");
+  else if (control.kicked === true) showViewerAccessOverlay("kicked");
+};
+
+const renderScreenOverlay = (snapshot) => {
+  const data = snapshot.val();
+  let box = document.getElementById("animefume-screen-overlay");
+  if (!data?.active || !data.image || maintenanceActive || viewerBlocked) { box?.remove(); return; }
+  if (!box) {
+    box = document.createElement("aside");
+    box.id = "animefume-screen-overlay";
+    box.style.cssText = "position:fixed;right:16px;bottom:82px;z-index:9997;width:min(210px,42vw);padding:8px;border:1px solid rgba(53,224,193,.55);border-radius:16px;background:rgba(10,16,22,.94);box-shadow:0 12px 30px rgba(0,0,0,.45);color:#fff;font:13px/1.35 system-ui,sans-serif";
+    document.body.appendChild(box);
+  }
+  box.innerHTML = "";
+  const image = document.createElement("img");
+  image.src = data.image;
+  image.alt = data.title || "AnimeFume overlay";
+  image.loading = "lazy";
+  image.style.cssText = "display:block;width:100%;max-height:190px;object-fit:cover;border-radius:11px";
+  const title = document.createElement("strong");
+  title.textContent = data.title || "";
+  title.style.cssText = "display:block;margin-top:7px;color:#35e0c1";
+  const caption = document.createElement("span");
+  caption.textContent = data.caption || "";
+  caption.style.color = "#c7d0d9";
+  box.append(image, title, caption);
+};
+
 const heartbeat = async () => {
-  await set(userRef, {
+  await update(userRef, {
     page: location.pathname,
     title: document.title || "AnimeFume",
     time: Date.now(),
@@ -129,6 +187,9 @@ const heartbeat = async () => {
 try {
   onDisconnect(userRef).remove();
   onValue(ref(db, "siteConfig/announcement"), renderAnnouncement);
+  onValue(ref(db, "siteConfig/overlay"), renderScreenOverlay);
+  onValue(ref(db, `onlineUsers/${sid}`), handleViewerControl);
+  onValue(ref(db, `blockedSessions/${sid}`), (snapshot) => { if (snapshot.val() === true) showViewerAccessOverlay("blocked"); });
   onValue(ref(db, "settings/maintenanceMode"), renderMaintenance);
   onValue(ref(db, "settings/notificationsEnabled"), (snapshot) => {
     notificationsEnabled = snapshot.val() !== false;

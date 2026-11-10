@@ -131,14 +131,15 @@ private fun LoginScreen(error: String?, onLogin: (String, String) -> Unit) {
 @Composable
 private fun AdminConsole(session: AdminSession, onSignOut: () -> Unit) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("ภาพรวม", "รายงาน", "ประกาศ", "เพิ่มตอน", "ผู้ช่วย")
-    Scaffold(topBar = { TopAppBar(title = { Column { Text("AnimeFume Admin", fontWeight = FontWeight.Bold); Text("${session.role} • ${session.email}", color = Muted, style = MaterialTheme.typography.labelSmall) } }, actions = { IconButton(onClick = onSignOut) { Icon(Icons.Default.Logout, "ออกจากระบบ") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Bg)) }, bottomBar = { NavigationBar(containerColor = Panel) { tabs.forEachIndexed { index, label -> NavigationBarItem(selected = tab == index, onClick = { tab = index }, icon = { Icon(listOf(Icons.Default.Dashboard, Icons.Default.ReportProblem, Icons.Default.Campaign, Icons.Default.VideoLibrary, Icons.Default.GroupAdd)[index], null) }, label = { Text(label) }) } } }, containerColor = Bg) { padding ->
+    val tabs = listOf("ภาพรวม", "รายงาน", "ประกาศ", "Overlay", "เพิ่มตอน", "ผู้ช่วย")
+    Scaffold(topBar = { TopAppBar(title = { Column { Text("AnimeFume Admin", fontWeight = FontWeight.Bold); Text("${session.role} • ${session.email}", color = Muted, style = MaterialTheme.typography.labelSmall) } }, actions = { IconButton(onClick = onSignOut) { Icon(Icons.Default.Logout, "ออกจากระบบ") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Bg)) }, bottomBar = { NavigationBar(containerColor = Panel) { tabs.forEachIndexed { index, label -> NavigationBarItem(selected = tab == index, onClick = { tab = index }, icon = { Icon(listOf(Icons.Default.Dashboard, Icons.Default.ReportProblem, Icons.Default.Campaign, Icons.Default.Layers, Icons.Default.VideoLibrary, Icons.Default.GroupAdd)[index], null) }, label = { Text(label) }) } } }, containerColor = Bg) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
             when (tab) {
                 0 -> OverviewScreen(session)
                 1 -> ReportsScreen()
                 2 -> AnnouncementScreen(session.role)
-                3 -> AddEpisodeScreen(session.uid)
+                3 -> OverlayScreen(session.role)
+                4 -> AddEpisodeScreen(session.uid)
                 else -> AssistantsScreen(session)
             }
         }
@@ -230,7 +231,7 @@ private fun OverviewScreen(session: AdminSession) {
         }
         item { Text("ผู้ใช้ออนไลน์ล่าสุด", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
         if (online.isEmpty()) item { EmptyCard("ยังไม่มีผู้ใช้งานออนไลน์") }
-        items(online.take(20), key = { it.id }) { OnlineRow(it) }
+        items(online.take(20), key = { it.id }) { OnlineRow(it, database, session.role == "owner" || session.role == "admin") }
     }
 }
 
@@ -286,6 +287,29 @@ private fun AddEpisodeScreen(uid: String) {
 }
 
 @Composable
+private fun OverlayScreen(role: String) {
+    val db = remember { FirebaseDatabase.getInstance(RTDB_URL) }
+    var title by remember { mutableStateOf("") }
+    var image by remember { mutableStateOf("") }
+    var caption by remember { mutableStateOf("") }
+    var active by remember { mutableStateOf(false) }
+    var status by remember { mutableStateOf<String?>(null) }
+    DisposableEffect(Unit) {
+        val ref = db.getReference("siteConfig/overlay")
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) { title = snapshot.child("title").getValue(String::class.java).orEmpty(); image = snapshot.child("image").getValue(String::class.java).orEmpty(); caption = snapshot.child("caption").getValue(String::class.java).orEmpty(); active = snapshot.child("active").getValue(Boolean::class.java) == true }
+            override fun onCancelled(error: DatabaseError) { status = "อ่าน Overlay ไม่สำเร็จ: ${error.message}" }
+        }
+        ref.addValueEventListener(listener)
+        onDispose { ref.removeEventListener(listener) }
+    }
+    LazyColumn(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
+        item { Text("Overlay บนหน้าจอผู้ชม", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("แสดงภาพและข้อความอนิเมะทับบนทุกหน้าผู้ชมแบบเรียลไทม์", color = Muted) }
+        if (role == "owner") item { Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) { EpisodeField("ชื่อ Overlay", title) { title = it }; EpisodeField("ลิงก์รูปภาพอนิเมะ", image, KeyboardType.Uri) { image = it }; EpisodeField("ข้อความใต้ภาพ", caption) { caption = it }; Row(verticalAlignment = Alignment.CenterVertically) { Switch(checked = active, onCheckedChange = { active = it }); Spacer(Modifier.width(8.dp)); Text(if (active) "กำลังแสดง" else "ซ่อนอยู่", color = if (active) Mint else Muted) }; Button({ db.getReference("siteConfig/overlay").setValue(mapOf("active" to active, "title" to title.trim(), "image" to image.trim(), "caption" to caption.trim(), "updatedAt" to System.currentTimeMillis())); status = if (active) "เผยแพร่ Overlay แล้ว" else "ซ่อน Overlay แล้ว" }, enabled = !active || image.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("บันทึก Overlay") }; if (status != null) Text(status!!, color = Mint) } } }
+    }
+}
+
+@Composable
 private fun AssistantsScreen(session: AdminSession) {
     val db = remember { FirebaseDatabase.getInstance(RTDB_URL) }; var assistants by remember { mutableStateOf<List<Assistant>>(emptyList()) }; var uid by remember { mutableStateOf("") }; var email by remember { mutableStateOf("") }; var status by remember { mutableStateOf<String?>(null) }
     DisposableEffect(Unit) {
@@ -314,7 +338,7 @@ private fun AssistantsScreen(session: AdminSession) {
 @Composable private fun MetricCard(label: String, value: String, color: Color, modifier: Modifier) { Card(modifier, colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(16.dp)) { Column(Modifier.padding(14.dp)) { Text(label, color = Muted); Text(value, color = color, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) } } }
 @Composable private fun StatusCard(label: String, value: String, ok: Boolean) { Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(16.dp)) { Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) { Icon(if (ok) Icons.Default.CloudDone else Icons.Default.CloudOff, null, tint = if (ok) Mint else Warning); Spacer(Modifier.width(10.dp)); Column { Text(label, fontWeight = FontWeight.Bold); Text(value, color = Muted, style = MaterialTheme.typography.bodySmall) } } } }
 @Composable private fun EmptyCard(message: String) { Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(16.dp)) { Text(message, Modifier.fillMaxWidth().padding(18.dp), color = Muted) } }
-@Composable private fun OnlineRow(user: OnlineUser) { Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) { Row(Modifier.fillMaxWidth().padding(13.dp), verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.Person, null, tint = Mint); Spacer(Modifier.width(10.dp)); Column { Text(user.title.ifBlank { "ไม่ระบุหน้า" }, fontWeight = FontWeight.Bold); Text(user.page, color = Muted, style = MaterialTheme.typography.bodySmall) } } } }
+@Composable private fun OnlineRow(user: OnlineUser, database: FirebaseDatabase, canModerate: Boolean) { Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) { Column(Modifier.fillMaxWidth().padding(13.dp)) { Row(verticalAlignment = Alignment.CenterVertically) { Icon(Icons.Default.Person, null, tint = Mint); Spacer(Modifier.width(10.dp)); Column(Modifier.weight(1f)) { Text(user.title.ifBlank { "ไม่ระบุหน้า" }, fontWeight = FontWeight.Bold); Text(user.page, color = Muted, style = MaterialTheme.typography.bodySmall); Text(user.id, color = Muted, style = MaterialTheme.typography.labelSmall) } }; if (canModerate) Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { TextButton(onClick = { database.getReference("onlineUsers/${user.id}").updateChildren(mapOf("kicked" to true, "commandAt" to System.currentTimeMillis())) }) { Text("เตะออก", color = Warning) }; TextButton(onClick = { database.getReference("onlineUsers/${user.id}").updateChildren(mapOf("blocked" to true, "commandAt" to System.currentTimeMillis())); database.getReference("blockedSessions/${user.id}").setValue(true) }) { Text("บล็อก", color = Danger) } } } } }
 @Composable private fun ReportCard(report: ReportItem, database: FirebaseDatabase) { Card(colors = CardDefaults.cardColors(containerColor = if (report.read) Panel else Panel2), shape = RoundedCornerShape(14.dp)) { Column(Modifier.padding(14.dp)) { Row(verticalAlignment = Alignment.CenterVertically) { Text(report.page.ifBlank { "ไม่ระบุหน้า" }, Modifier.weight(1f), fontWeight = FontWeight.Bold); Text(if (report.read) "อ่านแล้ว" else "ใหม่", color = if (report.read) Muted else Warning, style = MaterialTheme.typography.labelSmall) }; Text(report.detail, Modifier.padding(top = 6.dp)); Text(report.meta, color = Muted, style = MaterialTheme.typography.bodySmall); Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) { if (!report.read) TextButton({ database.getReference("reports/${report.id}").updateChildren(mapOf("read" to true)) }) { Text("อ่านแล้ว") }; TextButton({ database.getReference("reports/${report.id}").removeValue() }) { Text("ลบ", color = Danger) } } } } }
 @Composable private fun AnnouncementCard(item: Announcement, database: FirebaseDatabase, canEdit: Boolean) { Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) { Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) { Column(Modifier.weight(1f)) { Text(item.title, fontWeight = FontWeight.Bold); Text(item.body, color = Muted, style = MaterialTheme.typography.bodySmall); Text(if (item.active) "กำลังแสดง" else "ปิดอยู่", color = if (item.active) Mint else Muted, style = MaterialTheme.typography.labelSmall) }; if (canEdit) Switch(item.active, { database.getReference("siteConfig/announcement").updateChildren(mapOf("active" to it, "updatedAt" to System.currentTimeMillis())) }) } } }
 @Composable private fun LoadingScreen(text: String) { Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { Column(horizontalAlignment = Alignment.CenterHorizontally) { CircularProgressIndicator(color = Mint); Spacer(Modifier.height(12.dp)); Text(text, color = Muted) } } }

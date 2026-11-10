@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#08080d">
+<title>ดูต่อจากที่ค้างไว้ | AnimeFume</title>
+<link rel="stylesheet" href="animefume-refresh.css">
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:var(--af-bg,#08080d);color:#fff;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+.af-page{max-width:1050px;margin:auto;padding:22px 16px 50px}
+.af-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:22px}
+.af-top h1{font-size:clamp(22px,4vw,30px);margin:0}
+.af-back,.af-clear{min-height:42px;padding:9px 14px;border:1px solid rgba(255,255,255,.12);border-radius:12px;background:#171720;color:#fff;text-decoration:none;font:inherit;cursor:pointer}
+.af-tools{display:flex;gap:10px;align-items:center;margin-bottom:14px}
+.af-tools input{width:100%;min-height:46px;padding:0 14px;border:1px solid rgba(255,255,255,.12);border-radius:13px;background:#15151e;color:#fff;font:inherit}
+.af-count{font-size:13px;color:#aaa;margin:0 2px 14px}
+.af-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.af-item{display:flex;align-items:center;gap:12px;min-width:0;padding:12px;border:1px solid rgba(255,255,255,.09);border-radius:16px;background:#14141d;color:#fff;text-decoration:none}
+.af-thumb{width:66px;height:88px;flex:none;border-radius:11px;object-fit:cover;background:linear-gradient(135deg,#ff416c,#24242d);display:grid;place-items:center;font-size:22px}
+.af-info{min-width:0;flex:1}.af-title{font-weight:750;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.af-ep{font-size:13px;color:#c4c4cf;margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.af-time{font-size:11px;color:#858592;margin-top:6px}
+.af-empty{grid-column:1/-1;padding:55px 20px;text-align:center;color:#aaa;border:1px dashed #393945;border-radius:18px}
+@media(max-width:650px){.af-page{padding:15px 11px 35px}.af-list{grid-template-columns:1fr}.af-thumb{width:58px;height:76px}.af-top{align-items:flex-start}}
+</style>
+</head>
+<body>
+<main class="af-page">
+<header class="af-top"><div><h1>▶ ดูต่อจากที่ค้างไว้</h1><div style="color:#999;font-size:13px;margin-top:5px">รายการอนิเมะที่คุณเปิดดูล่าสุด</div></div><a class="af-back" href="home.html">← หน้าแรก</a></header>
+<div class="af-tools"><input id="filter" type="search" placeholder="ค้นหาชื่อเรื่องหรือตอน..." aria-label="ค้นหารายการที่ดูค้างไว้"></div>
+<div id="count" class="af-count" aria-live="polite"></div>
+<section id="list" class="af-list" aria-live="polite"></section>
+</main>
+<script>
+'use strict';
+const KEY='animefume_watch_history_v2';
+const list=document.getElementById('list'),filter=document.getElementById('filter'),count=document.getElementById('count');
+function read(){try{const v=JSON.parse(localStorage.getItem(KEY)||'[]');return Array.isArray(v)?v:[]}catch{return[]}}
+function when(v){const n=Number(v)||0;if(!n)return 'ยังไม่มีเวลาบันทึก';try{return new Date(n).toLocaleString('th-TH',{dateStyle:'medium',timeStyle:'short'})}catch{return ''}}
+function render(){
+ const all=read(),q=filter.value.trim().toLocaleLowerCase('th-TH');
+ const rows=all.filter(x=>!q||[x.title,x.episode].some(v=>String(v||'').toLocaleLowerCase('th-TH').includes(q)));
+ count.textContent='ทั้งหมด '+all.length+' รายการ'+(q?' • พบ '+rows.length+' รายการ':'');
+ list.replaceChildren();
+ if(!rows.length){const e=document.createElement('div');e.className='af-empty';e.textContent=q?'ไม่พบรายการที่ค้นหา':'ยังไม่มีรายการที่ดูค้างไว้ เมื่อเริ่มดูอนิเมะ รายการจะปรากฏที่หน้านี้';list.append(e);return}
+ rows.forEach(item=>{
+  const a=document.createElement('a');a.className='af-item';a.href=item.page||item.link||'#';
+  let thumb;if(item.image){thumb=document.createElement('img');thumb.src=item.image;thumb.alt='';thumb.loading='lazy';thumb.onerror=()=>{const d=document.createElement('div');d.className='af-thumb';d.textContent='▶';thumb.replaceWith(d)}}else{thumb=document.createElement('div');thumb.className='af-thumb';thumb.textContent='▶'}
+  const info=document.createElement('div');info.className='af-info';
+  const title=document.createElement('div');title.className='af-title';title.textContent=item.title||'AnimeFume';
+  const ep=document.createElement('div');ep.className='af-ep';ep.textContent=item.episode||'เปิดเรื่องต่อ';
+  const time=document.createElement('div');time.className='af-time';time.textContent='ดูล่าสุด '+when(item.time||item.watchedAt);
+  info.append(title,ep,time);a.append(thumb,info);list.append(a);
+ });
+}
+filter.addEventListener('input',render);window.addEventListener('storage',e=>{if(e.key===KEY)render()});window.addEventListener('pageshow',render);render();
+</script>
+</body></html>

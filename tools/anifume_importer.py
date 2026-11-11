@@ -21,6 +21,8 @@ import requests
 from bs4 import BeautifulSoup
 import firebase_admin
 from firebase_admin import credentials, db, storage
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 BASE_URL = os.getenv("ANIFUME_BASE_URL", "https://anifume.com").rstrip("/")
 USER_AGENT = "AnimeFumeAuthorizedMediaMonitor/1.0 (+authorized-import-worker)"
@@ -77,21 +79,30 @@ def storage_allowlist() -> set[str]:
     return {bucket, "storage.googleapis.com", "firebasestorage.googleapis.com"}
 
 
-def fetch(session: requests.Session, url: str) -> str:
-    validate_http_url(url, {urlparse(BASE_URL).hostname.lower().rstrip(".")})
-    response = session.get(url, timeout=(15, 30), allow_redirects=False)
-    if response.is_redirect:
+def checked_get(session: requests.Session, url: str, allowed_hosts: set[str], **kwargs):
+    current = url
+    for _ in range(4):
+        validate_http_url(current, allowed_hosts)
+        response = session.get(current, allow_redirects=False, **kwargs)
+        if not response.is_redirect:
+            return response, current
         location = response.headers.get("Location")
         response.close()
         if not location:
-            raise RuntimeError(f"redirect ไม่มีปลายทาง: {url}")
-        next_url = urljoin(url, location)
-        validate_http_url(next_url, {urlparse(BASE_URL).hostname.lower().rstrip(".")})
-        response = session.get(next_url, timeout=(15, 30), allow_redirects=False)
-    response.raise_for_status()
-    if "text/html" not in response.headers.get("content-type", ""): 
-        raise RuntimeError(f"ไม่ใช่ HTML: {url}")
-    return response.text
+            raise RuntimeError(f"redirect ไม่มีปลายทาง: {current}")
+        current = urljoin(current, location)
+    raise RuntimeError(f"redirect เกินจำนวนที่อนุญาต: {url}")
+
+
+def fetch(session: requests.Session, url: str) -> str:
+    response, _ = checked_get(session, url, {urlparse(BASE_URL).hostname.lower().rstrip(".")}, timeout=(15, 30))
+    try:
+        response.raise_for_status()
+        if "text/html" not in response.headers.get("content-type", ""):
+            raise RuntimeError(f"ไม่ใช่ HTML: {url}")
+        return response.text
+    finally:
+        response.close()
 
 
 def parse_episode_links(page_url: str, html: str) -> list[dict[str, str]]:
@@ -172,16 +183,7 @@ def authorized_media_url(record: dict) -> str:
 
 def check_media_url(session: requests.Session, url: str, allowed_hosts: set[str]) -> tuple[bool, str]:
     try:
-        validate_http_url(url, allowed_hosts)
-        response = session.get(url, headers={"Range": "bytes=0-1023"}, stream=True, timeout=(15, 30), allow_redirects=False)
-        if response.is_redirect:
-            location = response.headers.get("Location")
-            response.close()
-            if not location:
-                return False, "redirect ไม่มีปลายทาง"
-            redirected = urljoin(url, location)
-            validate_http_url(redirected, allowed_hosts)
-            response = session.get(redirected, headers={"Range": "bytes=0-1023"}, stream=True, timeout=(15, 30), allow_redirects=False)
+        response, _ = checked_get(session, url, allowed_hosts, headers={"Range": "bytes=0-1023"}, stream=True, timeout=(15, 30))
         content_type = response.headers.get("content-type", "").lower()
         ok = response.status_code in {200, 206} and (content_type.startswith("video/") or content_type in {"application/octet-stream", "application/mp4"})
         response.close()
@@ -212,15 +214,7 @@ def import_media(key: str, record: dict, session: requests.Session) -> None:
     if not url:
         db.reference(f"videoImports/{key}").update({"state": "awaiting_media_url", "lastCheckedAt": int(time.time() * 1000)})
         return
-    response = session.get(url, stream=True, timeout=(20, 60), allow_redirects=False)
-    if response.is_redirect:
-        location = response.headers.get("Location")
-        response.close()
-        if not location:
-            raise RuntimeError("redirect ไม่มีปลายทาง")
-        redirected = urljoin(url, location)
-        validate_http_url(redirected, media_allowlist())
-        response = session.get(redirected, stream=True, timeout=(20, 60), allow_redirects=False)
+    response, final_url = checked_get(session, url, media_allowlist(), stream=True, timeout=(20, 60))
     response.raise_for_status()
     content_type = response.headers.get("content-type", "").lower()
     if not (content_type.startswith("video/") or content_type in {"application/octet-stream", "application/mp4"}):
@@ -228,7 +222,7 @@ def import_media(key: str, record: dict, session: requests.Session) -> None:
     length = int(response.headers.get("content-length", "0") or 0)
     if length > MAX_MEDIA_BYTES:
         raise RuntimeError("ไฟล์ใหญ่เกิน MAX_MEDIA_BYTES")
-    suffix = ".mp4" if "mp4" in content_type or url.lower().split("?")[0].endswith(".mp4") else ".media"
+    suffix = ".mp4" if "mp4" in content_type or final_url.lower().split("?")[0].endswith(".mp4") else ".media"
     temp = None
     try:
         with tempfile.NamedTemporaryFile(prefix="animefume-", suffix=suffix, delete=False) as handle:
@@ -274,6 +268,9 @@ def main() -> int:
         parser.error("ใช้ --once ใน scheduled worker แต่ละรอบ")
     init_firebase()
     session = requests.Session()
+    retry = Retry(total=3, connect=3, read=3, backoff_factor=0.6, status_forcelist={429, 500, 502, 503, 504}, allowed_methods=frozenset({"GET", "HEAD"}), respect_retry_after_header=True)
+    session.mount("https://", HTTPAdapter(max_retries=retry))
+    session.mount("http://", HTTPAdapter(max_retries=retry))
     session.headers.update({"User-Agent": USER_AGENT, "Accept": "text/html,application/json;q=0.9,*/*;q=0.8"})
     if os.getenv("ANIFUME_COOKIE"):
         session.headers["Cookie"] = os.environ["ANIFUME_COOKIE"]

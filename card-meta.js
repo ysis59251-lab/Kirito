@@ -15,11 +15,7 @@
     const text = String(title || '').replace(/\s+/g, '').toLowerCase();
     const page = location.pathname.toLowerCase();
     const hasDub = page.endsWith('index3.html') || text.includes('พากย์ไทย') || text.includes('พากย์');
-    const hasSub = page.endsWith('index2.html') || text.includes('ซับไทย') || text.includes('ซับ');
-    if (hasDub && hasSub) return 'พากย์ไทย • ซับไทย';
-    if (hasDub) return 'พากย์ไทย';
-    if (hasSub) return 'ซับไทย';
-    return 'ยังไม่ระบุภาษา';
+    return hasDub ? 'พากย์ไทย' : 'ซับไทย';
   };
 
   const decorate = (card) => {

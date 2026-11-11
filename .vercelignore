@@ -1,0 +1,11 @@
+# Python scripts are used only by GitHub Actions and are not Vercel functions.
+*.py
+system-integrate.py
+tools/
+.github/
+.git/
+node_modules/
+
+# Local and generated files
+*.log
+.DS_Store

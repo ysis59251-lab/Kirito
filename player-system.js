@@ -43,8 +43,6 @@
   tools.className = 'af-player-tools';
   tools.innerHTML = `
     <button class="primary" data-af="episodes">📺 เลือกตอน</button>
-    <button data-af="back">↩ กลับหน้าก่อน</button>
-    <button data-af="copy">📋 คัดลอกลิงก์</button>
   `;
   const control = document.querySelector('.control');
   (control || player).insertAdjacentElement('afterend', tools);
@@ -61,23 +59,11 @@
     else if (modal) modal.style.display = 'block';
   }
 
-  function goBack(){
-    if (history.length > 1) history.back();
-    else location.href = '../home.html';
-  }
-
-  async function copyLink(){
-    try { await navigator.clipboard.writeText(location.href); setState('คัดลอกลิงก์แล้ว ✓'); }
-    catch { setState('คัดลอกไม่ได้ ให้กดค้างที่แถบที่อยู่เพื่อคัดลอก'); }
-  }
-
   tools.addEventListener('click', e => {
     const button = e.target.closest('[data-af]');
     if (!button) return;
     const action = button.dataset.af;
     if (action === 'episodes') openEpisodes();
-    if (action === 'back') goBack();
-    if (action === 'copy') copyLink();
   });
 
   function saveHistory(){
@@ -111,5 +97,4 @@
     if (e.key === 'ArrowLeft' && typeof window.prevEp === 'function') window.prevEp();
   });
 
-  setState('คีย์ลัด: E เลือกตอน • ←/→ เปลี่ยนตอน');
 })();

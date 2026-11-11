@@ -15,8 +15,17 @@
     card.dataset.year = item.year || '0';
     card.dataset.search = '1';
     card.dataset.title = item.title || 'ไม่มีชื่อเรื่อง';
-    card.innerHTML = `<div class="card-img"><img src="${String(item.image || '').replace(/"/g, '&quot;')}" alt="" loading="lazy"><div class="overlay"></div></div>`;
-    card.querySelector('.overlay').textContent = item.title || 'ไม่มีชื่อเรื่อง';
+    const imageBox = document.createElement('div');
+    imageBox.className = 'card-img';
+    const image = document.createElement('img');
+    image.src = item.image || '';
+    image.alt = item.title || '';
+    image.loading = 'lazy';
+    const overlay = document.createElement('div');
+    overlay.className = 'overlay';
+    overlay.textContent = item.title || 'ไม่มีชื่อเรื่อง';
+    imageBox.append(image, overlay);
+    card.append(imageBox);
     return card;
   };
   const load = async () => {
@@ -28,7 +37,12 @@
       if (!response.ok) throw new Error(`source ${response.status}`);
       const rows = await response.json();
       const existing = new Set([...list.querySelectorAll('.anime-card')].map((card) => card.dataset.id || card.href));
-      rows.filter((item) => (isDub(item.title) ? 'dub' : 'sub') === target).forEach((item) => {
+      const uniqueRows = new Map();
+      rows.forEach((item) => {
+        const key = String(item.id || item.title || item.link || '');
+        if (key && !uniqueRows.has(key)) uniqueRows.set(key, item);
+      });
+      [...uniqueRows.values()].filter((item) => (isDub(item.title) ? 'dub' : 'sub') === target).forEach((item) => {
         const key = String(item.id || item.title || item.link || '');
         if (!key || existing.has(key)) return;
         list.append(makeCard(item));

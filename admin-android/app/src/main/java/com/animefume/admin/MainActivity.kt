@@ -427,15 +427,26 @@ private fun AssistantsScreen(session: AdminSession) {
 private fun sendEpisode(uid: String, anime: String, name: String, episode: String, video: String, desc: String, cover: String, languages: List<String>, done: (String) -> Unit) {
     Thread {
         try {
+            val cleanVideo = video.trim()
+            val cleanCover = cover.trim()
+            fun requireHttpUrl(value: String, label: String) {
+                val parsed = URL(value)
+                if (parsed.protocol !in listOf("http", "https") || parsed.host.isBlank()) throw IllegalArgumentException("$label ต้องเป็นลิงก์ http/https")
+            }
+            requireHttpUrl(cleanVideo, "ลิงก์วิดีโอ")
+            if (cleanCover.isNotBlank()) requireHttpUrl(cleanCover, "ลิงก์รูปปก")
+            if (episode.trim().toDoubleOrNull() == null || episode.trim().toDouble() < 0) throw IllegalArgumentException("ตอนต้องเป็นตัวเลขที่ไม่ติดลบ")
+            var completed = 0
             languages.forEach { language ->
-                val payload = JSONObject().apply { put("anime", anime.trim()); put("name", name.trim()); put("episode", episode.trim()); put("title", language); put("video_url", video.trim()); put("desc", desc.trim()); put("cover", cover.trim()); put("adminUid", uid) }
+                val payload = JSONObject().apply { put("anime", anime.trim()); put("name", name.trim()); put("episode", episode.trim()); put("title", language); put("video_url", cleanVideo); put("desc", desc.trim()); put("cover", cleanCover); put("adminUid", uid) }
                 val connection = URL(API_URL).openConnection() as HttpURLConnection
                 connection.requestMethod = "POST"; connection.doOutput = true; connection.setRequestProperty("Content-Type", "application/json")
                 connection.outputStream.use { it.write(payload.toString().toByteArray()) }
                 if (connection.responseCode !in 200..299) throw IllegalStateException("HTTP ${connection.responseCode}")
                 connection.disconnect()
+                completed++
             }
-            Handler(Looper.getMainLooper()).post { done("สำเร็จ: เพิ่ม ${languages.size} รายการแล้ว") }
-        } catch (e: Exception) { Handler(Looper.getMainLooper()).post { done("ส่งไม่สำเร็จ: ${e.localizedMessage ?: "ตรวจสอบอินเทอร์เน็ต"}") } }
+            Handler(Looper.getMainLooper()).post { done("สำเร็จ: เพิ่ม $completed รายการแล้ว") }
+        } catch (e: Exception) { Handler(Looper.getMainLooper()).post { done("ส่งไม่สำเร็จ: ตรวจสอบข้อมูลและอินเทอร์เน็ต (${e.localizedMessage ?: "ไม่ทราบสาเหตุ"})") } }
     }.start()
 }

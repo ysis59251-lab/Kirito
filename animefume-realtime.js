@@ -35,7 +35,7 @@ const stopViewerActivity = () => {
     clearInterval(heartbeatTimer);
     heartbeatTimer = null;
   }
-  remove(userRef).catch(() => {});
+  remove(userRef).catch((error) => console.warn("AnimeFume session cleanup failed", error));
   document.querySelectorAll("video, audio").forEach((media) => {
     try { media.pause(); media.currentTime = media.currentTime; } catch (_) {}
   });
@@ -45,7 +45,9 @@ const stopViewerActivity = () => {
 const startViewerActivity = () => {
   if (maintenanceActive || viewerBlocked || heartbeatTimer) return;
   heartbeat().catch(() => {});
-  heartbeatTimer = window.setInterval(heartbeat, 8000);
+  heartbeatTimer = window.setInterval(() => {
+    heartbeat().catch((error) => console.warn("AnimeFume heartbeat failed", error));
+  }, 8000);
   document.querySelectorAll("iframe").forEach((frame) => { frame.style.pointerEvents = ""; });
 };
 
@@ -205,11 +207,12 @@ const heartbeat = async () => {
 };
 
 try {
-  onDisconnect(userRef).remove();
+  onDisconnect(userRef).remove().catch((error) => console.warn("AnimeFume disconnect hook failed", error));
   onValue(ref(db, "siteConfig/announcement"), renderAnnouncement);
   onValue(ref(db, "siteConfig/overlay"), renderScreenOverlay);
   onValue(ref(db, "contentOverrides"), renderContentOverrides);
-  new MutationObserver(applyContentOverrides).observe(document.body, { childList: true, subtree: true });
+  const contentObserver = new MutationObserver(applyContentOverrides);
+  contentObserver.observe(document.body, { childList: true, subtree: true });
   onValue(ref(db, `onlineUsers/${sid}`), handleViewerControl);
   onValue(ref(db, `blockedSessions/${sid}`), (snapshot) => { if (snapshot.val() === true) showViewerAccessOverlay("blocked"); });
   onValue(ref(db, "settings/maintenanceMode"), renderMaintenance);
@@ -217,7 +220,10 @@ try {
     notificationsEnabled = snapshot.val() !== false;
     if (latestAnnouncement) renderAnnouncement(latestAnnouncement);
   });
-  window.addEventListener("pagehide", () => { remove(userRef).catch(() => {}); }, { once: true });
+  window.addEventListener("pagehide", () => {
+    contentObserver.disconnect();
+    remove(userRef).catch((error) => console.warn("AnimeFume page cleanup failed", error));
+  }, { once: true });
 } catch (error) {
   console.warn("AnimeFume realtime heartbeat unavailable", error);
 }

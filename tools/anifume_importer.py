@@ -54,8 +54,34 @@ def key_for(url: str) -> str:
     return hashlib.sha256(url.encode()).hexdigest()[:32]
 
 
+def validate_http_url(url: str, allowed_hosts: set[str] | None = None) -> str:
+    parsed = urlparse(url)
+    if parsed.scheme not in {"http", "https"} or parsed.username or parsed.password:
+        raise RuntimeError(f"URL ไม่ปลอดภัย: {url}")
+    if parsed.port not in {None, 80, 443}:
+        raise RuntimeError(f"พอร์ต URL ไม่ได้รับอนุญาต: {parsed.port}")
+    host = (parsed.hostname or "").lower().rstrip(".")
+    if not host:
+        raise RuntimeError(f"URL ไม่มี hostname: {url}")
+    if allowed_hosts is not None and host not in allowed_hosts:
+        raise RuntimeError(f"host ไม่อยู่ใน allowlist: {host}")
+    return url
+
+
+def media_allowlist() -> set[str]:
+    return {x.strip().lower().rstrip(".") for x in os.getenv("MEDIA_ALLOWLIST", "").split(",") if x.strip()}
+
+
 def fetch(session: requests.Session, url: str) -> str:
-    response = session.get(url, timeout=(15, 30), allow_redirects=True)
+    validate_http_url(url, {urlparse(BASE_URL).hostname.lower().rstrip(".")})
+    response = session.get(url, timeout=(15, 30), allow_redirects=False)
+    if response.is_redirect:
+        location = response.headers.get("Location")
+        if not location:
+            raise RuntimeError(f"redirect ไม่มีปลายทาง: {url}")
+        next_url = urljoin(url, location)
+        validate_http_url(next_url, {urlparse(BASE_URL).hostname.lower().rstrip(".")})
+        response = session.get(next_url, timeout=(15, 30), allow_redirects=False)
     response.raise_for_status()
     if "text/html" not in response.headers.get("content-type", ""): 
         raise RuntimeError(f"ไม่ใช่ HTML: {url}")
@@ -133,17 +159,24 @@ def authorized_media_url(record: dict) -> str:
     url = str(record.get("directMediaUrl", "")).strip()
     if not url:
         return ""
-    host = urlparse(url).hostname or ""
-    allow = {x.strip().lower() for x in os.getenv("MEDIA_ALLOWLIST", "").split(",") if x.strip()}
-    if host.lower() not in allow:
-        raise RuntimeError(f"media host ไม่อยู่ใน MEDIA_ALLOWLIST: {host}")
+    validate_http_url(url, media_allowlist())
     return url
 
 
 
 def check_media_url(session: requests.Session, url: str) -> tuple[bool, str]:
     try:
-        response = session.get(url, headers={"Range": "bytes=0-1023"}, stream=True, timeout=(15, 30), allow_redirects=True)
+        allowed = media_allowlist()
+        validate_http_url(url, allowed)
+        response = session.get(url, headers={"Range": "bytes=0-1023"}, stream=True, timeout=(15, 30), allow_redirects=False)
+        if response.is_redirect:
+            location = response.headers.get("Location")
+            response.close()
+            if not location:
+                return False, "redirect ไม่มีปลายทาง"
+            redirected = urljoin(url, location)
+            validate_http_url(redirected, allowed)
+            response = session.get(redirected, headers={"Range": "bytes=0-1023"}, stream=True, timeout=(15, 30), allow_redirects=False)
         content_type = response.headers.get("content-type", "").lower()
         ok = response.status_code in {200, 206} and (content_type.startswith("video/") or content_type in {"application/octet-stream", "application/mp4"})
         response.close()
@@ -171,7 +204,15 @@ def import_media(key: str, record: dict, session: requests.Session) -> None:
     if not url:
         db.reference(f"videoImports/{key}").update({"state": "awaiting_media_url", "lastCheckedAt": int(time.time() * 1000)})
         return
-    response = session.get(url, stream=True, timeout=(20, 60), allow_redirects=True)
+    response = session.get(url, stream=True, timeout=(20, 60), allow_redirects=False)
+    if response.is_redirect:
+        location = response.headers.get("Location")
+        response.close()
+        if not location:
+            raise RuntimeError("redirect ไม่มีปลายทาง")
+        redirected = urljoin(url, location)
+        validate_http_url(redirected, media_allowlist())
+        response = session.get(redirected, stream=True, timeout=(20, 60), allow_redirects=False)
     response.raise_for_status()
     content_type = response.headers.get("content-type", "").lower()
     if not (content_type.startswith("video/") or content_type in {"application/octet-stream", "application/mp4"}):
@@ -180,19 +221,20 @@ def import_media(key: str, record: dict, session: requests.Session) -> None:
     if length > MAX_MEDIA_BYTES:
         raise RuntimeError("ไฟล์ใหญ่เกิน MAX_MEDIA_BYTES")
     suffix = ".mp4" if "mp4" in content_type or url.lower().split("?")[0].endswith(".mp4") else ".media"
-    with tempfile.NamedTemporaryFile(prefix="animefume-", suffix=suffix, delete=False) as handle:
-        temp = Path(handle.name)
-        total = 0
-        digest = hashlib.sha256()
-        for chunk in response.iter_content(chunk_size=1024 * 1024):
-            if not chunk:
-                continue
-            total += len(chunk)
-            if total > MAX_MEDIA_BYTES:
-                raise RuntimeError("ไฟล์ใหญ่เกิน MAX_MEDIA_BYTES")
-            handle.write(chunk)
-            digest.update(chunk)
+    temp = None
     try:
+        with tempfile.NamedTemporaryFile(prefix="animefume-", suffix=suffix, delete=False) as handle:
+            temp = Path(handle.name)
+            total = 0
+            digest = hashlib.sha256()
+            for chunk in response.iter_content(chunk_size=1024 * 1024):
+                if not chunk:
+                    continue
+                total += len(chunk)
+                if total > MAX_MEDIA_BYTES:
+                    raise RuntimeError("ไฟล์ใหญ่เกิน MAX_MEDIA_BYTES")
+                handle.write(chunk)
+                digest.update(chunk)
         blob_path = f"videos/{key}{suffix}"
         bucket = storage.bucket()
         blob = bucket.blob(blob_path)
@@ -208,9 +250,12 @@ def import_media(key: str, record: dict, session: requests.Session) -> None:
             "contentType": content_type,
             "uploadedAt": now,
             "lastCheckedAt": now,
+            "needsReplacement": False,
         })
     finally:
-        temp.unlink(missing_ok=True)
+        response.close()
+        if temp:
+            temp.unlink(missing_ok=True)
 
 
 def main() -> int:

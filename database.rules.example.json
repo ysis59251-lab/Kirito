@@ -1,0 +1,48 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "adminUsers": {
+      "$uid": {
+        ".read": "auth != null && (auth.uid === $uid || root.child('adminUsers').child(auth.uid).child('role').val() === 'owner')",
+        ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() === 'owner' && $uid !== auth.uid",
+        ".validate": "newData.hasChildren(['active', 'role']) && newData.child('role').val() in ['owner', 'admin']"
+      }
+    },
+    "onlineUsers": {
+      "$sid": {
+        ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true",
+        ".write": "(!data.exists() && newData.exists()) || (auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true)",
+        ".validate": "newData.hasChildren(['time', 'page']) && newData.child('time').isNumber()"
+      }
+    },
+    "blockedSessions": {
+      "$sid": {
+        ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true",
+        ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() in ['owner', 'admin']"
+      }
+    },
+    "settings": {
+      ".read": true,
+      ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() === 'owner'"
+    },
+    "siteConfig": {
+      ".read": true,
+      ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() === 'owner'"
+    },
+    "contentOverrides": {
+      ".read": true,
+      ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() in ['owner', 'admin']"
+    },
+    "reports": {
+      ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true",
+      "$report": {
+        ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true"
+      }
+    },
+    "videoImports": {
+      ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true",
+      ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true"
+    }
+  }
+}

@@ -174,16 +174,19 @@ body::before {
   margin: 12px auto 0;
   padding: 0;
   gap: 8px;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 220px) 52px;
   justify-content: center;
 }
 .af-player-tools button, .af-player-tools a {
-  min-width: 180px;
+  min-width: 0;
   min-height: 42px;
   border: 1px solid var(--watch-line);
   border-radius: 12px;
   background: rgba(17,26,40,.75);
   color: var(--watch-text);
 }
+.af-player-tools button[data-af="prev"], .af-player-tools button[data-af="next"] { width: 52px; padding: 8px; font-size: 18px; }
 .af-player-tools .primary { background: linear-gradient(135deg, #18bfa4, #277fd4); }
 .af-player-state { width: min(1080px, 100%); max-width: none; margin: 8px auto; padding: 0; color: var(--watch-muted); text-align: left; }
 
@@ -224,8 +227,9 @@ body::before {
   .player { border-radius: 15px; box-shadow: 0 16px 36px rgba(0,0,0,.45); }
   .control { grid-template-columns: 1fr 1.25fr 1fr; gap: 6px; }
   .control button { min-height: 44px; padding: 8px 5px; font-size: 12px; }
-  .af-player-tools { display: block; }
+  .af-player-tools { grid-template-columns: 48px minmax(0, 1fr) 48px; gap: 6px; }
   .af-player-tools button, .af-player-tools a { width: 100%; min-width: 0; }
+  .af-player-tools button[data-af="prev"], .af-player-tools button[data-af="next"] { width: 48px; }
 }
 
 @media (prefers-reduced-motion: reduce) {

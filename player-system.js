@@ -42,7 +42,9 @@
   const tools = document.createElement('div');
   tools.className = 'af-player-tools';
   tools.innerHTML = `
+    <button data-af="prev" aria-label="ตอนก่อนหน้า" title="ตอนก่อนหน้า">◀</button>
     <button class="primary" data-af="episodes">📺 เลือกตอน</button>
+    <button data-af="next" aria-label="ตอนถัดไป" title="ตอนถัดไป">▶</button>
   `;
   const control = document.querySelector('.control');
   (control || player).insertAdjacentElement('afterend', tools);
@@ -64,6 +66,8 @@
     if (!button) return;
     const action = button.dataset.af;
     if (action === 'episodes') openEpisodes();
+    if (action === 'prev' && typeof window.prevEp === 'function') window.prevEp();
+    if (action === 'next' && typeof window.nextEp === 'function') window.nextEp();
   });
 
   function saveHistory(){

@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+concurrency:
+  group: kirito-main-writes
+  cancel-in-progress: false
+
 permissions:
   contents: write
 

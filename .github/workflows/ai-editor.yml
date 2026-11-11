@@ -8,6 +8,10 @@ on:
         required: true
         type: string
 
+concurrency:
+  group: kirito-main-writes
+  cancel-in-progress: false
+
 permissions:
   contents: write
 

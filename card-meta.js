@@ -28,7 +28,10 @@
     const existing = card.querySelector(':scope > .af-card-meta');
     if (existing) {
       const language = existing.querySelector('.af-card-language');
-      if (language && language.textContent !== label) language.textContent = label;
+      if (language) {
+        language.textContent = label;
+        language.dataset.type = card.dataset.afLanguage;
+      }
       return;
     }
     const meta = document.createElement('div');

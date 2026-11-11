@@ -9,6 +9,10 @@ on:
       - '.github/workflows/protect-scripts.yml'
   workflow_dispatch:
 
+concurrency:
+  group: kirito-main-writes
+  cancel-in-progress: false
+
 permissions:
   contents: write
 

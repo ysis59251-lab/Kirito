@@ -13,8 +13,7 @@
 
   const languageText = (title) => {
     const text = String(title || '').replace(/\s+/g, '').toLowerCase();
-    const page = location.pathname.toLowerCase();
-    const hasDub = page.endsWith('index3.html') || text.includes('พากย์ไทย') || text.includes('พากย์');
+    const hasDub = text.includes('พากย์ไทย') || text.includes('พากย์');
     return hasDub ? 'พากย์ไทย' : 'ซับไทย';
   };
 

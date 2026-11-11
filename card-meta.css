@@ -1,0 +1,32 @@
+.af-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 7px;
+  padding: 8px 10px 10px;
+  color: #aeb9c6;
+  font-size: 11px;
+  line-height: 1.2;
+}
+.af-card-episodes { white-space: nowrap; }
+.af-card-language {
+  max-width: 58%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 4px 7px;
+  border: 1px solid rgba(77,163,255,.35);
+  border-radius: 999px;
+  color: #9fd2ff;
+  background: rgba(77,163,255,.12);
+  font-weight: 750;
+}
+.af-card-language[data-type="dub"] {
+  border-color: rgba(66,230,197,.38);
+  color: #7ff3dc;
+  background: rgba(66,230,197,.12);
+}
+@media (max-width: 520px) {
+  .af-card-meta { padding: 7px 8px 9px; font-size: 10px; }
+  .af-card-language { max-width: 62%; padding: 4px 6px; }
+}

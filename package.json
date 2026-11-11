@@ -1,0 +1,12 @@
+{
+  "name": "animefume-static",
+  "private": true,
+  "version": "1.0.0",
+  "description": "AnimeFume static website",
+  "scripts": {
+    "build": "node -e \"console.log('AnimeFume static site: no build step required')\""
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -22,7 +22,7 @@
 ## โครงสร้าง
 - `admin-android/`: แอปผู้ดูแล Kotlin/Compose และ APK
 - `animefume-realtime.js`, `animefume-*.js/css`: client realtime และ UI
-- `tools/anifume_importer.py`: worker ค้นหา ตรวจ และนำเข้า media ที่ได้รับอนุญาต
+- `tools/anifume_importer.py.txt`: worker ค้นหา ตรวจ และนำเข้า media ที่ได้รับอนุญาต
 - `.github/workflows/`: scheduled/import และ automation workflows
 
 ## ข้อจำกัด

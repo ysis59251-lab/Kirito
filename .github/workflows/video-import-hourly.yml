@@ -41,4 +41,4 @@ jobs:
           ANIFUME_MAX_PAGES: "20"
           ANIFUME_MAX_EPISODES: "500"
           MAX_MEDIA_BYTES: "8589934592"
-        run: python tools/anifume_importer.py --once
+        run: python tools/anifume_importer.py.txt --once

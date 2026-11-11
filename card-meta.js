@@ -51,6 +51,7 @@
     const page = location.pathname.toLowerCase();
     const required = page.endsWith('index3.html') ? 'dub' : page.endsWith('index2.html') ? 'sub' : '';
     if (!required) return;
+    if (card.getAttribute('aria-hidden') === 'true') return;
     const shouldShow = card.dataset.afLanguage === required;
     const desired = shouldShow ? '' : 'none';
     if (card.style.display !== desired) card.style.display = desired;

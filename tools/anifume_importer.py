@@ -72,11 +72,17 @@ def media_allowlist() -> set[str]:
     return {x.strip().lower().rstrip(".") for x in os.getenv("MEDIA_ALLOWLIST", "").split(",") if x.strip()}
 
 
+def storage_allowlist() -> set[str]:
+    bucket = os.getenv("FIREBASE_STORAGE_BUCKET", "mpmp-5864a.firebasestorage.app").strip().lower().rstrip(".")
+    return {bucket, "storage.googleapis.com", "firebasestorage.googleapis.com"}
+
+
 def fetch(session: requests.Session, url: str) -> str:
     validate_http_url(url, {urlparse(BASE_URL).hostname.lower().rstrip(".")})
     response = session.get(url, timeout=(15, 30), allow_redirects=False)
     if response.is_redirect:
         location = response.headers.get("Location")
+        response.close()
         if not location:
             raise RuntimeError(f"redirect ไม่มีปลายทาง: {url}")
         next_url = urljoin(url, location)
@@ -164,10 +170,9 @@ def authorized_media_url(record: dict) -> str:
 
 
 
-def check_media_url(session: requests.Session, url: str) -> tuple[bool, str]:
+def check_media_url(session: requests.Session, url: str, allowed_hosts: set[str]) -> tuple[bool, str]:
     try:
-        allowed = media_allowlist()
-        validate_http_url(url, allowed)
+        validate_http_url(url, allowed_hosts)
         response = session.get(url, headers={"Range": "bytes=0-1023"}, stream=True, timeout=(15, 30), allow_redirects=False)
         if response.is_redirect:
             location = response.headers.get("Location")
@@ -175,7 +180,7 @@ def check_media_url(session: requests.Session, url: str) -> tuple[bool, str]:
             if not location:
                 return False, "redirect ไม่มีปลายทาง"
             redirected = urljoin(url, location)
-            validate_http_url(redirected, allowed)
+            validate_http_url(redirected, allowed_hosts)
             response = session.get(redirected, headers={"Range": "bytes=0-1023"}, stream=True, timeout=(15, 30), allow_redirects=False)
         content_type = response.headers.get("content-type", "").lower()
         ok = response.status_code in {200, 206} and (content_type.startswith("video/") or content_type in {"application/octet-stream", "application/mp4"})
@@ -190,10 +195,13 @@ def health_check_records(records: dict, session: requests.Session) -> None:
     for key, record in records.items():
         if not isinstance(record, dict):
             continue
-        target = str(record.get("storageUrl") or record.get("directMediaUrl") or "").strip()
+        storage_url = str(record.get("storageUrl", "")).strip()
+        direct_url = str(record.get("directMediaUrl", "")).strip()
+        target = storage_url or direct_url
         if not target or record.get("state") not in {"uploaded", "approved", "retry", "failed"}:
             continue
-        ok, detail = check_media_url(session, target)
+        allowed_hosts = storage_allowlist() if storage_url else media_allowlist()
+        ok, detail = check_media_url(session, target, allowed_hosts)
         patch = {"lastCheckedAt": now, "health": "ok" if ok else "failed", "healthDetail": detail}
         if not ok:
             patch.update({"state": "failed", "needsReplacement": True, "error": f"media health check failed: {detail}"})

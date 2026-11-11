@@ -4,6 +4,9 @@ service-account*.json
 .env
 .env.*
 !.env.example
+__pycache__/
+*.py[cod]
+.pytest_cache/
 
 # Generated media and local build output
 tools/downloads/

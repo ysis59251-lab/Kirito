@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="animefume-refresh.css">
 <link rel="stylesheet" href="viewer-list.css">
 <script src="protected/animefume-core.js"></script>
+  <link rel="stylesheet" href="category-nav.css">
 </head>
 <body>
 <div id="afLoading"><div class="af-load"><div class="af-ring"></div><b>AnimeFume</b><small>กำลังโหลดพากย์ไทย...</small></div></div>
@@ -17,6 +18,9 @@
 <button id="menuBtn" type="button" aria-label="เปิดเมนู">☰</button>
 <div id="menuDropdown"><a href="home.html">หน้าแรก</a><a href="index2.html">ซับไทย</a><a href="index3.html">พากย์ไทย</a><a href="#" id="afFavOpen">⭐ รายการโปรด</a><a href="ระบบควบคุมภายในเว็บ/Administrator.html">แอดมิน</a><a href="ระบบควบคุมภายในเว็บ/DMCA.html">DMCA</a></div>
 <header class="header"><h1>AnimeFume</h1><input class="search" type="search" autocomplete="off" aria-label="ค้นหาอนิเมะ" placeholder="ค้นหาอนิเมะ..."></header>
+<nav class="category-nav" aria-label="หมวดหมู่อะนิเมะ">
+  <a href="home.html">ทั้งหมด<small>รวมทุกประเภท</small></a> <a href="index2.html">ซับไทย<small>เสียงต้นฉบับ + คำบรรยายไทย</small></a> <a href="index3.html" aria-current="page">พากย์ไทย<small>เสียงพากย์ภาษาไทย</small></a>
+</nav>
 <section class="hot-section"><h2>🔥 ยอดฮิต</h2><div class="hot-slider" id="hotSlider"></div></section>
 <main class="anime-list" id="animeList" aria-live="polite"></main>
 <div class="bottom-area" id="bottomNav"><div class="center-box" id="numberBox"></div><div class="bottom-nav"><button type="button" id="prevBtn" aria-label="หน้าก่อน">‹</button><button type="button" id="nextBtn" aria-label="หน้าถัดไป">›</button></div></div>

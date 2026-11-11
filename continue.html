@@ -43,8 +43,9 @@ function render(){
  count.textContent='ทั้งหมด '+all.length+' รายการ'+(q?' • พบ '+rows.length+' รายการ':'');
  list.replaceChildren();
  if(!rows.length){const e=document.createElement('div');e.className='af-empty';e.textContent=q?'ไม่พบรายการที่ค้นหา':'ยังไม่มีรายการที่ดูค้างไว้ เมื่อเริ่มดูอนิเมะ รายการจะปรากฏที่หน้านี้';list.append(e);return}
- rows.forEach(item=>{
+  rows.forEach(item=>{
   const a=document.createElement('a');a.className='af-item';a.href=item.page||item.link||'#';
+  a.addEventListener('click',()=>{if(item.episodeUrl)localStorage.setItem('lastEpisode',item.episodeUrl)});
   let thumb;if(item.image){thumb=document.createElement('img');thumb.src=item.image;thumb.alt='';thumb.loading='lazy';thumb.onerror=()=>{const d=document.createElement('div');d.className='af-thumb';d.textContent='▶';thumb.replaceWith(d)}}else{thumb=document.createElement('div');thumb.className='af-thumb';thumb.textContent='▶'}
   const info=document.createElement('div');info.className='af-info';
   const title=document.createElement('div');title.className='af-title';title.textContent=item.title||'AnimeFume';

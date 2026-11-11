@@ -174,8 +174,10 @@ body::before {
   margin: 12px auto 0;
   padding: 0;
   gap: 8px;
+  justify-content: center;
 }
 .af-player-tools button, .af-player-tools a {
+  min-width: 180px;
   min-height: 42px;
   border: 1px solid var(--watch-line);
   border-radius: 12px;
@@ -222,8 +224,8 @@ body::before {
   .player { border-radius: 15px; box-shadow: 0 16px 36px rgba(0,0,0,.45); }
   .control { grid-template-columns: 1fr 1.25fr 1fr; gap: 6px; }
   .control button { min-height: 44px; padding: 8px 5px; font-size: 12px; }
-  .af-player-tools { grid-template-columns: repeat(2, 1fr); }
-  .af-player-tools .primary { grid-column: 1 / -1; }
+  .af-player-tools { display: block; }
+  .af-player-tools button, .af-player-tools a { width: 100%; min-width: 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {

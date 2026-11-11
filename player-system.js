@@ -70,7 +70,15 @@
     const text = status?.textContent?.trim() || '';
     try {
       const historyItems = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-      const item = {title, page:location.href, episode:text, time:Date.now()};
+      const cover = document.getElementById('coverImg')?.getAttribute('src') || '';
+      const item = {
+        title: animeName?.textContent?.trim() || title,
+        page: location.href,
+        episode: text,
+        episodeUrl: localStorage.getItem('lastEpisode') || '',
+        image: cover,
+        time: Date.now()
+      };
       const next = [item, ...historyItems.filter(x => x.page !== item.page)].slice(0,30);
       localStorage.setItem(HISTORY_KEY, JSON.stringify(next));
     } catch {}

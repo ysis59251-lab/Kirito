@@ -12,7 +12,7 @@
     "onlineUsers": {
       "$sid": {
         ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true",
-        ".write": "(!data.exists() && newData.exists()) || (auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true)",
+        ".write": "auth != null && (auth.token.firebase.sign_in_provider === 'anonymous' || root.child('adminUsers').child(auth.uid).child('active').val() === true)",
         ".validate": "newData.hasChildren(['time', 'page']) && newData.child('time').isNumber()"
       }
     },

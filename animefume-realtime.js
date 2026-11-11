@@ -8,6 +8,7 @@ import {
   remove,
   update
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC_eG_drnzYDUSyNBapN7kJ7XaYsbkhCwA",
@@ -21,6 +22,13 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig, "animefume-realtime");
 const db = getDatabase(app);
+const auth = getAuth(app);
+const anonymousAuthReady = auth.currentUser
+  ? Promise.resolve(auth.currentUser)
+  : signInAnonymously(auth).then(({ user }) => user).catch((error) => {
+      console.warn("AnimeFume anonymous auth unavailable", error);
+      return null;
+    });
 const sidKey = "animefume_live_session_id";
 const sid = sessionStorage.getItem(sidKey) || crypto.randomUUID();
 sessionStorage.setItem(sidKey, sid);
@@ -210,6 +218,7 @@ const renderScreenOverlay = (snapshot) => {
 };
 
 const heartbeat = async () => {
+  await anonymousAuthReady;
   await update(userRef, {
     page: location.pathname,
     title: document.title || "AnimeFume",

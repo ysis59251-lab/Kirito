@@ -25,6 +25,19 @@
     ].join(' ');
     const label = languageText(title);
     card.dataset.afLanguage = label === 'พากย์ไทย' ? 'dub' : 'sub';
+    const image = card.querySelector('img');
+    if (image && !image.dataset.fallbackBound) {
+      image.dataset.fallbackBound = '1';
+      image.addEventListener('error', () => {
+        image.hidden = true;
+        if (!image.parentElement?.querySelector('.af-image-fallback')) {
+          const fallback = document.createElement('div');
+          fallback.className = 'af-image-fallback';
+          fallback.textContent = card.dataset.title || 'AnimeFume';
+          image.parentElement?.prepend(fallback);
+        }
+      }, { once: true });
+    }
     const existing = card.querySelector(':scope > .af-card-meta');
     if (existing) {
       const language = existing.querySelector('.af-card-language');

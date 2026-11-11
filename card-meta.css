@@ -9,6 +9,17 @@
   line-height: 1.2;
 }
 .af-card-episodes { white-space: nowrap; }
+.af-image-fallback {
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 20px 12px;
+  color: rgba(255,255,255,.86);
+  text-align: center;
+  font-size: 12px;
+  font-weight: 750;
+  background: radial-gradient(circle at 50% 20%, rgba(53,224,193,.28), transparent 52%), linear-gradient(145deg, #1b2833, #0c1017);
+}
 .af-card-language {
   max-width: 58%;
   overflow: hidden;

@@ -6,10 +6,10 @@ import {
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
-  getFirestore,
-  doc,
-  getDoc
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  getDatabase,
+  ref,
+  get
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
 export const firebaseConfig = {
   apiKey: "AIzaSyC_eG_drnzYDUSyNBapN7kJ7XaYsbkhCwA",
@@ -24,12 +24,12 @@ export const firebaseConfig = {
 const app = getApps().find((item) => item.name === "animefume-admin-auth")
   || initializeApp(firebaseConfig, "animefume-admin-auth");
 export const auth = getAuth(app);
-export const firestore = getFirestore(app);
+export const database = getDatabase(app);
 
 export async function verifyAdmin(user) {
   if (!user?.uid) return null;
-  const snapshot = await getDoc(doc(firestore, "adminUsers", user.uid));
-  const data = snapshot.exists() ? snapshot.data() : null;
+  const snapshot = await get(ref(database, `adminUsers/${user.uid}`));
+  const data = snapshot.exists() ? snapshot.val() : null;
   return data?.active === true ? { user, ...data } : null;
 }
 

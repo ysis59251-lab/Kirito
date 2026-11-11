@@ -1,6 +1,5 @@
 (() => {
   'use strict';
-  const SOURCE = 'https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1';
   const PER_PAGE = 40;
   const pageType = location.pathname.toLowerCase().endsWith('index3.html') ? 'dub' : 'sub';
   let allItems = [];
@@ -108,9 +107,10 @@
 
   const load = async () => {
     try {
-      const response = await fetch(SOURCE, { cache: 'no-store' });
-      if (!response.ok) throw new Error(`source ${response.status}`);
-      const rows = await response.json();
+      if (typeof window.fetchAnimeFumeSheet !== 'function') {
+        throw new Error('ไม่พบตัวโหลดข้อมูล Google Sheets');
+      }
+      const rows = await window.fetchAnimeFumeSheet('Sheet1');
       const unique = new Map();
       rows.forEach((item) => {
         const key = canonicalKey(item);

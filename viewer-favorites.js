@@ -12,13 +12,15 @@
 let sheet2Rows=[];let sheet2Filtered=[];let sheet2Page=1;const sheet2PerPage=40;
   const norm=v=>String(v??'').trim().toLowerCase();
   function sheet2Render(){
+    const grid=$('#sheet2Grid');
+    if(!grid)return;
     const q=norm($('#searchInput')?.value||'');
     sheet2Filtered=sheet2Rows.filter(r=>!q||norm(r.title).includes(q)||norm(r.id).includes(q)||norm(r.year).includes(q));
     const total=Math.max(1,Math.ceil(sheet2Filtered.length/sheet2PerPage));if(sheet2Page>total)sheet2Page=total;
-    const grid=$('#sheet2Grid');grid.innerHTML='';
+    grid.innerHTML='';
     const start=(sheet2Page-1)*sheet2PerPage;const list=sheet2Filtered.slice(start,start+sheet2PerPage);
     if(!list.length){grid.innerHTML='<div class="sheet2-empty">ไม่พบรายการใน Sheet2</div>'}
-    else list.forEach(r=>{const a=document.createElement('a');a.className='sheet2-card';a.href=r.link||'#';const wrap=document.createElement('div');wrap.className='card-img';const img=document.createElement('img');img.src=r.image||'';img.alt=r.title||'Anime';img.loading='lazy';img.decoding='async';img.onerror=()=>{img.style.opacity='.25'};const ov=document.createElement('div');ov.className='overlay';ov.textContent=r.title||'ไม่มีชื่อ';wrap.append(img,ov);const meta=document.createElement('div');meta.className='sheet2-meta';meta.textContent=[r.year,r.Show,r.id?'#'+r.id:''].filter(Boolean).join(' • ');a.append(wrap,meta);grid.appendChild(a)});
+    else list.forEach(r=>{const a=document.createElement('a');a.className='sheet2-card';a.href=String(r.link||(r.id?`folder-name/${r.id}.html`:'#')).replace(/^folder-name(\d+\.html)$/i,'folder-name/$1');const wrap=document.createElement('div');wrap.className='card-img';const img=document.createElement('img');img.src=r.image||'';img.alt=r.title||'Anime';img.loading='lazy';img.decoding='async';img.onerror=()=>{img.style.opacity='.25'};const ov=document.createElement('div');ov.className='overlay';ov.textContent=r.title||'ไม่มีชื่อ';wrap.append(img,ov);const meta=document.createElement('div');meta.className='sheet2-meta';meta.textContent=[r.year,r.Show,r.id?'#'+r.id:''].filter(Boolean).join(' • ');a.append(wrap,meta);grid.appendChild(a)});
     $('#sheet2Status').textContent=`${sheet2Filtered.length.toLocaleString()} รายการ • หน้า ${sheet2Page}/${total}`;
     const pages=$('#sheet2Pages');pages.innerHTML='';const maxButtons=5;let startPage=Math.max(1,Math.min(sheet2Page-2,total-4));let endPage=Math.min(total,startPage+maxButtons-1);
     if(sheet2Page>1){const b=document.createElement('button');b.className='sheet2-page';b.textContent='‹';b.onclick=()=>{sheet2Page--;sheet2Render();document.getElementById('sheet2Section')?.scrollIntoView({behavior:'smooth',block:'start'})};pages.appendChild(b)}

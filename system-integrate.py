@@ -25,6 +25,7 @@ def inject(path: Path, src: str):
 # Shared core + shared mobile navigation on public pages.
 for name in ('home.html', 'index2.html', 'index3.html', 'search.html', 'history.html', 'sheet2.html'):
     path = Path(name)
+    inject(path, 'data-source.js')
     inject(path, 'animefume-core.js')
     inject(path, 'animefume-menu-fix.js')
 

@@ -202,16 +202,9 @@ function initOnline(){
   try{
 
     const sid =
-
     sessionStorage.getItem("sid")
-
     ||
-
-    (
-      Date.now() +
-      "_" +
-      Math.random()
-    );
+    (window.crypto?.randomUUID?.() || `${Date.now()}_${Math.random().toString(36).slice(2)}`);
 
     sessionStorage.setItem(
       "sid",
@@ -448,13 +441,13 @@ function initHot(){
 LOAD DATA
 ========================= */
 function loadFromSheet(){
+  const loadRows = window.fetchAnimeFumeSheet;
+  if(typeof loadRows !== "function"){
+    console.error("ไม่พบตัวโหลดข้อมูล Google Sheets");
+    return;
+  }
 
-  const url =
-  "https://opensheet.elk.sh/1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58/Sheet1";
-
-  fetch(url)
-
-  .then(r => r.json())
+  loadRows("Sheet1")
 
   .then(data => {
 
@@ -473,7 +466,8 @@ function loadFromSheet(){
       document.createElement("a");
 
       card.href =
-      row.link || "#";
+      String(row.link || (row.id ? `folder-name/${row.id}.html` : "#"))
+      .replace(/^folder-name(\d+\.html)$/i, "folder-name/$1");
 
       card.className =
       "anime-card";
@@ -1126,8 +1120,6 @@ document
     }
 
     loadFromSheet();
-
-    initOnline();
 
     initViews();
 

@@ -3,6 +3,16 @@ name: AnimeFume UI 2.0
 on:
   push:
     branches: [main]
+    paths:
+      - 'style.css'
+      - 'style1.css'
+      - 'style2.css'
+      - 'animefume-ui2.css'
+      - 'animefume-corner-fix.css'
+      - 'home.html'
+      - 'index2.html'
+      - 'index3.html'
+      - '.github/workflows/animefume-ui2.yml'
   workflow_dispatch:
 
 concurrency:

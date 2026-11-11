@@ -3,6 +3,10 @@ name: Fix AnimeFume Players
 on:
   push:
     branches: [main]
+    paths:
+      - 'folder-name/**'
+      - 'player-system.js'
+      - '.github/workflows/player-fix.yml'
 
 concurrency:
   group: kirito-main-writes

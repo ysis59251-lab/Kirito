@@ -3,6 +3,20 @@ name: AnimeFume System Integration
 on:
   push:
     branches: [main]
+    paths:
+      - 'home.html'
+      - 'index2.html'
+      - 'index3.html'
+      - 'search.html'
+      - 'history.html'
+      - 'sheet2.html'
+      - 'folder-name/**'
+      - 'animefume-core.js'
+      - 'animefume-menu-fix.js'
+      - 'player-system.js'
+      - 'sheet2-data.js'
+      - 'system-integrate.py'
+      - '.github/workflows/animefume-integration.yml'
   workflow_dispatch:
 
 concurrency:

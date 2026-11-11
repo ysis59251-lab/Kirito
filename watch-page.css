@@ -16,9 +16,8 @@ body {
   min-height: 100vh;
   color: var(--watch-text);
   background:
-    radial-gradient(circle at 8% 0%, rgba(77,163,255,.18), transparent 30rem),
-    radial-gradient(circle at 92% 14%, rgba(66,230,197,.10), transparent 26rem),
-    linear-gradient(180deg, #0b1420 0%, var(--watch-bg) 46%, #05070b 100%);
+    linear-gradient(rgba(0,0,0,.68), rgba(0,0,0,.91)),
+    url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center / cover fixed;
   font-family: Inter, "Segoe UI", system-ui, -apple-system, sans-serif;
 }
 
@@ -27,7 +26,7 @@ body::before {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  opacity: .18;
+  opacity: .10;
   background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
   background-size: 36px 36px;
   mask-image: linear-gradient(to bottom, #000, transparent 75%);

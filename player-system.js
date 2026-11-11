@@ -11,7 +11,6 @@
   const modal = document.getElementById('modal');
   const animeName = document.getElementById('animeName');
   const title = (animeName?.textContent || document.title || 'AnimeFume').trim();
-  const REPORT_URL = '../ระบบควบคุมภายในเว็บ/Report%20a%20Problem.html';
   const HISTORY_KEY = 'animefume_watch_history_v2';
 
   const css = document.createElement('style');
@@ -44,12 +43,8 @@
   tools.className = 'af-player-tools';
   tools.innerHTML = `
     <button class="primary" data-af="episodes">📺 เลือกตอน</button>
-    <button data-af="fullscreen">⛶ เต็มจอ</button>
-    <button data-af="history">🕘 ประวัติ</button>
     <button data-af="back">↩ กลับหน้าก่อน</button>
-    <button data-af="share">🔗 แชร์</button>
     <button data-af="copy">📋 คัดลอกลิงก์</button>
-    <a href="${REPORT_URL}" data-af="report">⚠️ แจ้งปัญหา</a>
   `;
   const control = document.querySelector('.control');
   (control || player).insertAdjacentElement('afterend', tools);
@@ -66,29 +61,9 @@
     else if (modal) modal.style.display = 'block';
   }
 
-  async function fullscreen(){
-    try {
-      if (document.fullscreenElement) await document.exitFullscreen();
-      else if (player.requestFullscreen) await player.requestFullscreen();
-      else setState('เบราว์เซอร์นี้ไม่รองรับโหมดเต็มจอ');
-    } catch { setState('ไม่สามารถเปิดเต็มจอได้'); }
-  }
-
   function goBack(){
     if (history.length > 1) history.back();
     else location.href = '../home.html';
-  }
-
-  function openHistory(){ location.href = '../history.html'; }
-
-  async function share(){
-    const data = {title, text:`ดู ${title} บน AnimeFume`, url:location.href};
-    try {
-      if (navigator.share) await navigator.share(data);
-      else { await navigator.clipboard.writeText(location.href); setState('คัดลอกลิงก์แล้ว'); }
-    } catch(e) {
-      if (e?.name !== 'AbortError') setState('แชร์ไม่สำเร็จ ลองคัดลอกลิงก์แทน');
-    }
   }
 
   async function copyLink(){
@@ -101,10 +76,7 @@
     if (!button) return;
     const action = button.dataset.af;
     if (action === 'episodes') openEpisodes();
-    if (action === 'fullscreen') fullscreen();
-    if (action === 'history') openHistory();
     if (action === 'back') goBack();
-    if (action === 'share') share();
     if (action === 'copy') copyLink();
   });
 
@@ -134,13 +106,10 @@
   document.addEventListener('keydown', e => {
     if (e.target && /input|textarea|select/i.test(e.target.tagName)) return;
     if (e.key === 'Escape' && modal) modal.style.display = 'none';
-    if (e.key === 'f' || e.key === 'F') fullscreen();
     if (e.key === 'e' || e.key === 'E') openEpisodes();
-    if (e.key === 'h' || e.key === 'H') openHistory();
-    if (e.key === 's' || e.key === 'S') share();
     if (e.key === 'ArrowRight' && typeof window.nextEp === 'function') window.nextEp();
     if (e.key === 'ArrowLeft' && typeof window.prevEp === 'function') window.prevEp();
   });
 
-  setState('คีย์ลัด: F เต็มจอ • E เลือกตอน • H ประวัติ • ←/→ เปลี่ยนตอน');
+  setState('คีย์ลัด: E เลือกตอน • ←/→ เปลี่ยนตอน');
 })();

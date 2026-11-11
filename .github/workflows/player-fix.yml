@@ -6,7 +6,6 @@ on:
     paths:
       - 'folder-name/**'
       - 'player-system.js'
-      - '.github/workflows/player-fix.yml'
 
 concurrency:
   group: kirito-main-writes

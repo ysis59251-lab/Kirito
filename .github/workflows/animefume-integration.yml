@@ -16,7 +16,6 @@ on:
       - 'player-system.js'
       - 'sheet2-data.js'
       - 'system-integrate.py'
-      - '.github/workflows/animefume-integration.yml'
   workflow_dispatch:
 
 concurrency:

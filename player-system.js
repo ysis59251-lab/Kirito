@@ -16,11 +16,11 @@
 
   const css = document.createElement('style');
   css.textContent = `
-    .af-player-tools{display:flex;flex-wrap:wrap;gap:8px;margin:12px auto 4px;max-width:900px;padding:0 10px}
-    .af-player-tools button,.af-player-tools a{appearance:none;border:1px solid rgba(255,255,255,.12);background:#151515;color:#fff;text-decoration:none;min-height:42px;padding:9px 13px;border-radius:12px;font:600 13px system-ui;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px}
-    .af-player-tools button:hover,.af-player-tools a:hover{background:#242424}
-    .af-player-tools .primary{background:linear-gradient(135deg,#e50914,#b20710);border-color:transparent}
-    .af-player-state{max-width:900px;margin:8px auto;padding:0 12px;color:#aaa;font-size:12px;text-align:center;min-height:18px}
+    .af-player-tools{display:flex;flex-wrap:wrap;gap:8px;margin:12px auto 4px;max-width:1080px;padding:0}
+    .af-player-tools button,.af-player-tools a{appearance:none;border:1px solid rgba(255,255,255,.1);background:rgba(17,26,40,.78);color:#f7fbff;text-decoration:none;min-height:42px;padding:9px 13px;border-radius:12px;font:600 13px system-ui;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:transform .2s ease,border-color .2s ease,background .2s ease}
+    .af-player-tools button:hover,.af-player-tools a:hover{background:rgba(66,230,197,.12);border-color:rgba(66,230,197,.45);transform:translateY(-2px)}
+    .af-player-tools .primary{background:linear-gradient(135deg,#18bfa4,#277fd4);border-color:transparent}
+    .af-player-state{max-width:1080px;margin:8px auto;padding:0;color:#9caabd;font-size:12px;text-align:left;min-height:18px}
     .af-player-loading{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.62);z-index:3;pointer-events:none;opacity:1;transition:opacity .25s}
     .af-player-loading.hide{opacity:0}
     .af-player-spinner{width:38px;height:38px;border:4px solid #444;border-top-color:#fff;border-radius:50%;animation:afpspin .75s linear infinite}

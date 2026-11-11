@@ -1,0 +1,13 @@
+# Firebase credentials and local secrets
+*.service-account.json
+service-account*.json
+.env
+.env.*
+!.env.example
+
+# Generated media and local build output
+tools/downloads/
+tools/tmp/
+admin-android/.kotlin/
+admin-android/.gradle/
+admin-android/releases/*.apk

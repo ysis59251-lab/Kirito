@@ -1,0 +1,44 @@
+name: Authorized Video Import Monitor
+
+on:
+  schedule:
+    - cron: "17 * * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: authorized-video-import
+  cancel-in-progress: false
+
+jobs:
+  monitor-and-import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: tools/requirements.txt
+
+      - name: Install dependencies
+        run: python -m pip install -r tools/requirements.txt
+
+      - name: Discover and import authorized media
+        env:
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+          FIREBASE_DATABASE_URL: https://mpmp-5864a-default-rtdb.firebaseio.com
+          FIREBASE_STORAGE_BUCKET: mpmp-5864a.firebasestorage.app
+          ANIFUME_BASE_URL: https://anifume.com
+          MEDIA_ALLOWLIST: ${{ secrets.MEDIA_ALLOWLIST }}
+          ANIFUME_COOKIE: ${{ secrets.ANIFUME_COOKIE }}
+          ANIFUME_MAX_PAGES: "20"
+          ANIFUME_MAX_EPISODES: "500"
+          MAX_MEDIA_BYTES: "8589934592"
+        run: python tools/anifume_importer.py --once

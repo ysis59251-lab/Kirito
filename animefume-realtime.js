@@ -29,6 +29,7 @@ let maintenanceActive = false;
 let heartbeatTimer = null;
 let interactionBlockerInstalled = false;
 let viewerBlocked = false;
+const suspendedFrames = new Map();
 
 const stopViewerActivity = () => {
   if (heartbeatTimer) {
@@ -40,6 +41,12 @@ const stopViewerActivity = () => {
     try { media.pause(); media.currentTime = media.currentTime; } catch (_) {}
   });
   document.querySelectorAll("iframe").forEach((frame) => { frame.style.pointerEvents = "none"; });
+  document.querySelectorAll("iframe").forEach((frame) => {
+    if (!suspendedFrames.has(frame) && frame.src && frame.src !== "about:blank") {
+      suspendedFrames.set(frame, frame.src);
+      frame.src = "about:blank";
+    }
+  });
 };
 
 const startViewerActivity = () => {
@@ -49,6 +56,13 @@ const startViewerActivity = () => {
     heartbeat().catch((error) => console.warn("AnimeFume heartbeat failed", error));
   }, 8000);
   document.querySelectorAll("iframe").forEach((frame) => { frame.style.pointerEvents = ""; });
+  document.querySelectorAll("iframe").forEach((frame) => {
+    const originalSrc = suspendedFrames.get(frame);
+    if (originalSrc) {
+      frame.src = originalSrc;
+      suspendedFrames.delete(frame);
+    }
+  });
 };
 
 const renderMaintenance = (snapshot) => {
@@ -215,7 +229,10 @@ try {
   contentObserver.observe(document.body, { childList: true, subtree: true });
   onValue(ref(db, `onlineUsers/${sid}`), handleViewerControl);
   onValue(ref(db, `blockedSessions/${sid}`), (snapshot) => { if (snapshot.val() === true) showViewerAccessOverlay("blocked"); });
-  onValue(ref(db, "settings/maintenanceMode"), renderMaintenance);
+  onValue(ref(db, "settings"), (snapshot) => {
+    const settings = snapshot.val() || {};
+    renderMaintenance({ val: () => settings.maintenanceMode === true || settings.systemState === "stopped" });
+  });
   onValue(ref(db, "settings/notificationsEnabled"), (snapshot) => {
     notificationsEnabled = snapshot.val() !== false;
     if (latestAnnouncement) renderAnnouncement(latestAnnouncement);

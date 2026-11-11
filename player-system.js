@@ -15,7 +15,7 @@
 
   const css = document.createElement('style');
   css.textContent = `
-    .af-player-tools{display:flex;flex-wrap:wrap;gap:8px;margin:12px auto 4px;max-width:1080px;padding:0}
+    .af-player-tools{display:grid;grid-template-columns:52px minmax(0,220px) 52px;justify-content:center;gap:7px;width:fit-content;max-width:calc(100% - 8px);margin:12px auto 4px;padding:6px;border:1px solid rgba(255,255,255,.1);border-radius:18px;background:linear-gradient(145deg,rgba(24,38,55,.86),rgba(8,14,23,.88));box-shadow:0 12px 32px rgba(0,0,0,.28),inset 0 1px 0 rgba(255,255,255,.06);backdrop-filter:blur(16px)}
     .af-player-tools button,.af-player-tools a{appearance:none;border:1px solid rgba(255,255,255,.1);background:rgba(17,26,40,.78);color:#f7fbff;text-decoration:none;min-height:42px;padding:9px 13px;border-radius:12px;font:600 13px system-ui;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;transition:transform .2s ease,border-color .2s ease,background .2s ease}
     .af-player-tools button:hover,.af-player-tools a:hover{background:rgba(66,230,197,.12);border-color:rgba(66,230,197,.45);transform:translateY(-2px)}
     .af-player-tools .primary{background:linear-gradient(135deg,#18bfa4,#277fd4);border-color:transparent}
@@ -24,7 +24,7 @@
     .af-player-loading.hide{opacity:0}
     .af-player-spinner{width:38px;height:38px;border:4px solid #444;border-top-color:#fff;border-radius:50%;animation:afpspin .75s linear infinite}
     @keyframes afpspin{to{transform:rotate(360deg)}}
-    @media(max-width:600px){.af-player-tools{display:grid;grid-template-columns:repeat(2,1fr);padding:0 8px}.af-player-tools button,.af-player-tools a{width:100%;min-height:46px}.af-player-tools .primary{grid-column:1/-1}}
+    @media(max-width:600px){.af-player-tools{grid-template-columns:48px minmax(0,1fr) 48px;gap:6px;width:min(100%,360px);max-width:calc(100% - 8px);padding:6px}.af-player-tools button,.af-player-tools a{width:100%;min-width:0;min-height:46px}.af-player-tools button[data-af="prev"],.af-player-tools button[data-af="next"]{width:48px}}
   `;
   document.head.appendChild(css);
 

@@ -19,12 +19,19 @@
   };
 
   const decorate = (card) => {
-    if (card.querySelector(':scope > .af-card-meta')) return;
     const title = [
       card.dataset.title || '',
       card.querySelector('.overlay')?.textContent || '',
       card.textContent || ''
     ].join(' ');
+    const label = languageText(title);
+    card.dataset.afLanguage = label === 'พากย์ไทย' ? 'dub' : 'sub';
+    const existing = card.querySelector(':scope > .af-card-meta');
+    if (existing) {
+      const language = existing.querySelector('.af-card-language');
+      if (language && language.textContent !== label) language.textContent = label;
+      return;
+    }
     const meta = document.createElement('div');
     meta.className = 'af-card-meta';
     const episodes = document.createElement('span');
@@ -32,18 +39,29 @@
     episodes.textContent = `▣ ${episodeText(title)}`;
     const language = document.createElement('span');
     language.className = 'af-card-language';
-    language.textContent = languageText(title);
-    if (language.textContent.includes('พากย์ไทย')) language.dataset.type = 'dub';
-    else if (language.textContent.includes('ซับไทย')) language.dataset.type = 'sub';
+    language.textContent = label;
+    language.dataset.type = card.dataset.afLanguage;
     meta.append(episodes, language);
     card.append(meta);
   };
 
-  const scan = () => document.querySelectorAll('.anime-card, .hot-card').forEach(decorate);
+  const applyCategory = (card) => {
+    const page = location.pathname.toLowerCase();
+    const required = page.endsWith('index3.html') ? 'dub' : page.endsWith('index2.html') ? 'sub' : '';
+    if (!required) return;
+    const shouldShow = card.dataset.afLanguage === required;
+    const desired = shouldShow ? '' : 'none';
+    if (card.style.display !== desired) card.style.display = desired;
+  };
+
+  const scan = () => document.querySelectorAll('.anime-card, .hot-card').forEach((card) => {
+    decorate(card);
+    applyCategory(card);
+  });
   const list = document.getElementById('animeList');
   const hot = document.getElementById('hotSlider');
   const observer = new MutationObserver(scan);
-  if (list) observer.observe(list, { childList: true, subtree: true });
-  if (hot) observer.observe(hot, { childList: true, subtree: true });
+  if (list) observer.observe(list, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
+  if (hot) observer.observe(hot, { childList: true, subtree: true, attributes: true, attributeFilter: ['style'] });
   scan();
 })();

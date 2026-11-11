@@ -159,6 +159,7 @@ private fun OverviewScreen(session: AdminSession) {
     var controlStatus by remember { mutableStateOf<String?>(null) }
     var blockedSessions by remember { mutableStateOf<List<String>>(emptyList()) }
     var lastSync by remember { mutableLongStateOf(0L) }
+    var showShutdownConfirm by remember { mutableStateOf(false) }
     DisposableEffect(Unit) {
         val onlineRef = database.getReference("onlineUsers")
         val reportsRef = database.getReference("reports")
@@ -213,8 +214,12 @@ private fun OverviewScreen(session: AdminSession) {
                         Text(if (maintenanceMode) "เว็บไซต์กำลังแสดงหน้าปิดปรับปรุง" else "เว็บไซต์กำลังเปิดให้ผู้ชมใช้งาน", color = if (maintenanceMode) Warning else Muted, style = MaterialTheme.typography.bodySmall)
                     }
                     Switch(checked = maintenanceMode, onCheckedChange = { enabled ->
-                        database.getReference("settings/maintenanceMode").setValue(enabled)
-                            .addOnSuccessListener { database.getReference("settings").updateChildren(mapOf("updatedAt" to System.currentTimeMillis(), "updatedBy" to session.email)); controlStatus = if (enabled) "เปิดโหมดปรับปรุงแล้ว" else "เปิดเว็บไซต์ให้ผู้ชมแล้ว" }
+                        database.getReference("settings").updateChildren(mapOf(
+                            "maintenanceMode" to enabled,
+                            "systemState" to if (enabled) "stopped" else "running",
+                            "updatedAt" to System.currentTimeMillis(),
+                            "updatedBy" to session.email
+                        )).addOnSuccessListener { controlStatus = if (enabled) "หยุดระบบผู้ชมแล้ว" else "เปิดเว็บไซต์ให้ผู้ชมแล้ว" }
                     })
                 }
                 Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 14.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -235,6 +240,11 @@ private fun OverviewScreen(session: AdminSession) {
                     }, modifier = Modifier.weight(1f)) { Text("ล้าง session ค้าง") }
                     if (controlStatus != null) Text(controlStatus!!, color = Mint, style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
                 }
+                Button(
+                    onClick = { showShutdownConfirm = true },
+                    colors = ButtonDefaults.buttonColors(containerColor = Danger),
+                    modifier = Modifier.fillMaxWidth().padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                ) { Text("หยุดระบบทั้งหมด", fontWeight = FontWeight.Bold) }
             }
         }
         item { Text("ผู้ใช้ออนไลน์ล่าสุด", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
@@ -252,6 +262,28 @@ private fun OverviewScreen(session: AdminSession) {
                 }
             }
         }
+    }
+    if (showShutdownConfirm) {
+        AlertDialog(
+            onDismissRequest = { showShutdownConfirm = false },
+            title = { Text("ยืนยันหยุดระบบทั้งหมด") },
+            text = { Text("เว็บจะเข้าสู่โหมดปิดปรับปรุงทันที วิดีโอ เสียง iframe และการกดใช้งานของผู้ชมจะถูกหยุดทั้งหมด คุณสามารถเปิดกลับได้จากสวิตช์เดิม") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showShutdownConfirm = false
+                    database.getReference("settings").updateChildren(mapOf(
+                        "maintenanceMode" to true,
+                        "systemState" to "stopped",
+                        "notificationsEnabled" to false,
+                        "updatedAt" to System.currentTimeMillis(),
+                        "updatedBy" to session.email,
+                        "shutdownAt" to System.currentTimeMillis()
+                    )).addOnSuccessListener { controlStatus = "หยุดระบบทั้งหมดแล้ว" }
+                        .addOnFailureListener { controlStatus = "หยุดระบบไม่สำเร็จ: ${it.localizedMessage ?: "ตรวจสอบสิทธิ์ Firebase"}" }
+                }) { Text("ยืนยันหยุดระบบ", color = Danger) }
+            },
+            dismissButton = { TextButton(onClick = { showShutdownConfirm = false }) { Text("ยกเลิก") } }
+        )
     }
 }
 

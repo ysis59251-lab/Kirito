@@ -33,20 +33,36 @@
     if (cache.has(key)) return cache.get(key);
     if (pending.has(key)) return pending.get(key);
     const request = (async () => {
-      const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 15000);
       try {
-        const response = await fetch(gvizUrl(key), {
-          cache: 'no-store',
-          headers: { Accept: 'text/plain, application/javascript' },
-          signal: controller.signal
-        });
-        if (!response.ok) throw new Error(`Google Sheets HTTP ${response.status}`);
-        const rows = parseGviz(await response.text());
+        const urls = [];
+        if (location.protocol === 'http:' || location.protocol === 'https:') {
+          urls.push(`/api/sheet?name=${encodeURIComponent(key)}`);
+        }
+        urls.push(gvizUrl(key));
+        let lastError;
+        let rows;
+        for (const url of urls) {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 15000);
+          try {
+            const response = await fetch(url, {
+              cache: 'no-store',
+              headers: { Accept: 'text/plain, application/javascript' },
+              signal: controller.signal
+            });
+            if (!response.ok) throw new Error(`Google Sheets HTTP ${response.status}`);
+            rows = parseGviz(await response.text());
+            break;
+          } catch (error) {
+            lastError = error;
+          } finally {
+            clearTimeout(timer);
+          }
+        }
+        if (!rows) throw lastError || new Error('ไม่สามารถโหลดข้อมูลได้');
         cache.set(key, rows);
         return rows;
       } finally {
-        clearTimeout(timer);
         pending.delete(key);
       }
     })();

@@ -15,7 +15,8 @@ def inject(path: Path, src: str):
     if not path.exists():
         return
     text = path.read_text(encoding='utf-8')
-    if src in text:
+    protected_src = f'protected/{src}'
+    if src in text or protected_src in text:
         return
     if '</head>' not in text:
         return

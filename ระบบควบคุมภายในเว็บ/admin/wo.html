@@ -81,6 +81,10 @@ await requireAdmin("../Administrator.html");
 
 <div class="box">
   <h2>🖼️ เพิ่มรูปอนิเมะ</h2>
+  <p style="color:#ffd166;font-size:14px;line-height:1.5;background:#2a220f;padding:10px;border-radius:10px">
+    หน้านี้ยังไม่เปิดใช้ เพราะยังไม่ได้เชื่อม Google Apps Script สำหรับเขียนข้อมูลลง Sheet
+    กรุณาตั้งค่า API ก่อนใช้งาน
+  </p>
 
   <input id="id" placeholder="ID (เช่น 241)">
   <input id="title" placeholder="ชื่อเรื่อง">
@@ -88,7 +92,7 @@ await requireAdmin("../Administrator.html");
   <input id="year" placeholder="ปี (2024)">
   <input id="link" placeholder="ลิงก์หน้าเว็บ (folder-name/241.html)">
 
-  <button onclick="send()">🚀 เพิ่มข้อมูล</button>
+  <button id="sendBtn" type="button" onclick="send()" disabled>🚀 เพิ่มข้อมูล (ยังไม่พร้อมใช้)</button>
 </div>
 
 <!-- POPUP -->
@@ -99,12 +103,13 @@ await requireAdmin("../Administrator.html");
 </div>
 
 <script>
-const API = "https://script.google.com/macros/s/XXXXX/exec";
+// ห้ามยิง endpoint ปลอม: ต้องใส่ URL deployment จริงจาก Google Apps Script ก่อน
+const API = "";
 
 async function send(){
 
-  if(!API || API.includes("XXXXX")){
-    show("⚠️ ยังไม่ได้ตั้งค่า Google Apps Script API");
+  if(!API){
+    show("⚠️ หน้านี้ยังไม่ได้เชื่อม Google Apps Script");
     return;
   }
 

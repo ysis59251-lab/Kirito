@@ -15,7 +15,7 @@ on:
       - 'animefume-menu-fix.js'
       - 'player-system.js'
       - 'sheet2-data.js'
-      - 'system-integrate.py.txt'
+      - '.github/scripts/system-integrate.py.txt'
   workflow_dispatch:
 
 concurrency:
@@ -33,7 +33,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Run system integration
-        run: python3 system-integrate.py.txt
+        run: python3 .github/scripts/system-integrate.py.txt
 
       - name: Commit repaired files
         run: |

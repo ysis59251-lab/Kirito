@@ -304,7 +304,7 @@ fetch(API)
       desc:r.c[6]?.v,
       cover:r.c[7]?.v
     }))
-    .filter(e=>e.anime === currentAnime);
+    .filter(e=>Number(e.anime) === Number(currentAnime));
 
   // ❗ กัน error ถ้าไม่มีข้อมูล
   if(episodes.length === 0){
@@ -348,7 +348,7 @@ function renderEpisodes(){
     div.innerText=`ตอนที่ ${e.ep}`;
     if(watched.includes(e.url)) div.classList.add("watched");
 
-    div.onclick=()=>play(e.url);
+    div.onclick=()=>e.url ? play(e.url) : (document.getElementById(\"nowEp\").innerText=\"⚠️ ตอนนี้ยังไม่มีลิงก์วิดีโอใน Google Sheets\");
     box.appendChild(div);
   });
 
@@ -388,7 +388,7 @@ function play(url){
 
   video.src=url;
 
-  currentIndex=episodes.findIndex(e=>e.url===url || url.includes(e.url));
+  currentIndex=episodes.findIndex(e=>String(e.url||\"\")===String(sourceUrl||\"\"));
 
   localStorage.setItem("lastEpisode",episodes[currentIndex].url);
 

@@ -10,12 +10,25 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.google.firebase.FirebaseApp
+import com.google.firebase.FirebaseOptions
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 
 class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) { super.onCreate(savedInstanceState); setContent { AdminApp() } }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (FirebaseApp.getApps(this).isEmpty()) {
+            FirebaseApp.initializeApp(this, FirebaseOptions.Builder()
+                .setApiKey("PASTE_FIREBASE_API_KEY")
+                .setApplicationId("PASTE_FIREBASE_APP_ID")
+                .setProjectId("PASTE_FIREBASE_PROJECT_ID")
+                .setGcmSenderId("PASTE_FIREBASE_MESSAGING_SENDER_ID")
+                .build())
+        }
+        setContent { AdminApp() }
+    }
 }
 
 @Composable

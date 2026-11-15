@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AnimeFume - Dead Mount Death Play</title>
+<title>AnimeFume - Yuusha-kei ni Shosu: Choubatsu Yuusha 9004-tai Keimu Kiroku ผู้กล้าโทษประหาร : บันทึกการรับโทษของหน่วยผู้กล้าต้องโทษ 9004 ตอนที่ 1-3 ซับไทย</title>
 
 <style>
 
@@ -374,7 +374,7 @@ body {
 const SHEET_ID="1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
 const API=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
 
-const currentAnime = 'Dead Mount Death Play';
+const currentAnime = 0;
 
 let episodes=[];
 let currentIndex=0;
@@ -436,11 +436,12 @@ fetch(API)
     desc: get(7),
     cover: get(8)
   };
-});
-    .filter(e=>e.anime === currentAnime);
+}).filter(e=>e.anime === currentAnime);
 
   if(episodes.length === 0){
-    document.getElementById("animeName").innerText = "ไม่พบข้อมูล";
+    stopLoading();
+    document.getElementById("animeName").innerText = "ไม่พบข้อมูลตอน";
+    document.getElementById("nowEp").innerText = "ยังไม่มีตอนสำหรับเรื่องนี้";
     return;
   }
 

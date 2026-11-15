@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AnimeFume - Dead Mount Death Play</title>
+<title>AnimeFume - Mahouka Koukou no Rettousei พี่น้องปริศนาโรงเรียนมหาเวท (ภาค1) ตอนที่ 1-26 พากย์ไทย จบเเล้ว</title>
 
 <style>
 
@@ -437,7 +437,9 @@ fetch(API)
     .filter(e=>e.anime === currentAnime);
 
   if(episodes.length === 0){
-    document.getElementById("animeName").innerText = "ไม่พบข้อมูล";
+    stopLoading();
+    document.getElementById("animeName").innerText = "ไม่พบข้อมูลตอน";
+    document.getElementById("nowEp").innerText = "ยังไม่มีตอนสำหรับเรื่องนี้";
     return;
   }
 

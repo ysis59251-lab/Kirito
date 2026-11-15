@@ -489,11 +489,12 @@ function renderEpisodes(){
    PLAY VIDEO
 ========================= */
 function play(url){
+  const sourceUrl = url;
   startLoading(); // 🔥 เริ่มโหลด
 
   const video=document.getElementById("video");
 
-  if(url.includes("drive.google.com")){
+  if(String(url || "").includes("drive.google.com")){
     const match = url.match(/\/d\/(.+?)\//);
     if(match){
       url=`https://drive.google.com/file/d/${match[1]}/preview`;
@@ -509,6 +510,11 @@ function play(url){
   setTimeout(stopLoading, 3000);
 
   currentIndex=episodes.findIndex(e=>String(e.url||"")===String(sourceUrl||""));
+
+  if(currentIndex<0){
+    document.getElementById("nowEp").innerText="⚠️ ไม่พบลิงก์ตอนนี้ในข้อมูล";
+    return;
+  }
 
   localStorage.setItem("lastEpisode",episodes[currentIndex].url);
 

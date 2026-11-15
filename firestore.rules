@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function admin() { return request.auth != null && exists(/databases/$(database)/documents/admins/$(request.auth.uid)); }
+    match /catalog/{id} {
+      allow read: if resource.data.published == true || admin();
+      allow create, update, delete: if admin();
+    }
+    match /episodes/{id} {
+      allow read: if resource.data.published == true || admin();
+      allow create, update, delete: if admin();
+    }
+    match /admins/{uid} { allow read: if request.auth != null && request.auth.uid == uid; allow write: if false; }
+  }
+}

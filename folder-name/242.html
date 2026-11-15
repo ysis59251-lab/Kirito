@@ -348,7 +348,7 @@ function renderEpisodes(){
     div.innerText=`ตอนที่ ${e.ep}`;
     if(watched.includes(e.url)) div.classList.add("watched");
 
-    div.onclick=()=>e.url ? play(e.url) : (document.getElementById(\"nowEp\").innerText=\"⚠️ ตอนนี้ยังไม่มีลิงก์วิดีโอใน Google Sheets\");
+    div.onclick=()=>e.url ? play(e.url) : (document.getElementById("nowEp").innerText="⚠️ ตอนนี้ยังไม่มีลิงก์วิดีโอใน Google Sheets");
     box.appendChild(div);
   });
 
@@ -388,7 +388,7 @@ function play(url){
 
   video.src=url;
 
-  currentIndex=episodes.findIndex(e=>String(e.url||\"\")===String(sourceUrl||\"\"));
+  currentIndex=episodes.findIndex(e=>String(e.url||"")===String(sourceUrl||""));
 
   localStorage.setItem("lastEpisode",episodes[currentIndex].url);
 

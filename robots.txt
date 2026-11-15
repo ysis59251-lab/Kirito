@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://ysis59251-lab.github.io/Kirito/sitemap.xml

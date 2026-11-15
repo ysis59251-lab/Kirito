@@ -1,0 +1,17 @@
+{
+  "name": "AnimeFume System Manifest",
+  "version": "2.0.0",
+  "core": "animefume-core.js",
+  "data": ["sheet2-data.js"],
+  "features": {
+    "search": true,
+    "favorites": true,
+    "history": true,
+    "views": true,
+    "onlineUsers": true,
+    "sheet2Embedded": true,
+    "player": true,
+    "reports": true,
+    "admin": true
+  }
+}

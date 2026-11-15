@@ -1,11 +1,24 @@
-# AnimeFume rebuild TODO
+# AnimeFume / Kirito — Improvement Outcomes
 
-- [x] ล้างโค้ด player, Google Sheets, Firebase config เดิม และข้อมูล catalog เดิม
-- [x] สร้างเว็บสาธารณะให้ใช้ Firestore เป็นแหล่งข้อมูลเดียว
-- [x] สร้างหน้า watch เดียวที่อ่าน episodes จาก Firestore
-- [x] สร้าง Admin Console สำหรับ login, เพิ่ม/แก้ไข/ลบเรื่อง และเพิ่มตอน
-- [x] สร้าง Android admin foundation ที่ใช้ collections เดียวกัน
-- [x] สร้าง Firestore rules สำหรับแยกผู้ชมและผู้ดูแล
-- [ ] ใส่ Firebase config ของโปรเจกต์ใหม่
-- [ ] สร้าง Firebase Authentication user และเอกสาร admins/{uid}
-- [ ] deploy firestore.rules และทดสอบเพิ่ม/เผยแพร่เรื่องจากแอปแอดมิน
+## ความเสถียรและความปลอดภัยของ importer
+- [x] ตรวจ URL สื่อและ redirect ทุก hop ให้อยู่ใน allowlist และใช้ scheme/port ที่ปลอดภัย
+- [x] เพิ่ม timeout/retry ที่เหมาะสมและ cleanup ไฟล์ชั่วคราวทุกกรณี
+- [x] ทำให้ state ของการอัปโหลดและ health-check สอดคล้อง และไม่สร้างงานซ้ำโดยไม่จำเป็น
+
+## เว็บ realtime
+- [x] heartbeat ต้องจับ error และไม่สร้าง unhandled rejection
+- [x] cleanup `onDisconnect`, pagehide และ MutationObserver อย่างปลอดภัย
+- [x] คง maintenance/block overlay และการหยุด media ได้โดยไม่ทำให้หน้าเสีย
+
+## Admin Android
+- [ ] คำสั่ง Firebase ต้องแสดง pending/success/error ตามผลจริง
+- [ ] การส่งข้อมูลตอนต้อง validate URL/episode และรายงานผลล้มเหลวที่แก้ได้
+- [x] สร้าง APK debug รุ่นใหม่และตรวจ syntax/build
+
+## CI และเอกสาร
+- [x] ตรวจ workflow/importer/Android ด้วยคำสั่งที่มีอยู่จริง
+- [x] ไม่ส่ง secret ออกนอกระบบและไม่ commit ไฟล์คีย์
+
+## เว็บทนต่อข้อมูลภายนอก
+- [x] การ์ดอนิเมะมี fallback เมื่อรูปปกโหลดไม่ได้
+- [x] หน้าซับไทยและพากย์ไทยใช้ข้อมูลชุดเดียวกับหน้าแรกและกันรายการซ้ำ

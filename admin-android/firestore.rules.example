@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function activeAdmin() {
+      return signedIn()
+        && exists(/databases/$(database)/documents/adminUsers/$(request.auth.uid))
+        && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.active == true;
+    }
+    function owner() {
+      return activeAdmin()
+        && get(/databases/$(database)/documents/adminUsers/$(request.auth.uid)).data.role == "owner";
+    }
+
+    match /adminUsers/{uid} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // Replace these example collections with the exact collections used by the website.
+    match /adminManaged/{document=**} {
+      allow read: if activeAdmin();
+      allow write: if owner();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

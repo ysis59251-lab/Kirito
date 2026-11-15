@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>AnimeFume - Okiraku Ryoushu no Tanoshii Ryouchi Bouei หนุ่มน้อยเจ้าดินแดนกับแผนสร้างเมืองแสนสนุก ตอนที่ 1-10 ซัพไทย ยังไม่จบ</title>
+<style>
+#nowEp{text-align:center;margin-top:12px;font-size:16px;font-weight:bold;color:#ff3b3b}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
+body{color:#fff;background:#080808;min-height:100vh;line-height:1.5}
+.header{padding:16px;text-align:center;font-size:24px;font-weight:800;background:linear-gradient(90deg,#e50914,#b20710);box-shadow:0 6px 20px rgba(0,0,0,.6)}
+.player{max-width:900px;margin:24px auto;aspect-ratio:16/9;background:#000;border-radius:18px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.85)}
+.video-box{position:relative;width:100%;height:100%}.video-box iframe{width:100%;height:100%;border:none}
+.control{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:10px;padding:0 16px}.control button{min-height:46px;padding:10px 12px;font-size:14px;border-radius:30px;background:linear-gradient(135deg,#e50914,#b20710);color:#fff;border:none;cursor:pointer}
+.modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:10;padding:20px}.modal-content{background:#111;max-width:520px;margin:60px auto;padding:16px;border-radius:18px;max-height:70vh;overflow-y:auto}.ep{padding:14px;margin-bottom:8px;border-radius:12px;cursor:pointer;background:rgba(255,255,255,.05);font-size:16px}.ep.active{background:linear-gradient(135deg,#e50914,#b20710);font-weight:700}.ep.watched{color:#aaa}.ep.watched::after{content:" ✔";color:#00ffcc}
+.container{max-width:540px;margin:24px auto;padding:0 16px}.anime-img{width:100%;max-width:280px;display:block;margin:24px auto;border-radius:16px}.card img{width:100%;max-width:300px;display:block;margin:0 auto;border-radius:16px}.desc{margin-top:12px}
+@media(max-width:600px){.header{font-size:20px;padding:14px}.control{grid-template-columns:1fr 1fr 1fr;padding:0 8px;gap:6px}.control button{font-size:13px;padding:12px 4px;min-height:48px}.player{margin:12px 0;border-radius:10px}.modal{padding:10px}.modal-content{margin:30px auto;max-height:80vh}.ep{padding:15px}}
+</style>
+<script src="../animefume-core.js"></script>
+  <link rel="stylesheet" href="../watch-page.css">
+</head>
+<body>
+<div class="header">🎬 AnimeFume</div>
+<button class="back-btn" onclick="location.href='../home.html'" aria-label="กลับหน้าก่อน">❮</button>
+<div class="container">
+<h2 id="animeName"></h2>
+<div class="card"><img id="coverImg" loading="lazy" alt="ปกอนิเมะ"></div><p class="desc" id="desc"></p>
+<div class="player"><div class="video-box"><iframe id="video" allowfullscreen loading="lazy"></iframe></div></div>
+<div id="nowEp">🎬 กำลังโหลด...</div>
+
+<div class="modal" id="modal"><div class="modal-content" id="episodeList"></div></div>
+<script>
+const SHEET_ID="1dafLtcL0ba4ZmWpFLMhpMXcYF81uwJ42lgOjF5CRmPw";
+const API=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json`;
+const currentAnime = 5;
+const key=s=>`animefume_${s}_${encodeURIComponent(currentAnime)}`;
+let episodes=[],currentIndex=0,watched=JSON.parse(localStorage.getItem(key('watched'))||'[]');
+fetch(API).then(r=>{if(!r.ok)throw Error();return r.text()}).then(text=>{const json=JSON.parse(text.substring(47).slice(0,-2));episodes=json.table.rows.map(r=>({anime:r.c[0]?.v,name:r.c[1]?.v,ep:r.c[2]?.v,title:r.c[3]?.v,url:r.c[4]?.v,desc:r.c[6]?.v,cover:r.c[7]?.v})).filter(e=>e.anime===currentAnime);if(!episodes.length){animeName.innerText='ไม่พบข้อมูลตอน';nowEp.innerText='ยังไม่มีตอนสำหรับเรื่องนี้';return}const info=episodes.find(e=>e.cover||e.desc)||episodes[0];animeName.innerText=info.name||'';desc.innerHTML='<b>📖 เรื่องย่อ</b><br><br>'+String(info.desc||'').replace(/\n/g,'<br><br>');coverImg.src=info.cover||'';const last=localStorage.getItem(key('last'));const i=episodes.findIndex(e=>e.url===last);currentIndex=i>=0?i:0;renderEpisodes();play(currentIndex,false)}).catch(()=>{animeName.innerText='⚠️ โหลดข้อมูลไม่สำเร็จ';nowEp.innerText='กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่'});
+function renderEpisodes(){episodeList.innerHTML='';episodes.forEach((e,i)=>{const d=document.createElement('div');d.className='ep'+(watched.includes(e.url)?' watched':'');d.innerText=`ตอนที่ ${e.ep}`;d.onclick=()=>play(i);episodeList.appendChild(d)});highlight()}
+function play(i,mark=true){if(!episodes[i])return;currentIndex=i;let url=episodes[i].url;const m=url.match(/drive\.google\.com\/file\/d\/([^/]+)/);if(m)url=`https://drive.google.com/file/d/${m[1]}/preview`;video.src=url;localStorage.setItem(key('last'),episodes[i].url);if(mark&&!watched.includes(episodes[i].url)){watched.push(episodes[i].url);localStorage.setItem(key('watched'),JSON.stringify(watched))}highlight();nowEp.innerText=`🎬 กำลังดู: ตอนที่ ${episodes[i].ep} • ${episodes[i].title||''}`;closeModal()}
+function nextEp(){if(currentIndex<episodes.length-1)play(currentIndex+1)}function prevEp(){if(currentIndex>0)play(currentIndex-1)}function highlight(){document.querySelectorAll('.ep').forEach((e,i)=>e.classList.toggle('active',i===currentIndex))}function openModal(){modal.style.display='block'}function closeModal(){modal.style.display='none'}modal.onclick=e=>{if(e.target===modal)closeModal()};document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')nextEp();if(e.key==='ArrowLeft')prevEp()});
+</script>
+<script src="../player-system.js"></script>
+<script type="module" src="../animefume-realtime.js"></script>
+</body></html>

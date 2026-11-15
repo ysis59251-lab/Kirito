@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เพิ่มอนิเมะ</title>
+
+<style>
+/* ===== YOUR CSS (ไม่แตะ) ===== */
+
+.btn-row{
+  display:flex;
+  gap:10px;
+  margin-top:8px;
+}
+
+.btn-left,.btn-right{
+  flex:1;
+  padding:12px;
+  border:none;
+  border-radius:12px;
+  cursor:pointer;
+  font-weight:600;
+  transition:0.2s;
+}
+
+.btn-left{
+  background:linear-gradient(135deg,#4facfe,#00f2fe);
+  color:#000;
+}
+
+.btn-right{
+  background:linear-gradient(135deg,#ff416c,#ff4b2b);
+  color:#fff;
+}
+
+.btn-left:hover,
+.btn-right:hover{
+  transform:translateY(-2px);
+  opacity:0.9;
+}
+
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  font-family:system-ui, sans-serif;
+}
+
+body{
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background: radial-gradient(circle at top,#1a1a2e,#0f0f0f);
+  color:#fff;
+}
+
+.box{
+  width:92%;
+  max-width:420px;
+  background:rgba(255,255,255,0.06);
+  backdrop-filter: blur(18px);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:22px;
+  padding:22px;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+}
+
+h2{
+  text-align:center;
+  margin-bottom:15px;
+  font-size:20px;
+}
+
+input,select{
+  width:100%;
+  padding:13px;
+  margin:8px 0;
+  border:none;
+  border-radius:12px;
+  background:#151515;
+  color:#fff;
+}
+
+.lang-box{
+  display:flex;
+  gap:15px;
+  margin:10px 0;
+}
+
+button{
+  width:100%;
+  padding:13px;
+  margin-top:10px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,#ff4d6d,#ff006e);
+  color:#fff;
+  font-weight:600;
+  cursor:pointer;
+}
+
+#popup{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  display:none;
+  justify-content:center;
+  align-items:center;
+}
+
+.popup-box{
+  background:#111;
+  padding:25px;
+  border-radius:14px;
+}
+</style>
+<script type="module">
+import { requireAdmin } from "../../admin-auth.js";
+await requireAdmin("../Administrator.html");
+</script>
+</head>
+
+<body>
+
+<button onclick="history.back()" style="position:fixed;top:10px;left:10px;padding:2px 6px;font-size:14px">
+  ←
+</button>
+
+<div class="box">
+  <h2>🔥 เพิ่มอนิเมะ</h2>
+
+  <input id="anime" placeholder="ชื่อ id (Naruto)">
+  <input id="name" placeholder="ชื่อเรื่อง">
+
+<select id="episode">
+  <option value="">เลือกตอน</option>
+  <script>
+    const epSelect = document.getElementById("episode");
+
+for(let i=1;i<=30;i++){
+  const opt = document.createElement("option");
+  opt.value = i;
+  opt.textContent = i;
+  epSelect.appendChild(opt);
+}
+  </script>
+</select>
+
+<div style="display:flex;gap:10px;margin-top:8px;">
+  <button type="button" onclick="changeEp(-1)">◀ ตอนก่อน</button>
+  <button type="button" onclick="changeEp(1)">ตอนถัดไป ▶</button>
+</div>
+
+  <div class="lang-box">
+    <label><input type="checkbox" value="พากย์ไทย"> พากย์ไทย</label>
+    <label><input type="checkbox" value="ซับไทย"> ซับไทย</label>
+  </div>
+
+  <input id="video_url" placeholder="ลิงก์วิดีโอ">
+
+  <div class="btn-row">
+    <button class="btn-left" onclick="pasteText()">วาง</button>
+   
+  </div>
+
+  <input id="desc" placeholder="เรื่องย่อ">
+  <input id="cover" placeholder="ลิงก์รูป">
+
+ <button id="sendBtn">เพิ่มตอน</button>
+
+<div id="popup">
+  <div class="popup-box">
+    <div id="popupText">⏳</div>
+  </div>
+</div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycbxWBZkZyb5NRdMXLkBpwCX-zvDEc2BFSZFPzazKpyWsMSYlD0A7TL8GUP_Esy5MBbbNhg/exec";
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  const btn = document.getElementById("sendBtn");
+
+  const animeInput   = document.getElementById("anime");
+  const nameInput    = document.getElementById("name");
+  const episodeInput = document.getElementById("episode");
+  const videoInput   = document.getElementById("video_url");
+  const descInput    = document.getElementById("desc");
+  const coverInput   = document.getElementById("cover");
+
+  const popup = document.getElementById("popup");
+  const text  = document.getElementById("popupText");
+
+  function getLangs(){
+    return document.querySelectorAll('.lang-box input:checked');
+  }
+
+  function clearInput(){
+    videoInput.value = "";
+  }
+
+  async function send(){
+
+    btn.disabled = true;
+    popup.style.display = "flex";
+    text.innerText = "⏳ กำลังส่ง...";
+
+    try{
+
+      const langs = getLangs();
+
+      if(!animeInput.value.trim() || !nameInput.value.trim() || !episodeInput.value || !videoInput.value.trim()){
+        throw new Error("missing required fields");
+      }
+
+      if(langs.length === 0){
+        throw new Error("no lang");
+      }
+
+      await Promise.all(
+        Array.from(langs).map(lang => {
+
+          const data = {
+            anime: animeInput.value.trim(),
+            name: nameInput.value.trim(),
+            episode: episodeInput.value,
+            title: lang.value,
+            video_url: videoInput.value.trim(),
+            desc: descInput.value.trim(),
+            cover: coverInput.value.trim()
+          };
+
+          return fetch(API, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data)
+          }).then(res => {
+            if(!res.ok) throw new Error("HTTP " + res.status);
+            return res;
+          });
+
+        })
+      );
+
+      text.innerText = "✅ ส่งแล้ว!";
+      clearInput();
+
+    }catch(e){
+      text.innerText = "❌ ส่งไม่สำเร็จ";
+      console.error(e);
+    }
+
+    setTimeout(()=>{
+      popup.style.display = "none";
+      btn.disabled = false;
+    },1200);
+  }
+
+  // 👇 ตรงนี้สำคัญ
+  btn.addEventListener("click", send);
+
+});
+
+/* =========================
+   ปุ่มตอน (ต้องอยู่นอก)
+========================= */
+function changeEp(step){
+  const episodeInput = document.getElementById("episode");
+  let val = parseInt(episodeInput.value);
+
+  if(isNaN(val)) val = 1;
+
+  val += step;
+
+  if(val < 1) val = 1;
+  if(val > 30) val = 30;
+
+  episodeInput.value = val;
+}
+
+/* =========================
+   paste
+========================= */
+async function pasteText(){
+  try {
+    const clip = await navigator.clipboard.readText();
+    document.getElementById("video_url").value = clip;
+  } catch {
+    alert("เบราว์เซอร์ไม่อนุญาต clipboard");
+  }
+}
+</script>
+</body>
+</html>

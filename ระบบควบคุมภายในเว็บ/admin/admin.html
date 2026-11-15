@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anime Admin Dashboard</title>
+
+<style>
+body{
+  margin:0;
+  font-family:system-ui;
+  background:#0b0c14;
+  color:#fff;
+  height:100vh;
+  overflow:hidden;
+}
+
+.wrapper{
+  display:flex;
+  height:100vh;
+}
+
+/* LEFT MENU */
+.sidebar{
+  width:260px;
+  background:#111428;
+  border-right:1px solid rgba(255,255,255,0.1);
+  padding:12px;
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+
+.menu-item{
+  padding:12px;
+  border-radius:10px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.05);
+}
+
+.menu-item.active{
+  background:linear-gradient(90deg,#ff2e88,#00d4ff);
+  color:#000;
+  font-weight:bold;
+}
+
+/* RIGHT */
+.content{
+  flex:1;
+  padding:15px;
+  overflow:auto;
+}
+
+.panel{
+  display:none;
+  background:rgba(255,255,255,0.05);
+  padding:15px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,0.1);
+}
+
+.panel.active{
+  display:block;
+}
+
+.user,.report{
+  padding:8px;
+  border-bottom:1px solid #333;
+  font-size:13px;
+}
+
+.report small{
+  color:#aaa;
+}
+</style>
+</head>
+
+<body>
+
+<div class="wrapper">
+
+<!-- LEFT -->
+<div class="sidebar">
+  <div class="menu-item active" onclick="showPage('online',event)">👥 คนออนไลน์</div>
+  <div class="menu-item" onclick="showPage('top',event)">🔥 Top Anime</div>
+  <div class="menu-item" onclick="showPage('page',event)">📄 Page Stats</div>
+  <div class="menu-item" onclick="showPage('report',event)">📩 ข้อความ</div>
+</div>
+
+<button onclick="location.href='wo.html'" style="
+  position:fixed;
+  bottom:20px;
+  left:160px;
+  padding:12px 16px;
+  border:none;
+  border-radius:10px;
+  background:#00c6ff;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+  z-index:999;
+">
+  Upload a video.
+</button>
+
+<button onclick="location.href='add.html'" style="
+  position:fixed;
+  bottom:20px;
+  left:20px;
+  padding:12px 16px;
+  border:none;
+  border-radius:10px;
+  background:#00c6ff;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+  z-index:999;
+">
+  Upload video
+</button>
+
+<!-- RIGHT -->
+<div class="content">
+
+  <div id="page-online" class="panel active">
+    <h3>👥 คนออนไลน์</h3>
+    <div id="onlineList"></div>
+    <div>จำนวน: <span id="onlineCount">0</span></div>
+  </div>
+
+  <div id="page-top" class="panel">
+    <h3>🔥 Top Anime</h3>
+    <div id="topPage"></div>
+  </div>
+
+  <div id="page-page" class="panel">
+    <h3>📄 Page Stats</h3>
+    <div id="pageList"></div>
+  </div>
+
+<div id="page-report" class="panel">
+  <h3>📩 ข้อความ</h3>
+
+  <iframe 
+    src="รับข้อความ.html"
+    style="
+      width:100%;
+      height:80vh;
+      border:none;
+      border-radius:12px;
+      background:#000;
+    ">
+  </iframe>
+
+</div>
+
+</div>
+
+</div>
+
+<script type="module">
+import { requireAdmin } from "../../admin-auth.js";
+await requireAdmin("../Administrator.html");
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getDatabase,
+  ref,
+  onValue,
+  set,
+  onDisconnect,
+  remove
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+/* ===== CONFIG ===== */
+const firebaseConfig = {
+  apiKey: "AIzaSyC_eG_drnzYDUSyNBapN7kJ7XaYsbkhCwA",
+  authDomain: "mpmp-5864a.firebaseapp.com",
+  databaseURL: "https://mpmp-5864a-default-rtdb.firebaseio.com",
+  projectId: "mpmp-5864a",
+  storageBucket: "mpmp-5864a.firebasestorage.app",
+  messagingSenderId: "220776049054",
+  appId: "1:1071327366091:web:53524fb1e90ba83a12ce8f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* ===== USER ===== */
+const sid = sessionStorage.getItem("sid") || crypto.randomUUID();
+sessionStorage.setItem("sid", sid);
+
+const userRef = ref(db,"onlineUsers/"+sid);
+
+const isAdmin = true;
+
+/* ===== HEARTBEAT ===== */
+function updateUser(){
+  set(userRef,{
+    page: location.pathname,
+    title: isAdmin ? "ADMIN" : document.title,
+    time: Date.now(),
+    role: isAdmin ? "admin" : "user"
+  });
+}
+
+updateUser();
+setInterval(updateUser,8000);
+onDisconnect(userRef).remove();
+
+/* ===== PAGE SWITCH ===== */
+window.showPage = function(page,event){
+
+  document.querySelectorAll(".panel").forEach(p=>{
+    p.classList.remove("active");
+  });
+
+  document.getElementById("page-"+page).classList.add("active");
+
+  document.querySelectorAll(".menu-item").forEach(m=>{
+    m.classList.remove("active");
+  });
+
+  if(event) event.currentTarget.classList.add("active");
+};
+
+/* ===== DASHBOARD ===== */
+onValue(ref(db,"onlineUsers"), snap=>{
+
+  const data = snap.val() || {};
+  const now = Date.now();
+
+  const list = document.getElementById("onlineList");
+  const countEl = document.getElementById("onlineCount");
+  const topBox = document.getElementById("topPage");
+  const pageList = document.getElementById("pageList");
+
+  list.innerHTML = "";
+
+  let count = 0;
+  const pageStats = {};
+  const pageCount = {};
+
+  for(let id in data){
+    const u = data[id];
+
+    if(!u.time || now - u.time > 15000){
+      remove(ref(db,"onlineUsers/"+id));
+      continue;
+    }
+
+    if(u.role === "admin") continue;
+
+    count++;
+
+    pageStats[u.title] = (pageStats[u.title]||0)+1;
+    pageCount[u.page] = (pageCount[u.page]||0)+1;
+
+    list.innerHTML += `
+      <div class="user">
+        👤 ${id}<br>
+        📺 ${u.title}<br>
+        📄 ${u.page}
+      </div>
+    `;
+  }
+
+  countEl.textContent = count;
+
+  topBox.innerHTML =
+    Object.entries(pageStats)
+      .sort((a,b)=>b[1]-a[1])
+      .slice(0,5)
+      .map(([n,v])=>`📺 ${n} (${v})`)
+      .join("<br>");
+
+  pageList.innerHTML =
+    Object.entries(pageCount)
+      .sort((a,b)=>b[1]-a[1])
+      .map(([p,c])=>`📄 ${p} : ${c}`)
+      .join("<br>");
+});
+
+/* ===== REPORT SYSTEM ===== */
+onValue(ref(db,"reports"), snap=>{
+  const data = snap.val() || {};
+  const box = document.getElementById("reportList");
+
+  if(!box) return;
+  box.innerHTML = "";
+
+  Object.entries(data).reverse().forEach(([id,r])=>{
+    box.innerHTML += `
+      <div class="report">
+        📄 ${r.page}<br>
+        📝 ${r.detail}<br>
+        <small>${new Date(r.time).toLocaleString()}</small>
+      </div>
+    `;
+  });
+});
+</script>
+
+</body>
+</html>

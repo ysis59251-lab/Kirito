@@ -1,0 +1,48 @@
+/* AnimeFume Refresh — shared visual system, layered over legacy page styles */
+:root{
+  --af-ink:#f7f7fb;--af-muted:#a4a4b5;--af-bg:#08080d;--af-panel:#13131c;
+  --af-panel-2:#1a1a25;--af-line:rgba(255,255,255,.09);
+  --af-pink:#ff416c;--af-orange:#ff7956;--af-radius:18px;
+}
+html{background:var(--af-bg);scroll-behavior:smooth}
+body{color:var(--af-ink);background:radial-gradient(ellipse at 50% -18%,rgba(255,65,108,.16),transparent 42%),var(--af-bg);-webkit-font-smoothing:antialiased}
+a{ -webkit-tap-highlight-color:transparent }
+button,input,select,textarea{font:inherit}
+button{touch-action:manipulation}
+:focus-visible{outline:2px solid var(--af-pink)!important;outline-offset:3px}
+.header{background:rgba(8,8,13,.9)!important;border-bottom:1px solid var(--af-line);backdrop-filter:blur(20px)!important}
+.header h1{font-weight:900;letter-spacing:.02em;text-shadow:0 5px 28px rgba(255,65,108,.22)}
+.search{border:1px solid var(--af-line)!important;background:var(--af-panel)!important;border-radius:14px!important;min-height:46px;color:var(--af-ink)!important}
+.search:focus{border-color:rgba(255,65,108,.7)!important;box-shadow:0 0 0 3px rgba(255,65,108,.13)!important}
+#menuBtn,#reportBtn{border:1px solid var(--af-line)!important;border-radius:14px!important;box-shadow:0 8px 26px rgba(0,0,0,.35)}
+#menuDropdown{padding:9px!important;border:1px solid var(--af-line)!important;border-radius:18px!important;background:rgba(15,15,22,.98)!important;backdrop-filter:blur(18px)}
+#menuDropdown a{border-radius:11px!important;transition:background .18s ease,color .18s ease}
+#menuDropdown a:hover{background:rgba(255,65,108,.13)!important;color:#fff}
+.hot-section{background:linear-gradient(180deg,rgba(24,18,26,.92),rgba(8,8,13,.3))!important;border-block:1px solid var(--af-line)}
+.hot-section h2{color:#fff!important;-webkit-text-fill-color:#fff!important}
+.hot-card,.anime-card,.sheet2-card{border:1px solid var(--af-line)!important;border-radius:var(--af-radius)!important;background:linear-gradient(155deg,#1b1b26,#101016)!important;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.22);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.hot-card:hover,.anime-card:hover,.sheet2-card:hover{transform:translateY(-3px);border-color:rgba(255,65,108,.38)!important;box-shadow:0 16px 36px rgba(0,0,0,.38)}
+.hot-card img,.anime-card img,.sheet2-card img{display:block}
+.hot-badge,.badge{background:linear-gradient(135deg,var(--af-pink),var(--af-orange))!important;color:#fff!important;border:0}
+.overlay,.title{line-height:1.4;text-shadow:0 2px 8px #000}
+#animeList,.anime-list{max-width:1280px;margin-inline:auto}
+#numberBox{border:1px solid var(--af-line);border-radius:16px;background:rgba(17,17,25,.88)}
+.num{border:1px solid var(--af-line)!important;border-radius:12px!important}
+.num.active{background:linear-gradient(135deg,var(--af-pink),var(--af-orange))!important;color:white!important}
+.af-continue,.af-modal{background:linear-gradient(145deg,#191923,#101016)!important;border:1px solid var(--af-line)!important;border-radius:20px!important}
+.af-continue-card,.af-fav-card{border:1px solid var(--af-line)!important;background:#171720!important;border-radius:14px!important}
+.af-continue-all{color:#ff8da7!important}
+.footer{background:#08080d!important;border-top:1px solid var(--af-line)}
+.footer p{color:var(--af-muted)}
+#backTop,#afFavoritesBtn{box-shadow:0 10px 28px rgba(0,0,0,.45);border:1px solid var(--af-line)}
+@media(min-width:700px){
+  #animeList{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:17px!important;padding:22px!important}
+  .anime-list{grid-template-columns:repeat(auto-fill,minmax(175px,1fr))!important;gap:18px!important}
+  .hot-card{min-width:190px}
+}
+@media(max-width:600px){
+  #animeList,.anime-list{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important;padding:12px 10px!important}
+  .hot-card{min-width:145px}
+  .af-continue{margin-inline:10px}
+}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}

@@ -1,12 +1,12 @@
 {
-  "name": "animefume-clean",
+  "name": "animefume-static",
   "private": true,
   "version": "1.0.0",
-  "description": "AnimeFume clean static foundation",
-  "type": "module",
+  "description": "AnimeFume static website",
   "scripts": {
-    "build": "node tools/check.mjs",
-    "serve": "python3 -m http.server 4173"
+    "build": "node -e \"console.log('AnimeFume static site: no build step required')\""
   },
-  "engines": { "node": ">=20" }
+  "engines": {
+    "node": ">=20"
+  }
 }

@@ -1,1 +1,176 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#090909"><title>AnimeFume — อนิเมะออนไลน์</title><link rel="stylesheet" href="styles.css"></head><body><div id="bg"></div><header class="legacy-header"><button id="menuBtn" class="icon-btn" aria-label="เปิดเมนู">☰</button><div class="logo">Anime<span>Fume</span></div><button id="favBtn" class="icon-btn" aria-label="รายการโปรด">☆</button><div id="menuDropdown" class="menu" aria-hidden="true"><a href="./">หน้าหลัก</a><a href="search.html">ค้นหาอนิเมะ</a><a href="favorites.html">รายการโปรด</a><a href="history.html">ประวัติการดู</a><a href="admin.html">ระบบแอดมิน</a></div></header><main class="legacy-shell"><section class="search-bar"><input id="searchInput" type="search" placeholder="ค้นหาอนิเมะ..." autocomplete="off"><a href="search.html" class="search-submit">⌕</a></section><section class="hot-section"><div class="section-title"><h2>🔥 ยอดฮิต</h2><a href="search.html">ดูทั้งหมด</a></div><div id="hotSlider" class="hot-slider"></div></section><section class="continue-section"><div class="section-title"><h2>▶ ดูต่อจากเดิม</h2><a href="history.html">ดูประวัติ</a></div><div id="continueList" class="continue-list"></div></section><section class="catalog-section"><div class="section-title"><h2>อนิเมะทั้งหมด</h2><span id="status" class="status">กำลังโหลด...</span></div><div id="animeList" class="anime-grid" aria-live="polite"></div><nav id="pagination" class="pagination" aria-label="เปลี่ยนหน้า"></nav></section></main><nav class="bottom-nav"><a class="active" href="./">⌂<small>หน้าแรก</small></a><a href="search.html">⌕<small>ค้นหา</small></a><a href="favorites.html">☆<small>โปรด</small></a><a href="history.html">◷<small>ประวัติ</small></a></nav><div id="toast" class="toast" role="status"></div><script type="module" src="src/home.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#050505">
+  <meta name="description" content="AnimeFume - เว็บไซต์ดูอนิเมะ">
+  <title>AnimeFume</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --accent-cyan: #00ffcc;
+      --accent-pink: #ff00aa;
+      --surface: #151515;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      padding: max(20px, env(safe-area-inset-top))
+        max(20px, env(safe-area-inset-right))
+        max(20px, env(safe-area-inset-bottom))
+        max(20px, env(safe-area-inset-left));
+      background:
+        radial-gradient(circle at 50% 45%, #151515 0, #050505 48%, #000 100%);
+      color: #fff;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    .bg {
+      position: fixed;
+      inset: -20%;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle, rgba(0, 255, 204, .14), transparent 28%),
+        radial-gradient(circle at 75% 25%, rgba(255, 0, 170, .12), transparent 30%);
+      filter: blur(25px);
+      animation: float 5s ease-in-out infinite alternate;
+    }
+
+    .loading {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 360px);
+      text-align: center;
+    }
+
+    .ring {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto;
+      border: 4px solid rgba(255, 255, 255, .1);
+      border-top-color: var(--accent-cyan);
+      border-right-color: var(--accent-pink);
+      border-radius: 50%;
+      box-shadow: 0 0 28px rgba(0, 255, 204, .35);
+      animation: spin .8s linear infinite;
+    }
+
+    .title {
+      margin-top: 20px;
+      font-size: clamp(25px, 7vw, 30px);
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .text {
+      min-height: 22px;
+      margin-top: 8px;
+      color: #aaa;
+      font-size: 14px;
+    }
+
+    .fallback {
+      display: inline-flex;
+      min-height: 44px;
+      align-items: center;
+      justify-content: center;
+      margin-top: 18px;
+      padding: 10px 18px;
+      border: 1px solid #383838;
+      border-radius: 12px;
+      background: var(--surface);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 650;
+      text-decoration: none;
+      transition: border-color .2s ease, transform .2s ease;
+    }
+
+    .fallback:focus-visible {
+      outline: 2px solid var(--accent-cyan);
+      outline-offset: 3px;
+    }
+
+    .fallback:active {
+      transform: scale(.97);
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes float {
+      from {
+        transform: translate3d(-2%, -1%, 0) scale(1);
+      }
+      to {
+        transform: translate3d(2%, 1%, 0) scale(1.05);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg" aria-hidden="true"></div>
+
+  <main class="loading" aria-live="polite">
+    <div class="ring" aria-hidden="true"></div>
+    <div class="title">AnimeFume</div>
+    <p class="text" id="status">กำลังเปิดเว็บไซต์...</p>
+  </main>
+
+  <script>
+    (() => {
+      "use strict";
+
+      const status = document.getElementById("status");
+      let redirected = false;
+
+      function openHome() {
+        if (redirected) return;
+        redirected = true;
+        status.textContent = "กำลังเข้าสู่หน้าแรก...";
+        window.location.replace("home.html");
+      }
+
+      // เปิดหน้าแรกอัตโนมัติ แต่ยังคงปุ่มสำรองไว้ให้กดได้
+      window.setTimeout(openHome, 1200);
+
+    })();
+  </script>
+<script type="module" src="animefume-realtime.js"></script>
+</body>
+</html>

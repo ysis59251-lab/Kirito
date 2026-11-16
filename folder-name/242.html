@@ -445,5 +445,6 @@ document.getElementById("modal").onclick=closeModal;
 
 <script src="../player-system.js"></script>
 <script type="module" src="../animefume-realtime.js"></script>
+<script>window.addEventListener("unhandledrejection",()=>{const e=document.getElementById("nowEp");if(e)e.textContent="⚠️ โหลดข้อมูลตอนไม่สำเร็จ กรุณาลองใหม่"});window.addEventListener("error",()=>{const e=document.getElementById("nowEp");if(e&&e.textContent.includes("กำลังโหลด"))e.textContent="⚠️ โหลดข้อมูลตอนไม่สำเร็จ กรุณาลองใหม่"});</script>
 </body>
 </html>

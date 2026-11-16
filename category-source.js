@@ -88,6 +88,21 @@
     document.getElementById('afLoading')?.classList.add('af-load-hide');
   };
 
+  const showError = (message) => {
+    const list = document.getElementById('animeList');
+    if (!list) return;
+    list.replaceChildren();
+    const box = document.createElement('div');
+    box.className = 'empty-state';
+    box.textContent = message;
+    const retry = document.createElement('button');
+    retry.type = 'button';
+    retry.textContent = 'ลองใหม่';
+    retry.addEventListener('click', () => { box.textContent = 'กำลังโหลด...'; load(); });
+    box.append(' ', retry);
+    list.append(box);
+  };
+
   const setupSearch = () => {
     const input = document.querySelector('.search');
     if (!input) return;
@@ -124,6 +139,7 @@
     } catch (error) {
       console.warn('AnimeFume category source unavailable', error);
       document.getElementById('afLoading')?.classList.add('af-load-hide');
+      showError('โหลดรายการไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่');
     }
   };
 

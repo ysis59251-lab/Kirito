@@ -1,0 +1,42 @@
+/* AniStream-inspired visual layer for AnimeFume. Data and navigation stay unchanged. */
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+
+:root{
+  --af-bg:#0b0d14;
+  --af-surface:#141824;
+  --af-elevated:#1c2233;
+  --af-pink:#ff3b6b;
+  --af-violet:#7c3aed;
+}
+
+html,body{font-family:'Prompt','Segoe UI',sans-serif;background:var(--af-bg);color:#f8fafc}
+body{background:var(--af-bg)}
+#bg{opacity:.18;filter:saturate(.75);background-color:var(--af-bg)}
+.header{background:rgba(11,13,20,.86);border-bottom:1px solid rgba(255,255,255,.07);box-shadow:0 12px 32px rgba(0,0,0,.18)}
+.header h1{font-weight:700;letter-spacing:-.03em;background:linear-gradient(90deg,#fff,var(--af-pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.search{background:var(--af-surface);border:1px solid rgba(255,255,255,.1);border-radius:14px;box-shadow:inset 0 1px rgba(255,255,255,.03);font-family:inherit}
+.search:focus{border-color:var(--af-pink);box-shadow:0 0 0 3px rgba(255,59,107,.14)}
+#menuBtn{color:#fff;background:var(--af-surface);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:5px 10px;font-size:22px;line-height:1}
+#menuDropdown{background:rgba(20,24,36,.98);border:1px solid rgba(255,255,255,.1);box-shadow:0 16px 38px rgba(0,0,0,.42);border-radius:16px;overflow:hidden}
+#menuDropdown a{font-family:inherit;padding:11px 16px}
+#menuDropdown a:hover{background:rgba(255,59,107,.12);color:#ff8da9}
+.hot-section{background:linear-gradient(135deg,rgba(20,24,36,.94),rgba(28,34,51,.8));border:1px solid rgba(255,255,255,.07);border-radius:24px;padding:18px 16px;box-shadow:0 14px 36px rgba(0,0,0,.18)}
+.hot-section h2{font-weight:600}
+.hot-slider{scrollbar-width:none}
+.hot-slider::-webkit-scrollbar{display:none}
+.anime-list{background:transparent}
+.anime-card{background:var(--af-surface);border:1px solid rgba(255,255,255,.06);border-radius:17px;box-shadow:0 8px 22px rgba(0,0,0,.2);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.anime-card:hover{transform:translateY(-4px);border-color:rgba(255,59,107,.45);box-shadow:0 14px 30px rgba(255,59,107,.12)}
+.card-img{border-radius:16px}
+.card-img img{background:var(--af-elevated)}
+.overlay{background:linear-gradient(transparent,rgba(11,13,20,.96));font-weight:500}
+#numberBox .num.active,.num.active{background:linear-gradient(135deg,var(--af-pink),var(--af-violet));border-color:transparent}
+#backTop{background:linear-gradient(135deg,var(--af-pink),var(--af-violet));box-shadow:0 8px 22px rgba(255,59,107,.25)}
+@media (max-width:600px){
+  .header{text-align:left;padding:13px 58px 13px 58px}
+  .header h1{font-size:22px}
+  .hot-section{margin:8px 10px;padding:14px 12px;border-radius:20px}
+  .anime-list{padding:14px 10px;gap:12px}
+  .anime-card{border-radius:14px}
+  .card-img{border-radius:13px}
+}

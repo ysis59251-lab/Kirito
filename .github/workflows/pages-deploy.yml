@@ -38,15 +38,8 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p _site
-          rsync -a \
-            --exclude='.git/' \
-            --exclude='.github/' \
-            --exclude='admin-android/' \
-            --exclude='tools/' \
-            --exclude='node_modules/' \
-            --exclude='Downloads/' \
-            --exclude='_site/' \
-            ./ _site/
+          git archive --format=tar HEAD | tar -xf - -C _site
+          rm -rf _site/.git _site/.github _site/admin-android _site/tools _site/node_modules _site/Downloads _site/_site
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:

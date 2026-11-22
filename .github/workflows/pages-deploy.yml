@@ -41,7 +41,7 @@ jobs:
           git archive --format=tar HEAD | tar -xf - -C _site
           rm -rf _site/.git _site/.github _site/admin-android _site/tools _site/node_modules _site/Downloads _site/_site
       - name: Upload site artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-pages-artifact@v4
         with:
           name: github-pages
           path: _site

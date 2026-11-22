@@ -61,6 +61,11 @@ data class Assistant(val uid: String, val email: String, val role: String, val a
 
 data class AdminSession(val uid: String, val role: String, val email: String)
 
+private fun readBoolean(snapshot: DataSnapshot, child: String): Boolean {
+    val value = snapshot.child(child).value
+    return value == true || value?.toString()?.equals("true", ignoreCase = true) == true
+}
+
 @Composable
 private fun AnimeFumeAdminApp() {
     val auth = remember { FirebaseAuth.getInstance() }
@@ -94,7 +99,7 @@ private fun AnimeFumeAdminApp() {
             database.getReference("adminUsers/$checkedUid").get()
                 .addOnSuccessListener { snapshot ->
                     if (auth.currentUser?.uid != checkedUid) return@addOnSuccessListener
-                    val active = snapshot.exists() && (snapshot.child("active").getValue(Boolean::class.java) == true || snapshot.child("active").getValue(String::class.java)?.equals("true", ignoreCase = true) == true)
+                    val active = snapshot.exists() && readBoolean(snapshot, "active")
                     val role = snapshot.child("role").getValue(String::class.java) ?: "admin"
                     val email = snapshot.child("email").getValue(String::class.java) ?: fallbackEmail
                     session = if (active) AdminSession(checkedUid, role, email) else null
@@ -120,7 +125,7 @@ private fun AnimeFumeAdminApp() {
         val ref = database.getReference("adminUsers/$checkedUid")
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val active = snapshot.child("active").getValue(Boolean::class.java) == true || snapshot.child("active").getValue(String::class.java)?.equals("true", ignoreCase = true) == true
+                val active = readBoolean(snapshot, "active")
                 if (!active && auth.currentUser?.uid == checkedUid) {
                     session = null
                     error = "สิทธิ์ผู้ดูแลถูกปิดใช้งานแล้ว"
@@ -499,7 +504,7 @@ private fun AssistantsScreen(session: AdminSession) {
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 assistants = snapshot.children.mapNotNull { child ->
-                    val active = child.child("active").getValue(Boolean::class.java) == true || child.child("active").getValue(String::class.java)?.equals("true", ignoreCase = true) == true
+                    val active = readBoolean(child, "active")
                     val childUid = child.key.orEmpty().trim()
                     if (childUid.isBlank()) return@mapNotNull null
                     Assistant(childUid, child.child("email").getValue(String::class.java).orEmpty(), child.child("role").getValue(String::class.java) ?: "admin", active)

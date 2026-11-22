@@ -70,17 +70,34 @@ private fun AnimeFumeAdminApp() {
     var checking by remember { mutableStateOf(user != null) }
     var error by remember { mutableStateOf<String?>(null) }
 
+    DisposableEffect(auth) {
+        val authListener = FirebaseAuth.AuthStateListener { changedAuth ->
+            val changedUser = changedAuth.currentUser
+            if (changedUser?.uid != user?.uid) {
+                user = changedUser
+                if (changedUser == null) { session = null; checking = false }
+            }
+        }
+        auth.addAuthStateListener(authListener)
+        onDispose { auth.removeAuthStateListener(authListener) }
+    }
+
     LaunchedEffect(user?.uid) {
-        if (user == null) { session = null; checking = false; return@LaunchedEffect }
+        val checkedUser = user
+        if (checkedUser == null) { session = null; checking = false; return@LaunchedEffect }
+        val checkedUid = checkedUser.uid
+        val fallbackEmail = checkedUser.email.orEmpty()
         checking = true
         database.goOnline()
         fun checkAdmin(attempt: Int) {
-            database.getReference("adminUsers/${user!!.uid}").get()
+            if (auth.currentUser?.uid != checkedUid) return
+            database.getReference("adminUsers/$checkedUid").get()
                 .addOnSuccessListener { snapshot ->
+                    if (auth.currentUser?.uid != checkedUid) return@addOnSuccessListener
                     val active = snapshot.exists() && (snapshot.child("active").getValue(Boolean::class.java) == true || snapshot.child("active").getValue(String::class.java)?.equals("true", ignoreCase = true) == true)
                     val role = snapshot.child("role").getValue(String::class.java) ?: "admin"
-                    val email = snapshot.child("email").getValue(String::class.java) ?: user!!.email.orEmpty()
-                    session = if (active) AdminSession(user!!.uid, role, email) else null
+                    val email = snapshot.child("email").getValue(String::class.java) ?: fallbackEmail
+                    session = if (active) AdminSession(checkedUid, role, email) else null
                     error = if (!active) "บัญชีนี้ยังไม่ได้รับสิทธิ์ผู้ดูแลระบบ" else null
                     checking = false
                 }
@@ -95,6 +112,25 @@ private fun AnimeFumeAdminApp() {
                 }
         }
         checkAdmin(0)
+    }
+
+    DisposableEffect(user?.uid) {
+        val checkedUid = user?.uid
+        if (checkedUid == null) return@DisposableEffect onDispose { }
+        val ref = database.getReference("adminUsers/$checkedUid")
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val active = snapshot.child("active").getValue(Boolean::class.java) == true || snapshot.child("active").getValue(String::class.java)?.equals("true", ignoreCase = true) == true
+                if (!active && auth.currentUser?.uid == checkedUid) {
+                    session = null
+                    error = "สิทธิ์ผู้ดูแลถูกปิดใช้งานแล้ว"
+                    auth.signOut()
+                }
+            }
+            override fun onCancelled(error: DatabaseError) { }
+        }
+        ref.addValueEventListener(listener)
+        onDispose { ref.removeEventListener(listener) }
     }
 
     MaterialTheme(colorScheme = darkColorScheme(primary = Mint, background = Bg, surface = Panel, onSurface = Color.White)) {
@@ -146,8 +182,8 @@ private fun LoginScreen(error: String?, onLogin: (String, String) -> Unit) {
 @Composable
 private fun AdminConsole(session: AdminSession, onSignOut: () -> Unit) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("ภาพรวม", "รายงาน", "ประกาศ", "จัดการอนิเมะ", "เพิ่มตอน", "ผู้ช่วย")
-    Scaffold(topBar = { TopAppBar(title = { Column { Text("AnimeFume Admin", fontWeight = FontWeight.Bold); Text("${session.role} • ${session.email}", color = Muted, style = MaterialTheme.typography.labelSmall) } }, actions = { IconButton(onClick = onSignOut) { Icon(Icons.Default.Logout, "ออกจากระบบ") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Bg)) }, bottomBar = { NavigationBar(containerColor = Panel) { tabs.forEachIndexed { index, label -> NavigationBarItem(selected = tab == index, onClick = { tab = index }, icon = { Icon(listOf(Icons.Default.Dashboard, Icons.Default.ReportProblem, Icons.Default.Campaign, Icons.Default.Layers, Icons.Default.VideoLibrary, Icons.Default.GroupAdd)[index], null) }, label = { Text(label) }) } } }, containerColor = Bg) { padding ->
+    val tabs = listOf("ภาพรวม", "รายงาน", "ประกาศ", "จัดการอนิเมะ", "เพิ่มตอน", "Overlay", "ผู้ช่วย")
+    Scaffold(topBar = { TopAppBar(title = { Column { Text("AnimeFume Admin", fontWeight = FontWeight.Bold); Text("${session.role} • ${session.email}", color = Muted, style = MaterialTheme.typography.labelSmall) } }, actions = { IconButton(onClick = onSignOut) { Icon(Icons.Default.Logout, "ออกจากระบบ") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Bg)) }, bottomBar = { NavigationBar(containerColor = Panel) { tabs.forEachIndexed { index, label -> NavigationBarItem(selected = tab == index, onClick = { tab = index }, icon = { Icon(listOf(Icons.Default.Dashboard, Icons.Default.ReportProblem, Icons.Default.Campaign, Icons.Default.Layers, Icons.Default.VideoLibrary, Icons.Default.Image, Icons.Default.GroupAdd)[index], null) }, label = { Text(label) }) } } }, containerColor = Bg) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
             when (tab) {
                 0 -> OverviewScreen(session)
@@ -155,6 +191,7 @@ private fun AdminConsole(session: AdminSession, onSignOut: () -> Unit) {
                 2 -> AnnouncementScreen(session.role)
                 3 -> AnimeManagementScreen(session.role)
                 4 -> AddEpisodeScreen(session.uid)
+                5 -> OverlayScreen(session.role)
                 else -> AssistantsScreen(session)
             }
         }
@@ -337,7 +374,22 @@ private fun AnnouncementScreen(role: String) {
     }
     LazyColumn(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(bottom = 20.dp)) {
         item { Text("ประกาศหน้าเว็บ", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("เปิด/ปิดประกาศแบบเรียลไทม์", color = Muted) }
-        if (role == "owner") item { Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) { Text("สร้างประกาศ", fontWeight = FontWeight.Bold); OutlinedTextField(title, { title = it }, Modifier.fillMaxWidth(), label = { Text("หัวข้อ") }); OutlinedTextField(body, { body = it }, Modifier.fillMaxWidth(), label = { Text("รายละเอียด") }); Button({ database.getReference("siteConfig/announcement").setValue(mapOf("title" to title.trim(), "body" to body.trim(), "active" to true, "updatedAt" to System.currentTimeMillis())); title = ""; body = ""; status = "สร้างประกาศแล้ว" }, enabled = title.isNotBlank() && body.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("เผยแพร่ประกาศ") }; if (status != null) Text(status!!, color = Mint) } } }
+        if (role == "owner") item {
+            Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("สร้างประกาศ", fontWeight = FontWeight.Bold)
+                    OutlinedTextField(title, { title = it }, Modifier.fillMaxWidth(), label = { Text("หัวข้อ") })
+                    OutlinedTextField(body, { body = it }, Modifier.fillMaxWidth(), label = { Text("รายละเอียด") })
+                    Button({
+                        val data = mapOf("title" to title.trim(), "body" to body.trim(), "active" to true, "updatedAt" to System.currentTimeMillis())
+                        database.getReference("siteConfig/announcement").setValue(data)
+                            .addOnSuccessListener { title = ""; body = ""; status = "สร้างประกาศแล้ว" }
+                            .addOnFailureListener { status = "เผยแพร่ไม่สำเร็จ: ${it.localizedMessage ?: "ตรวจสอบสิทธิ์ Firebase"}" }
+                    }, enabled = title.isNotBlank() && body.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("เผยแพร่ประกาศ") }
+                    if (status != null) Text(status!!, color = if (status!!.contains("ไม่สำเร็จ")) Danger else Mint)
+                }
+            }
+        }
         items(announcements, key = { it.id }) { announcement -> AnnouncementCard(announcement, database, role == "owner") }
     }
 }
@@ -527,10 +579,15 @@ private fun sendEpisode(uid: String, anime: String, name: String, episode: Strin
             languages.forEach { language ->
                 val payload = JSONObject().apply { put("anime", anime.trim()); put("name", name.trim()); put("episode", episode.trim()); put("title", language); put("video_url", cleanVideo); put("desc", desc.trim()); put("cover", cleanCover); put("adminUid", uid) }
                 val connection = URL(API_URL).openConnection() as HttpURLConnection
-                connection.requestMethod = "POST"; connection.doOutput = true; connection.setRequestProperty("Content-Type", "application/json")
-                connection.outputStream.use { it.write(payload.toString().toByteArray()) }
-                if (connection.responseCode !in 200..299) throw IllegalStateException("HTTP ${connection.responseCode}")
-                connection.disconnect()
+                try {
+                    connection.requestMethod = "POST"; connection.doOutput = true; connection.connectTimeout = 15000; connection.readTimeout = 30000; connection.setRequestProperty("Content-Type", "application/json")
+                    connection.outputStream.use { it.write(payload.toString().toByteArray()) }
+                    if (connection.responseCode !in 200..299) throw IllegalStateException("HTTP ${connection.responseCode}")
+                    val response = connection.inputStream.bufferedReader().use { it.readText() }
+                    if (response.contains("error", ignoreCase = true) || response.contains("ไม่สำเร็จ", ignoreCase = true)) throw IllegalStateException("เซิร์ฟเวอร์ปฏิเสธข้อมูล")
+                } finally {
+                    connection.disconnect()
+                }
                 completed++
             }
             Handler(Looper.getMainLooper()).post { done("สำเร็จ: เพิ่ม $completed รายการแล้ว") }

@@ -436,16 +436,22 @@ private fun OverlayScreen(role: String) {
 
 @Composable
 private fun AssistantsScreen(session: AdminSession) {
-    val db = remember { FirebaseDatabase.getInstance(RTDB_URL) }; var assistants by remember { mutableStateOf<List<Assistant>>(emptyList()) }; var uid by remember { mutableStateOf("") }; var email by remember { mutableStateOf("") }; var status by remember { mutableStateOf<String?>(null) }
+    val db = remember { FirebaseDatabase.getInstance(RTDB_URL) }
+    var assistants by remember { mutableStateOf<List<Assistant>>(emptyList()) }
+    var uid by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var status by remember { mutableStateOf<String?>(null) }
+    var saving by remember { mutableStateOf(false) }
     DisposableEffect(Unit) {
         val ref = db.getReference("adminUsers")
         val listener = object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 assistants = snapshot.children.mapNotNull { child ->
                     val active = child.child("active").getValue(Boolean::class.java) == true || child.child("active").getValue(String::class.java)?.equals("true", ignoreCase = true) == true
-                    if (!active) return@mapNotNull null
-                    Assistant(child.key.orEmpty(), child.child("email").getValue(String::class.java).orEmpty(), child.child("role").getValue(String::class.java) ?: "admin", true)
-                }
+                    val childUid = child.key.orEmpty().trim()
+                    if (childUid.isBlank()) return@mapNotNull null
+                    Assistant(childUid, child.child("email").getValue(String::class.java).orEmpty(), child.child("role").getValue(String::class.java) ?: "admin", active)
+                }.sortedWith(compareByDescending<Assistant> { it.active }.thenBy { it.role != "owner" }.thenBy { it.email.ifBlank { it.uid }.lowercase() })
             }
             override fun onCancelled(error: DatabaseError) { status = "อ่านรายชื่อผู้ช่วยไม่สำเร็จ: ${error.message}" }
         }
@@ -453,9 +459,45 @@ private fun AssistantsScreen(session: AdminSession) {
         onDispose { ref.removeEventListener(listener) }
     }
     LazyColumn(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(bottom = 20.dp)) {
-        item { Text("ผู้ช่วยแอดมิน", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("จัดการเฉพาะบัญชีที่มีอยู่ใน Firebase Authentication", color = Muted) }
-        if (session.role == "owner") item { Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) { Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) { EpisodeField("Firebase UID", uid) { uid = it }; EpisodeField("อีเมลสำหรับแสดงผล", email, KeyboardType.Email) { email = it }; Button({ val cleanUid = uid.trim(); try { db.getReference("adminUsers/$cleanUid").updateChildren(mapOf("active" to true, "role" to "admin", "email" to email.trim())).addOnSuccessListener { status = "เพิ่มผู้ช่วยแล้ว" }.addOnFailureListener { status = "เพิ่มไม่สำเร็จ: ${it.localizedMessage ?: "ตรวจสอบสิทธิ์ Firebase"}" }; uid = ""; email = "" } catch (error: IllegalArgumentException) { status = "UID ไม่ถูกต้อง: ห้ามมี . # $ [ ] หรือ /" } }, enabled = uid.isNotBlank() && uid.none { it == '.' || it == '#' || it == '$' || it == '[' || it == ']' || it == '/' }, modifier = Modifier.fillMaxWidth()) { Text("เพิ่มผู้ช่วย") }; if (status != null) Text(status!!, color = Mint) } } }
-        items(assistants, key = { it.uid }) { assistant -> Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(14.dp)) { Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) { Icon(if (assistant.role == "owner") Icons.Default.VerifiedUser else Icons.Default.Person, null, tint = if (assistant.role == "owner") Warning else Mint); Spacer(Modifier.width(10.dp)); Column(Modifier.weight(1f)) { Text(assistant.email.ifBlank { assistant.uid }, fontWeight = FontWeight.Bold); Text("${assistant.role} • active", color = Muted, style = MaterialTheme.typography.bodySmall) }; if (session.role == "owner" && assistant.uid != session.uid) TextButton({ db.getReference("adminUsers/${assistant.uid}").updateChildren(mapOf("active" to false)) }) { Text("ปิดสิทธิ์", color = Danger) } } } }
+        item { Text("ผู้ช่วยแอดมิน", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold); Text("จัดการสิทธิ์จาก Firebase Realtime Database โดยไม่สร้างบัญชีซ้ำ", color = Muted) }
+        if (session.role == "owner") item {
+            Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("เพิ่มหรือเปิดสิทธิ์ผู้ช่วย", fontWeight = FontWeight.Bold)
+                    Text("ผู้ช่วยต้องมีบัญชี Firebase Authentication อยู่ก่อน แล้วคัดลอก UID มาใส่ที่นี่", color = Muted, style = MaterialTheme.typography.bodySmall)
+                    EpisodeField("Firebase UID", uid) { uid = it }
+                    EpisodeField("อีเมลสำหรับแสดงผล (ไม่บังคับ)", email, KeyboardType.Email) { email = it }
+                    Button(onClick = {
+                        val cleanUid = uid.trim()
+                        val cleanEmail = email.trim()
+                        when {
+                            cleanUid == session.uid -> status = "ไม่สามารถเปลี่ยนบัญชีเจ้าของเป็นผู้ช่วยได้"
+                            cleanUid.isBlank() || cleanUid.any { it == '.' || it == '#' || it == '$' || it == '[' || it == ']' || it == '/' } -> status = "UID ไม่ถูกต้อง: ห้ามมี . # $ [ ] หรือ /"
+                            cleanEmail.isNotBlank() && !android.util.Patterns.EMAIL_ADDRESS.matcher(cleanEmail).matches() -> status = "รูปแบบอีเมลไม่ถูกต้อง"
+                            else -> {
+                                saving = true
+                                db.getReference("adminUsers/$cleanUid").updateChildren(mapOf("active" to true, "role" to "admin", "email" to cleanEmail))
+                                    .addOnSuccessListener { status = "เปิดสิทธิ์ผู้ช่วยแล้ว"; uid = ""; email = ""; saving = false }
+                                    .addOnFailureListener { status = "บันทึกไม่สำเร็จ: ${it.localizedMessage ?: "ตรวจสอบสิทธิ์ Firebase"}"; saving = false }
+                            }
+                        }
+                    }, enabled = !saving, modifier = Modifier.fillMaxWidth()) { if (saving) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp) else Text("บันทึกผู้ช่วย") }
+                    if (status != null) Text(status!!, color = if (status!!.contains("สำเร็จ") || status!!.contains("แล้ว")) Mint else Danger, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        }
+        item { Text("รายชื่อและสถานะสิทธิ์", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold) }
+        if (assistants.isEmpty()) item { EmptyCard("ยังไม่มีข้อมูลผู้ช่วย") }
+        items(assistants, key = { it.uid }) { assistant ->
+            Card(colors = CardDefaults.cardColors(containerColor = if (assistant.active) Panel else Panel2), shape = RoundedCornerShape(14.dp)) {
+                Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(if (assistant.role == "owner") Icons.Default.VerifiedUser else Icons.Default.Person, null, tint = if (assistant.role == "owner") Warning else Mint)
+                    Spacer(Modifier.width(10.dp))
+                    Column(Modifier.weight(1f)) { Text(assistant.email.ifBlank { assistant.uid }, fontWeight = FontWeight.Bold); Text("${assistant.role} • ${if (assistant.active) "ใช้งานอยู่" else "ปิดสิทธิ์"}", color = if (assistant.active) Mint else Muted, style = MaterialTheme.typography.bodySmall); if (assistant.email.isNotBlank()) Text(assistant.uid, color = Muted, style = MaterialTheme.typography.labelSmall) }
+                    if (session.role == "owner" && assistant.uid != session.uid) TextButton(onClick = { db.getReference("adminUsers/${assistant.uid}").updateChildren(mapOf("active" to !assistant.active)).addOnSuccessListener { status = if (assistant.active) "ปิดสิทธิ์แล้ว" else "เปิดสิทธิ์แล้ว" }.addOnFailureListener { status = "เปลี่ยนสิทธิ์ไม่สำเร็จ: ${it.localizedMessage ?: "ตรวจสอบสิทธิ์ Firebase"}" } }) { Text(if (assistant.active) "ปิดสิทธิ์" else "เปิดสิทธิ์", color = if (assistant.active) Danger else Mint) }
+                }
+            }
+        }
     }
 }
 

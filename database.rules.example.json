@@ -11,9 +11,9 @@
     },
     "onlineUsers": {
       "$sid": {
-        ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true",
+        ".read": "auth != null && (auth.uid === $sid || root.child('adminUsers').child(auth.uid).child('active').val() === true)",
         ".write": "auth != null && (auth.token.firebase.sign_in_provider === 'anonymous' || root.child('adminUsers').child(auth.uid).child('active').val() === true)",
-        ".validate": "newData.hasChildren(['time', 'page']) && newData.child('time').isNumber()"
+        ".validate": "newData.hasChildren(['time', 'page']) && newData.child('time').isNumber() && newData.child('page').isString()"
       }
     },
     "blockedSessions": {
@@ -23,15 +23,15 @@
       }
     },
     "settings": {
-      ".read": true,
+      ".read": "auth != null",
       ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() === 'owner'"
     },
     "siteConfig": {
-      ".read": true,
+      ".read": "auth != null",
       ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() === 'owner'"
     },
     "contentOverrides": {
-      ".read": true,
+      ".read": "auth != null",
       ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() in ['owner', 'admin']"
     },
     "reports": {
@@ -43,6 +43,13 @@
     "videoImports": {
       ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true",
       ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true"
+    },
+    "animeViews": {
+      "$animeId": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.token.firebase.sign_in_provider === 'anonymous'",
+        ".validate": "newData.isNumber() && newData.val() >= 0"
+      }
     }
   }
 }

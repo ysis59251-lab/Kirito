@@ -589,13 +589,19 @@ private fun sendEpisode(uid: String, anime: String, name: String, episode: Strin
                     connection.outputStream.use { it.write(payload.toString().toByteArray()) }
                     if (connection.responseCode !in 200..299) throw IllegalStateException("HTTP ${connection.responseCode}")
                     val response = connection.inputStream.bufferedReader().use { it.readText() }
-                    if (response.contains("error", ignoreCase = true) || response.contains("ไม่สำเร็จ", ignoreCase = true)) throw IllegalStateException("เซิร์ฟเวอร์ปฏิเสธข้อมูล")
+                    val contentType = connection.contentType.orEmpty().lowercase()
+                    val looksLikeLoginPage = contentType.contains("text/html") || response.contains("accounts.google.com", ignoreCase = true) || response.contains("Google Sign-in", ignoreCase = true)
+                    if (looksLikeLoginPage) throw IllegalStateException("Apps Script ต้องเปิดให้แอปเรียกใช้งานได้ หรือ endpoint หมดอายุ")
+                    if (response.contains("error", ignoreCase = true) || response.contains("ไม่สำเร็จ", ignoreCase = true) || response.contains("success\":false", ignoreCase = true)) throw IllegalStateException("เซิร์ฟเวอร์ปฏิเสธข้อมูล")
                 } finally {
                     connection.disconnect()
                 }
                 completed++
             }
             Handler(Looper.getMainLooper()).post { done("สำเร็จ: เพิ่ม $completed รายการแล้ว") }
-        } catch (e: Exception) { Handler(Looper.getMainLooper()).post { done("ส่งไม่สำเร็จ: ตรวจสอบข้อมูลและอินเทอร์เน็ต (${e.localizedMessage ?: "ไม่ทราบสาเหตุ"})") } }
+        } catch (e: Exception) {
+            val progress = if (completed > 0) " เพิ่มสำเร็จแล้ว $completed/${languages.size} รายการ ห้ามกดซ้ำจนกว่าจะตรวจสอบข้อมูลในชีตก่อน" else ""
+            Handler(Looper.getMainLooper()).post { done("ส่งไม่สำเร็จ.$progress สาเหตุ: ${e.localizedMessage ?: "ไม่ทราบสาเหตุ"}") }
+        }
     }.start()
 }

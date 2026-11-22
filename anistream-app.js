@@ -2,7 +2,7 @@
   'use strict';
   const FAV_KEY = 'animefume_favorites_v2';
   const HISTORY_KEY = 'animefume_watch_history_v2';
-  const state = { items: [], query: '', category: 'all', page: 1 };
+  const state = { items: [], query: '', category: 'all', page: 1, homePage: 1 };
   const PAGE_SIZE = 20;
   const $ = (selector) => document.querySelector(selector);
   const clean = (value) => String(value ?? '').trim();
@@ -53,11 +53,16 @@
   function renderHome() {
     const items = state.items; const hero = $('#hero'); const main = items[0];
     if (hero && main) { hero.style.setProperty('--hero-image', `url("${clean(main.image).replace(/"/g, '')}")`); hero.innerHTML = ''; const copy = document.createElement('div'); copy.className = 'hero-copy'; const eyebrow = document.createElement('div'); eyebrow.className = 'eyebrow'; eyebrow.textContent = 'AnimeFume • อัปเดตล่าสุด'; const h = document.createElement('h1'); h.textContent = titleOf(main); const p = document.createElement('p'); p.textContent = 'เลือกดูอนิเมะที่คุณชอบจากรายการล่าสุดของเรา'; const button = document.createElement('a'); button.className = 'primary'; button.href = normalizeLink(main); button.textContent = 'เริ่มดูเลย'; copy.append(eyebrow, h, p, button); hero.append(copy); }
-    renderGrid('#latest-grid', items.slice(0, 20)); renderContinue();
+    const totalPages = Math.max(1, Math.ceil(items.length / PAGE_SIZE));
+    state.homePage = Math.min(state.homePage, totalPages);
+    const start = (state.homePage - 1) * PAGE_SIZE;
+    renderGrid('#latest-grid', items.slice(start, start + PAGE_SIZE));
+    renderPagination('#home-pagination', items.length, state.homePage, (page) => { state.homePage = page; renderHome(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    renderContinue();
   }
 
-  function renderPagination(total) {
-    const pagination = $('#browse-pagination');
+  function renderPagination(selector, total, currentPage, onPage) {
+    const pagination = $(selector);
     if (!pagination) return;
     pagination.replaceChildren();
     const totalPages = Math.ceil(total / PAGE_SIZE);
@@ -67,18 +72,18 @@
       button.type = 'button'; button.className = `page-btn${active ? ' active' : ''}`;
       button.textContent = label; button.disabled = disabled;
       button.setAttribute('aria-label', `หน้า ${label}`);
-      button.onclick = () => { state.page = page; renderBrowse(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+      button.onclick = () => onPage(page);
       pagination.append(button);
     };
-    addButton('‹', Math.max(1, state.page - 1), state.page === 1);
+    addButton('‹', Math.max(1, currentPage - 1), currentPage === 1);
     for (let page = 1; page <= totalPages; page += 1) {
-      if (totalPages > 7 && page > 2 && page < totalPages - 1 && Math.abs(page - state.page) > 1) {
+      if (totalPages > 7 && page > 2 && page < totalPages - 1 && Math.abs(page - currentPage) > 1) {
         if (!pagination.querySelector('.ellipsis')) { const gap = document.createElement('span'); gap.className = 'ellipsis'; gap.textContent = '…'; pagination.append(gap); }
         continue;
       }
-      addButton(String(page), page, false, page === state.page);
+      addButton(String(page), page, false, page === currentPage);
     }
-    addButton('›', Math.min(totalPages, state.page + 1), state.page === totalPages);
+    addButton('›', Math.min(totalPages, currentPage + 1), currentPage === totalPages);
   }
   function renderBrowse() {
     const list = filtered();
@@ -87,7 +92,7 @@
     const start = (state.page - 1) * PAGE_SIZE;
     $('#browse-count').textContent = `พบ ${list.length.toLocaleString('th-TH')} เรื่อง · หน้า ${state.page}/${totalPages}`;
     renderGrid('#browse-grid', list.slice(start, start + PAGE_SIZE), 'ไม่พบอนิเมะที่ตรงกับคำค้นหา');
-    renderPagination(list.length);
+    renderPagination('#browse-pagination', list.length, state.page, (page) => { state.page = page; renderBrowse(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
   }
   function renderMyList() { const list = favorites(); $('#mylist-count').textContent = `${list.length} เรื่อง`; renderGrid('#mylist-grid', list, 'ยังไม่มีอนิเมะในรายการโปรด'); }
   function renderAll() { renderHome(); renderBrowse(); renderMyList(); $('#fav-badge').textContent = favorites().length; }

@@ -52,7 +52,7 @@
   function renderHome() {
     const items = state.items; const hero = $('#hero'); const main = items[0];
     if (hero && main) { hero.style.setProperty('--hero-image', `url("${clean(main.image).replace(/"/g, '')}")`); hero.innerHTML = ''; const copy = document.createElement('div'); copy.className = 'hero-copy'; const eyebrow = document.createElement('div'); eyebrow.className = 'eyebrow'; eyebrow.textContent = 'AnimeFume • อัปเดตล่าสุด'; const h = document.createElement('h1'); h.textContent = titleOf(main); const p = document.createElement('p'); p.textContent = 'เลือกดูอนิเมะที่คุณชอบจากรายการล่าสุดของเรา'; const button = document.createElement('a'); button.className = 'primary'; button.href = normalizeLink(main); button.textContent = 'เริ่มดูเลย'; copy.append(eyebrow, h, p, button); hero.append(copy); }
-    renderGrid('#trending-grid', items.slice(0, 8)); renderGrid('#latest-grid', items.slice(0, 20)); renderContinue();
+    renderGrid('#latest-grid', items.slice(0, 20)); renderContinue();
   }
 
   function renderBrowse() { const list = filtered(); $('#browse-count').textContent = `พบ ${list.length.toLocaleString('th-TH')} เรื่อง`; renderGrid('#browse-grid', list, 'ไม่พบอนิเมะที่ตรงกับคำค้นหา'); }

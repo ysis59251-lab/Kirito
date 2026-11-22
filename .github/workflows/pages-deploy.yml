@@ -33,11 +33,24 @@ jobs:
         uses: actions/configure-pages@v5
         with:
           enablement: true
+      - name: Prepare website files
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          rsync -a \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='admin-android/' \
+            --exclude='tools/' \
+            --exclude='node_modules/' \
+            --exclude='Downloads/' \
+            ./ _site/
       - name: Upload site artifact
         uses: actions/upload-artifact@v4
         with:
           name: github-pages
-          path: .
+          path: _site
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

@@ -34,8 +34,9 @@ jobs:
         with:
           enablement: true
       - name: Upload site artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
+          name: github-pages
           path: .
       - name: Deploy to GitHub Pages
         id: deployment

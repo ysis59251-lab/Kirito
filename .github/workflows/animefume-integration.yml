@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
     paths:
-      - 'home.html'
       - 'index2.html'
       - 'index3.html'
       - 'search.html'

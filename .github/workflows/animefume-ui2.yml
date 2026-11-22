@@ -9,7 +9,6 @@ on:
       - 'style2.css'
       - 'animefume-ui2.css'
       - 'animefume-corner-fix.css'
-      - 'home.html'
       - 'index2.html'
       - 'index3.html'
   workflow_dispatch:
@@ -51,7 +50,7 @@ jobs:
         shell: bash
         run: |
           set -e
-          for html in home.html index2.html index3.html; do
+          for html in index2.html index3.html; do
             if [ -f "$html" ] && ! grep -qF 'animefume-menu-fix.js' "$html"; then
               sed -i 's#</body>#<script src="animefume-menu-fix.js"></script>\n</body>#' "$html"
               echo "Added menu fix to $html"
@@ -61,12 +60,12 @@ jobs:
       - name: Commit UI changes
         shell: bash
         run: |
-          if git diff --quiet -- style.css style1.css style2.css home.html index2.html index3.html; then
+          if git diff --quiet -- style.css style1.css style2.css index2.html index3.html; then
             echo 'No UI changes needed.'
             exit 0
           fi
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add style.css style1.css style2.css home.html index2.html index3.html
+          git add style.css style1.css style2.css index2.html index3.html
           git commit -m 'ทำเมนูมือถือแบบเลื่อนออก'
           git push

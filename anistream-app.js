@@ -87,12 +87,8 @@
   }
   function renderBrowse() {
     const list = filtered();
-    const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
-    state.page = Math.min(state.page, totalPages);
-    const start = (state.page - 1) * PAGE_SIZE;
-    $('#browse-count').textContent = `พบ ${list.length.toLocaleString('th-TH')} เรื่อง · หน้า ${state.page}/${totalPages}`;
-    renderGrid('#browse-grid', list.slice(start, start + PAGE_SIZE), 'ไม่พบอนิเมะที่ตรงกับคำค้นหา');
-    renderPagination('#browse-pagination', list.length, state.page, (page) => { state.page = page; renderBrowse(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    $('#browse-count').textContent = `พบ ${list.length.toLocaleString('th-TH')} เรื่อง`;
+    renderGrid('#browse-grid', list, 'ไม่พบอนิเมะที่ตรงกับคำค้นหา');
   }
   function renderMyList() { const list = favorites(); $('#mylist-count').textContent = `${list.length} เรื่อง`; renderGrid('#mylist-grid', list, 'ยังไม่มีอนิเมะในรายการโปรด'); }
   function renderAll() { renderHome(); renderBrowse(); renderMyList(); $('#fav-badge').textContent = favorites().length; }

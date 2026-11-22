@@ -2,7 +2,8 @@
   'use strict';
   const FAV_KEY = 'animefume_favorites_v2';
   const HISTORY_KEY = 'animefume_watch_history_v2';
-  const state = { items: [], query: '', category: 'all' };
+  const state = { items: [], query: '', category: 'all', page: 1 };
+  const PAGE_SIZE = 20;
   const $ = (selector) => document.querySelector(selector);
   const clean = (value) => String(value ?? '').trim();
   const read = (key) => { try { const value = JSON.parse(localStorage.getItem(key) || '[]'); return Array.isArray(value) ? value : []; } catch { return []; } };
@@ -55,7 +56,39 @@
     renderGrid('#latest-grid', items.slice(0, 20)); renderContinue();
   }
 
-  function renderBrowse() { const list = filtered(); $('#browse-count').textContent = `พบ ${list.length.toLocaleString('th-TH')} เรื่อง`; renderGrid('#browse-grid', list, 'ไม่พบอนิเมะที่ตรงกับคำค้นหา'); }
+  function renderPagination(total) {
+    const pagination = $('#browse-pagination');
+    if (!pagination) return;
+    pagination.replaceChildren();
+    const totalPages = Math.ceil(total / PAGE_SIZE);
+    if (totalPages <= 1) return;
+    const addButton = (label, page, disabled = false, active = false) => {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = `page-btn${active ? ' active' : ''}`;
+      button.textContent = label; button.disabled = disabled;
+      button.setAttribute('aria-label', `หน้า ${label}`);
+      button.onclick = () => { state.page = page; renderBrowse(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
+      pagination.append(button);
+    };
+    addButton('‹', Math.max(1, state.page - 1), state.page === 1);
+    for (let page = 1; page <= totalPages; page += 1) {
+      if (totalPages > 7 && page > 2 && page < totalPages - 1 && Math.abs(page - state.page) > 1) {
+        if (!pagination.querySelector('.ellipsis')) { const gap = document.createElement('span'); gap.className = 'ellipsis'; gap.textContent = '…'; pagination.append(gap); }
+        continue;
+      }
+      addButton(String(page), page, false, page === state.page);
+    }
+    addButton('›', Math.min(totalPages, state.page + 1), state.page === totalPages);
+  }
+  function renderBrowse() {
+    const list = filtered();
+    const totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+    state.page = Math.min(state.page, totalPages);
+    const start = (state.page - 1) * PAGE_SIZE;
+    $('#browse-count').textContent = `พบ ${list.length.toLocaleString('th-TH')} เรื่อง · หน้า ${state.page}/${totalPages}`;
+    renderGrid('#browse-grid', list.slice(start, start + PAGE_SIZE), 'ไม่พบอนิเมะที่ตรงกับคำค้นหา');
+    renderPagination(list.length);
+  }
   function renderMyList() { const list = favorites(); $('#mylist-count').textContent = `${list.length} เรื่อง`; renderGrid('#mylist-grid', list, 'ยังไม่มีอนิเมะในรายการโปรด'); }
   function renderAll() { renderHome(); renderBrowse(); renderMyList(); $('#fav-badge').textContent = favorites().length; }
 
@@ -70,11 +103,11 @@
   window.refreshAnimeFumeCatalog = () => refreshCatalog(true);
 
   window.switchTab = (name) => { document.querySelectorAll('.view').forEach((view) => view.classList.toggle('active', view.id === `view-${name}`)); document.querySelectorAll('[data-nav],[data-mobile-nav]').forEach((button) => button.classList.toggle('active', button.dataset.nav === name || button.dataset.mobileNav === name)); if (name === 'browse') renderBrowse(); if (name === 'mylist') renderMyList(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
-  window.handleHeaderSearch = (value) => { state.query = clean(value); $('#browse-input').value = state.query; switchTab('browse'); renderBrowse(); };
+  window.handleHeaderSearch = (value) => { state.query = clean(value); state.page = 1; $('#browse-input').value = state.query; switchTab('browse'); renderBrowse(); };
 
   document.addEventListener('DOMContentLoaded', async () => {
-    $('#browse-input')?.addEventListener('input', (event) => { state.query = clean(event.target.value); renderBrowse(); });
-    document.querySelectorAll('[data-category]').forEach((button) => button.addEventListener('click', () => { state.category = button.dataset.category; document.querySelectorAll('[data-category]').forEach((item) => item.classList.toggle('active', item === button)); renderBrowse(); }));
+    $('#browse-input')?.addEventListener('input', (event) => { state.query = clean(event.target.value); state.page = 1; renderBrowse(); });
+    document.querySelectorAll('[data-category]').forEach((button) => button.addEventListener('click', () => { state.category = button.dataset.category; state.page = 1; document.querySelectorAll('[data-category]').forEach((item) => item.classList.toggle('active', item === button)); renderBrowse(); }));
     try { await refreshCatalog(); }
     catch { const error = document.createElement('div'); error.className = 'error'; error.textContent = 'โหลดรายการไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่'; $('#latest-grid')?.replaceChildren(error); }
     window.setInterval(() => { if (!document.hidden) refreshCatalog(true).catch(() => {}); }, 30000);

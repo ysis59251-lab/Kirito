@@ -9,8 +9,8 @@
 *{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',sans-serif}
 body{
   min-height:100vh;
-  background:#000;
-  color:#fff;
+  background:#0b0d14;
+  color:#f8fafc;
   display:flex;
   align-items:center;
   justify-content:center;
@@ -18,38 +18,39 @@ body{
 #bg{
   position:fixed;
   inset:0;
-  background:url("https://wallpapers.com/images/hd/street-crossing-aesthetic-anime-scenery-l83ai5pxcgb259mv.jpg") center/cover;
+  background:radial-gradient(circle at 15% 10%,rgba(255,59,107,.18),transparent 35%),radial-gradient(circle at 85% 90%,rgba(124,58,237,.2),transparent 40%),#0b0d14;
   z-index:-1;
-  filter:blur(2px) brightness(.6);
 }
 .report-card{
   width:92%;
   max-width:420px;
-  background:rgba(0,0,0,.75);
+  background:#141824;
   backdrop-filter:blur(10px);
-  border-radius:20px;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:23px;
   padding:18px;
   box-shadow:0 10px 30px rgba(0,0,0,.7);
 }
-.report-card h1{font-size:20px;margin-bottom:6px}
-.report-card p{font-size:13px;color:#ccc;margin-bottom:14px}
+.report-card h1{font-size:20px;margin-bottom:6px;color:#f8fafc}
+.report-card p{font-size:13px;color:#94a3b8;margin-bottom:14px}
 input,textarea{
   width:100%;
-  background:#000;
-  border:1px solid #333;
+  background:#0b0d14;
+  border:1px solid rgba(255,255,255,.1);
   border-radius:12px;
   color:#fff;
   padding:10px;
   margin-bottom:10px;
   font-size:14px;
 }
+input:focus,textarea:focus{outline:0;border-color:#ff3b6b;box-shadow:0 0 0 3px rgba(255,59,107,.12)}
 textarea{min-height:110px;resize:none}
 button{
   width:100%;
   padding:12px;
   border:none;
   border-radius:14px;
-  background:#ff3b3b;
+  background:linear-gradient(135deg,#ff3b6b,#7c3aed);
   color:#fff;
   font-size:15px;
   cursor:pointer;
@@ -59,7 +60,7 @@ button:disabled{opacity:.6}
   margin-top:10px;
   text-align:center;
   font-size:13px;
-  color:#aaa;
+  color:#94a3b8;
   cursor:pointer;
 }
 .back:hover{color:#fff}
@@ -154,10 +155,10 @@ btn.onclick = async () => {
 function showSuccess(){
   const card = document.querySelector(".report-card");
   card.innerHTML = `
-    <h1 style="color:#4cff7a">ส่งเรียบร้อย ✅</h1>
+    <h1 style="color:#35e0c1">ส่งเรียบร้อย</h1>
     <p>ขอบคุณที่ช่วยแจ้งปัญหา</p>
     <button onclick="location.href='../home.html'"
-      style="margin-top:10px;background:#4cff7a;color:#000">
+      style="margin-top:10px;background:linear-gradient(135deg,#ff3b6b,#7c3aed);color:#fff">
       กลับหน้าแรก
     </button>
   `;

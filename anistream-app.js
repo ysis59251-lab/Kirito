@@ -59,13 +59,25 @@
   function renderMyList() { const list = favorites(); $('#mylist-count').textContent = `${list.length} เรื่อง`; renderGrid('#mylist-grid', list, 'ยังไม่มีอนิเมะในรายการโปรด'); }
   function renderAll() { renderHome(); renderBrowse(); renderMyList(); $('#fav-badge').textContent = favorites().length; }
 
+  async function refreshCatalog(force = false) {
+    const rows = await window.fetchAnimeFumeSheet('Sheet1', { force });
+    const unique = new Map();
+    rows.forEach((item) => { const key = keyOf(item); if (key && !unique.has(key)) unique.set(key, item); });
+    state.items = [...unique.values()];
+    renderAll();
+    window.dispatchEvent(new CustomEvent('animefume:catalog-updated', { detail: { count: state.items.length } }));
+  }
+  window.refreshAnimeFumeCatalog = () => refreshCatalog(true);
+
   window.switchTab = (name) => { document.querySelectorAll('.view').forEach((view) => view.classList.toggle('active', view.id === `view-${name}`)); document.querySelectorAll('[data-nav],[data-mobile-nav]').forEach((button) => button.classList.toggle('active', button.dataset.nav === name || button.dataset.mobileNav === name)); if (name === 'browse') renderBrowse(); if (name === 'mylist') renderMyList(); window.scrollTo({ top: 0, behavior: 'smooth' }); };
   window.handleHeaderSearch = (value) => { state.query = clean(value); $('#browse-input').value = state.query; switchTab('browse'); renderBrowse(); };
 
   document.addEventListener('DOMContentLoaded', async () => {
     $('#browse-input')?.addEventListener('input', (event) => { state.query = clean(event.target.value); renderBrowse(); });
     document.querySelectorAll('[data-category]').forEach((button) => button.addEventListener('click', () => { state.category = button.dataset.category; document.querySelectorAll('[data-category]').forEach((item) => item.classList.toggle('active', item === button)); renderBrowse(); }));
-    try { const rows = await window.fetchAnimeFumeSheet('Sheet1'); const unique = new Map(); rows.forEach((item) => { const key = keyOf(item); if (key && !unique.has(key)) unique.set(key, item); }); state.items = [...unique.values()]; renderAll(); }
+    try { await refreshCatalog(); }
     catch { const error = document.createElement('div'); error.className = 'error'; error.textContent = 'โหลดรายการไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่'; $('#latest-grid')?.replaceChildren(error); }
+    window.setInterval(() => { if (!document.hidden) refreshCatalog(true).catch(() => {}); }, 30000);
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshCatalog(true).catch(() => {}); });
   });
 })();

@@ -28,8 +28,10 @@
     });
   }
 
-  async function fetchSheet(sheet) {
+  async function fetchSheet(sheet, options = {}) {
     const key = String(sheet || 'Sheet1');
+    const force = options === true || options?.force === true;
+    if (force) cache.delete(key);
     if (cache.has(key)) return cache.get(key);
     if (pending.has(key)) return pending.get(key);
     const request = (async () => {

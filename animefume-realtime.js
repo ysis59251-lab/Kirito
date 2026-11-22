@@ -2,6 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getDatabase,
   ref,
+  goOnline,
   set,
   onValue,
   onDisconnect,
@@ -230,6 +231,12 @@ const heartbeat = async () => {
 };
 
 try {
+  goOnline(db);
+  onValue(ref(db, ".info/connected"), (snapshot) => {
+    window.dispatchEvent(new CustomEvent("animefume:realtime-status", {
+      detail: { connected: snapshot.val() === true }
+    }));
+  });
   onDisconnect(userRef).remove().catch((error) => console.warn("AnimeFume disconnect hook failed", error));
   onValue(ref(db, "siteConfig/announcement"), renderAnnouncement);
   onValue(ref(db, "siteConfig/overlay"), renderScreenOverlay);

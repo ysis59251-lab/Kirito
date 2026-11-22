@@ -64,6 +64,7 @@ data class AdminSession(val uid: String, val role: String, val email: String)
 @Composable
 private fun AnimeFumeAdminApp() {
     val auth = remember { FirebaseAuth.getInstance() }
+    val database = remember { FirebaseDatabase.getInstance(RTDB_URL) }
     var user by remember { mutableStateOf(auth.currentUser) }
     var session by remember { mutableStateOf<AdminSession?>(null) }
     var checking by remember { mutableStateOf(user != null) }
@@ -72,16 +73,28 @@ private fun AnimeFumeAdminApp() {
     LaunchedEffect(user?.uid) {
         if (user == null) { session = null; checking = false; return@LaunchedEffect }
         checking = true
-        FirebaseDatabase.getInstance(RTDB_URL).getReference("adminUsers/${user!!.uid}").get()
-            .addOnSuccessListener { snapshot ->
-                val active = snapshot.exists() && (snapshot.child("active").getValue(Boolean::class.java) == true || snapshot.child("active").getValue(String::class.java)?.equals("true", ignoreCase = true) == true)
-                val role = snapshot.child("role").getValue(String::class.java) ?: "admin"
-                val email = snapshot.child("email").getValue(String::class.java) ?: user!!.email.orEmpty()
-                session = if (active) AdminSession(user!!.uid, role, email) else null
-                error = if (!active) "บัญชีนี้ยังไม่ได้รับสิทธิ์ผู้ดูแลระบบ" else null
-                checking = false
-            }
-            .addOnFailureListener { error = "ตรวจสอบสิทธิ์ไม่สำเร็จ: ${it.localizedMessage}"; checking = false }
+        database.goOnline()
+        fun checkAdmin(attempt: Int) {
+            database.getReference("adminUsers/${user!!.uid}").get()
+                .addOnSuccessListener { snapshot ->
+                    val active = snapshot.exists() && (snapshot.child("active").getValue(Boolean::class.java) == true || snapshot.child("active").getValue(String::class.java)?.equals("true", ignoreCase = true) == true)
+                    val role = snapshot.child("role").getValue(String::class.java) ?: "admin"
+                    val email = snapshot.child("email").getValue(String::class.java) ?: user!!.email.orEmpty()
+                    session = if (active) AdminSession(user!!.uid, role, email) else null
+                    error = if (!active) "บัญชีนี้ยังไม่ได้รับสิทธิ์ผู้ดูแลระบบ" else null
+                    checking = false
+                }
+                .addOnFailureListener {
+                    if (attempt < 2) {
+                        database.goOnline()
+                        Handler(Looper.getMainLooper()).postDelayed({ checkAdmin(attempt + 1) }, 1200L)
+                    } else {
+                        error = "เชื่อมต่อ Firebase ไม่สำเร็จ กรุณาตรวจสอบอินเทอร์เน็ตแล้วลองใหม่"
+                        checking = false
+                    }
+                }
+        }
+        checkAdmin(0)
     }
 
     MaterialTheme(colorScheme = darkColorScheme(primary = Mint, background = Bg, surface = Panel, onSurface = Color.White)) {

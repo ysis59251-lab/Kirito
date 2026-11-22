@@ -15,7 +15,7 @@
   const isDub = (item) => /พากย์ไทย|พากย์/i.test(titleOf(item).replace(/\s+/g, ''));
 
   function card(item) {
-    const link = document.createElement('a'); link.className = 'card'; link.href = normalizeLink(item);
+    const link = document.createElement('a'); link.className = 'card'; link.href = normalizeLink(item); link.dataset.id = clean(item.id || item.anime || item.title);
     const poster = document.createElement('div'); poster.className = 'poster';
     const image = document.createElement('img'); image.src = clean(item.image); image.alt = titleOf(item); image.loading = 'lazy'; image.onerror = () => { image.style.opacity = '.18'; };
     const title = document.createElement('span'); title.className = 'card-title'; title.textContent = titleOf(item);

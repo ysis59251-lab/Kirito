@@ -77,7 +77,7 @@ button:disabled{opacity:.6}
   <textarea id="detail" placeholder="อธิบายปัญหาที่พบ..."></textarea>
 
   <button id="sendBtn">ส่งปัญหา</button>
-  <div class="back" onclick="history.back()">← กลับหน้าเดิม</div>
+  <div class="back" onclick="location.href='../home.html'">← กลับหน้าแรก</div>
 </div>
 
 <script type="module">
@@ -156,9 +156,9 @@ function showSuccess(){
   card.innerHTML = `
     <h1 style="color:#4cff7a">ส่งเรียบร้อย ✅</h1>
     <p>ขอบคุณที่ช่วยแจ้งปัญหา</p>
-    <button onclick="history.back()" 
+    <button onclick="location.href='../home.html'"
       style="margin-top:10px;background:#4cff7a;color:#000">
-      กลับหน้าเดิม
+      กลับหน้าแรก
     </button>
   `;
 }

@@ -1,5 +1,9 @@
 package com.animefume.admin
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -21,6 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -58,6 +63,7 @@ data class OnlineUser(val id: String, val page: String, val title: String, val t
 data class ReportItem(val id: String, val page: String, val detail: String, val time: Long, val read: Boolean, val meta: String)
 data class Announcement(val id: String, val title: String, val body: String, val active: Boolean, val updatedAt: Long)
 data class Assistant(val uid: String, val email: String, val role: String, val active: Boolean)
+data class UrlItem(val id: String, val title: String, val url: String, val anime: String, val episode: String, val type: String, val note: String, val active: Boolean, val updatedAt: Long)
 
 data class AdminSession(val uid: String, val role: String, val email: String)
 
@@ -187,8 +193,8 @@ private fun LoginScreen(error: String?, onLogin: (String, String) -> Unit) {
 @Composable
 private fun AdminConsole(session: AdminSession, onSignOut: () -> Unit) {
     var tab by remember { mutableIntStateOf(0) }
-    val tabs = listOf("ภาพรวม", "รายงาน", "ประกาศ", "จัดการอนิเมะ", "เพิ่มตอน", "Overlay", "ผู้ช่วย")
-    Scaffold(topBar = { TopAppBar(title = { Column { Text("AnimeFume Admin", fontWeight = FontWeight.Bold); Text("${session.role} • ${session.email}", color = Muted, style = MaterialTheme.typography.labelSmall) } }, actions = { IconButton(onClick = onSignOut) { Icon(Icons.Default.Logout, "ออกจากระบบ") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Bg)) }, bottomBar = { NavigationBar(containerColor = Panel) { tabs.forEachIndexed { index, label -> NavigationBarItem(selected = tab == index, onClick = { tab = index }, icon = { Icon(listOf(Icons.Default.Dashboard, Icons.Default.ReportProblem, Icons.Default.Campaign, Icons.Default.Layers, Icons.Default.VideoLibrary, Icons.Default.Image, Icons.Default.GroupAdd)[index], null) }, label = { Text(label) }) } } }, containerColor = Bg) { padding ->
+    val tabs = listOf("ภาพรวม", "รายงาน", "ประกาศ", "จัดการอนิเมะ", "เพิ่มตอน", "URL", "Overlay", "ผู้ช่วย")
+    Scaffold(topBar = { TopAppBar(title = { Column { Text("AnimeFume Admin", fontWeight = FontWeight.Bold); Text("${session.role} • ${session.email}", color = Muted, style = MaterialTheme.typography.labelSmall) } }, actions = { IconButton(onClick = onSignOut) { Icon(Icons.Default.Logout, "ออกจากระบบ") } }, colors = TopAppBarDefaults.topAppBarColors(containerColor = Bg)) }, bottomBar = { NavigationBar(containerColor = Panel) { tabs.forEachIndexed { index, label -> NavigationBarItem(selected = tab == index, onClick = { tab = index }, icon = { Icon(listOf(Icons.Default.Dashboard, Icons.Default.ReportProblem, Icons.Default.Campaign, Icons.Default.Layers, Icons.Default.VideoLibrary, Icons.Default.Link, Icons.Default.Image, Icons.Default.GroupAdd)[index], null) }, label = { Text(label) }) } } }, containerColor = Bg) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
             when (tab) {
                 0 -> OverviewScreen(session)
@@ -196,7 +202,8 @@ private fun AdminConsole(session: AdminSession, onSignOut: () -> Unit) {
                 2 -> AnnouncementScreen(session.role)
                 3 -> AnimeManagementScreen(session.role)
                 4 -> AddEpisodeScreen(session.uid)
-                5 -> OverlayScreen(session.role)
+                5 -> UrlLibraryScreen(session)
+                6 -> OverlayScreen(session.role)
                 else -> AssistantsScreen(session)
             }
         }
@@ -469,6 +476,114 @@ private fun AnimeManagementScreen(role: String) {
 }
 
 @Composable
+private fun UrlLibraryScreen(session: AdminSession) {
+    val db = remember { FirebaseDatabase.getInstance(RTDB_URL) }
+    val context = LocalContext.current
+    var items by remember { mutableStateOf<List<UrlItem>>(emptyList()) }
+    var title by remember { mutableStateOf("") }
+    var url by remember { mutableStateOf("") }
+    var anime by remember { mutableStateOf("") }
+    var episode by remember { mutableStateOf("") }
+    var type by remember { mutableStateOf("วิดีโอ") }
+    var note by remember { mutableStateOf("") }
+    var query by remember { mutableStateOf("") }
+    var status by remember { mutableStateOf<String?>(null) }
+    var saving by remember { mutableStateOf(false) }
+    DisposableEffect(Unit) {
+        val ref = db.getReference("urlLibrary")
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                items = snapshot.children.mapNotNull { child ->
+                    val cleanUrl = child.child("url").getValue(String::class.java).orEmpty()
+                    if (child.key.isNullOrBlank() || cleanUrl.isBlank()) null else UrlItem(
+                        child.key!!,
+                        child.child("title").getValue(String::class.java).orEmpty(),
+                        cleanUrl,
+                        child.child("anime").getValue(String::class.java).orEmpty(),
+                        child.child("episode").getValue(String::class.java).orEmpty(),
+                        child.child("type").getValue(String::class.java) ?: "อื่นๆ",
+                        child.child("note").getValue(String::class.java).orEmpty(),
+                        readBoolean(child, "active"),
+                        child.child("updatedAt").getValue(Long::class.java) ?: 0L
+                    )
+                }.sortedByDescending { it.updatedAt }
+            }
+            override fun onCancelled(error: DatabaseError) { status = "โหลดคลัง URL ไม่สำเร็จ: ${error.message}" }
+        }
+        ref.addValueEventListener(listener)
+        onDispose { ref.removeEventListener(listener) }
+    }
+    val visible = items.filter { query.isBlank() || listOf(it.title, it.url, it.anime, it.episode, it.type).any { value -> value.contains(query, true) } }
+    LazyColumn(Modifier.fillMaxSize().padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
+        item {
+            Text("คลัง URL", style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+            Text("รวบรวมลิงก์จากแหล่งต่าง ๆ ไว้ใน Firebase เดียวกับเว็บและแอป Admin", color = Muted)
+        }
+        item {
+            Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(18.dp)) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Text("เพิ่ม URL ใหม่", fontWeight = FontWeight.Bold)
+                    EpisodeField("ชื่อรายการ / คำอธิบาย", title) { title = it }
+                    EpisodeField("URL (http/https)", url, KeyboardType.Uri) { url = it }
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        EpisodeField("รหัส/ชื่ออนิเมะ", anime, onValueChange = { anime = it }, modifier = Modifier.weight(1f))
+                        EpisodeField("ตอน", episode, KeyboardType.Number, modifier = Modifier.weight(0.55f)) { episode = it }
+                    }
+                    EpisodeField("ประเภท เช่น วิดีโอ / รูป / แหล่งข้อมูล", type) { type = it }
+                    EpisodeField("หมายเหตุ (ไม่บังคับ)", note) { note = it }
+                    Button(onClick = {
+                        val cleanUrl = url.trim()
+                        try {
+                            val parsed = URL(cleanUrl)
+                            if (parsed.protocol !in listOf("http", "https") || parsed.host.isBlank()) throw IllegalArgumentException("URL ต้องเป็น http/https")
+                            saving = true
+                            val id = db.getReference("urlLibrary").push().key ?: throw IllegalStateException("สร้างรหัสรายการไม่สำเร็จ")
+                            db.getReference("urlLibrary/$id").setValue(mapOf("title" to title.trim(), "url" to cleanUrl, "anime" to anime.trim(), "episode" to episode.trim(), "type" to type.trim().ifBlank { "อื่นๆ" }, "note" to note.trim(), "active" to true, "createdBy" to session.uid, "updatedAt" to System.currentTimeMillis()))
+                                .addOnSuccessListener { title = ""; url = ""; anime = ""; episode = ""; note = ""; status = "เพิ่ม URL แล้ว"; saving = false }
+                                .addOnFailureListener { status = "บันทึกไม่สำเร็จ: ${it.localizedMessage ?: "ตรวจสอบสิทธิ์ Firebase"}"; saving = false }
+                        } catch (e: Exception) { status = e.localizedMessage ?: "URL ไม่ถูกต้อง" }
+                    }, enabled = !saving && url.isNotBlank(), modifier = Modifier.fillMaxWidth()) { if (saving) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp) else Text("เพิ่มเข้าคลัง URL") }
+                    if (status != null) Text(status!!, color = if (status!!.contains("แล้ว")) Mint else Danger, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+        }
+        item { OutlinedTextField(query, { query = it }, Modifier.fillMaxWidth(), label = { Text("ค้นหา URL ในคลัง") }, singleLine = true) }
+        item { Text("รายการทั้งหมด ${visible.size} รายการ", color = Muted, style = MaterialTheme.typography.labelLarge) }
+        if (visible.isEmpty()) item { EmptyCard("ยังไม่มี URL ในคลัง") }
+        items(visible, key = { it.id }) { item -> UrlLibraryCard(item, db, session, context) }
+    }
+}
+
+@Composable
+private fun EpisodeField(label: String, value: String, type: KeyboardType = KeyboardType.Text, modifier: Modifier = Modifier, onValueChange: (String) -> Unit) {
+    OutlinedTextField(value, onValueChange, modifier.fillMaxWidth(), label = { Text(label) }, singleLine = label != "เรื่องย่อ" && !label.contains("หมายเหตุ"), keyboardOptions = KeyboardOptions(keyboardType = type))
+}
+
+@Composable
+private fun UrlLibraryCard(item: UrlItem, db: FirebaseDatabase, session: AdminSession, context: android.content.Context) {
+    Card(colors = CardDefaults.cardColors(containerColor = if (item.active) Panel else Panel2), shape = RoundedCornerShape(14.dp)) {
+        Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(item.title.ifBlank { "ไม่มีชื่อรายการ" }, fontWeight = FontWeight.Bold)
+                    Text(listOf(item.type, item.anime.takeIf { it.isNotBlank() }?.let { "เรื่อง $it" }, item.episode.takeIf { it.isNotBlank() }?.let { "ตอน $it" }).filterNotNull().joinToString(" • "), color = Muted, style = MaterialTheme.typography.bodySmall)
+                }
+                Text(if (item.active) "ใช้งาน" else "ซ่อน", color = if (item.active) Mint else Muted, style = MaterialTheme.typography.labelSmall)
+            }
+            Text(item.url, color = Mint, style = MaterialTheme.typography.bodySmall, maxLines = 2)
+            if (item.note.isNotBlank()) Text(item.note, color = Muted, style = MaterialTheme.typography.bodySmall)
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                TextButton(onClick = { (context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText("AnimeFume URL", item.url)); statusToast(context, "คัดลอก URL แล้ว") }) { Text("คัดลอก") }
+                TextButton(onClick = { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(item.url))) }) { Text("เปิด") }
+                if (session.role == "owner") TextButton(onClick = { db.getReference("urlLibrary/${item.id}").removeValue() }) { Text("ลบ", color = Danger) }
+            }
+        }
+    }
+}
+
+private fun statusToast(context: android.content.Context, message: String) { android.widget.Toast.makeText(context, message, android.widget.Toast.LENGTH_SHORT).show() }
+
+@Composable
 private fun OverlayScreen(role: String) {
     val db = remember { FirebaseDatabase.getInstance(RTDB_URL) }
     var title by remember { mutableStateOf("") }
@@ -558,7 +673,6 @@ private fun AssistantsScreen(session: AdminSession) {
     }
 }
 
-@Composable private fun EpisodeField(label: String, value: String, type: KeyboardType = KeyboardType.Text, onValueChange: (String) -> Unit) { OutlinedTextField(value, onValueChange, Modifier.fillMaxWidth(), label = { Text(label) }, singleLine = label != "เรื่องย่อ", keyboardOptions = KeyboardOptions(keyboardType = type)) }
 @Composable private fun MetricCard(label: String, value: String, color: Color, modifier: Modifier) { Card(modifier, colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(16.dp)) { Column(Modifier.padding(14.dp)) { Text(label, color = Muted); Text(value, color = color, style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.Bold) } } }
 @Composable private fun StatusCard(label: String, value: String, ok: Boolean) { Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(16.dp)) { Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically) { Icon(if (ok) Icons.Default.CloudDone else Icons.Default.CloudOff, null, tint = if (ok) Mint else Warning); Spacer(Modifier.width(10.dp)); Column { Text(label, fontWeight = FontWeight.Bold); Text(value, color = Muted, style = MaterialTheme.typography.bodySmall) } } } }
 @Composable private fun EmptyCard(message: String) { Card(colors = CardDefaults.cardColors(containerColor = Panel), shape = RoundedCornerShape(16.dp)) { Text(message, Modifier.fillMaxWidth().padding(18.dp), color = Muted) } }

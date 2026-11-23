@@ -36,4 +36,5 @@ Do not deploy the rules blindly if the production database uses additional paths
 - Announcement management backed by Realtime Database `siteConfig/announcement`, including publish and live on/off controls for owners; the website listens to the same path.
 - Episode submission from Android to the existing Google Apps Script endpoint used by the website, including Thai dub/sub options.
 - Owner-only assistant management through Realtime Database `adminUsers/{uid}` with active/role/email fields.
+- Shared URL library at Realtime Database `urlLibrary/{urlId}`. Active admins can add and view validated HTTP/HTTPS URLs; only the owner can delete entries.
 - Role-aware navigation with a dedicated overview, reports, announcements, episode entry and assistants workspace.

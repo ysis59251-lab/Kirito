@@ -41,6 +41,12 @@
     "videoImports": {
       ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true",
       ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true"
+    },
+    "urlLibrary": {
+      ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true",
+      "$urlId": {
+        ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true && (newData.exists() || root.child('adminUsers').child(auth.uid).child('role').val() == 'owner')"
+      }
     }
   }
 }

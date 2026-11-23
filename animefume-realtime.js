@@ -219,8 +219,10 @@ const renderScreenOverlay = (snapshot) => {
 };
 
 const heartbeat = async () => {
-  await anonymousAuthReady;
+  const viewer = await anonymousAuthReady;
+  if (!viewer) throw new Error("anonymous authentication unavailable");
   await update(userRef, {
+    authUid: viewer.uid,
     page: location.pathname,
     title: document.title || "AnimeFume",
     time: Date.now(),

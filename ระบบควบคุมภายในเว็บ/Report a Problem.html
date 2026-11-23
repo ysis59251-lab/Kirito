@@ -85,6 +85,8 @@ button:disabled{opacity:.6}
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, push, set }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getAuth, signInAnonymously }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC_eG_drnzYDUSyNBapN7kJ7XaYsbkhCwA",
@@ -96,6 +98,11 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
+const anonymousAuthReady = signInAnonymously(auth).catch((error) => {
+  console.warn("Anonymous report authentication unavailable", error);
+  return null;
+});
 
 const btn = document.getElementById("sendBtn");
 
@@ -127,6 +134,9 @@ btn.onclick = async () => {
   btn.textContent = "กำลังส่ง...";
 
   try{
+
+    const viewer = await anonymousAuthReady;
+    if(!viewer) throw new Error("ไม่สามารถยืนยันตัวตนผู้แจ้งปัญหาได้");
 
     const reportData = {
       page,

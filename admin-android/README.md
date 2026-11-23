@@ -14,9 +14,9 @@ Native Android admin companion app, separate from the public AnimeFume website.
 Open this `admin-android` folder in AndroidIDE, sync Gradle, then build `app:assembleDebug`.
 
 ## Security status
-Firebase Authentication verifies identity only. The app additionally reads `adminUsers/{uid}` from Realtime Database, but **Realtime Database Security Rules must enforce admin permissions server-side** before connecting any management/write operations. Do not rely on hiding screens in the APK. Do not put service-account keys, private API secrets, or admin passwords in the app.
+Firebase Authentication verifies identity, while the production Realtime Database Rules enforce admin permissions server-side for management and write operations. The app additionally reads `adminUsers/{uid}` after sign-in. Do not rely on hiding screens in the APK. Do not put service-account keys, private API secrets, or admin passwords in the app.
 
-The repository includes a tightened reference policy at `../database.rules.example.json`. It requires Firebase Authentication for website realtime reads, allows an anonymous viewer to access only its own session record, and keeps management writes restricted to the owner/admin allow-list. This file is a reference until it is deployed to the existing `mpmp-5864a` project; verify the owner account and admin access in a staging/test window before deploying production rules.
+The repository includes the tightened policy used for the existing `mpmp-5864a` project at `../database.rules.example.json`. It requires Firebase Authentication for website realtime reads, allows an anonymous viewer to access only its own session record, and keeps management writes restricted to the owner/admin allow-list. After any rules change, verify the owner account and assistant access in a staging/test window before publishing.
 
 The episode endpoint is a legacy Google Apps Script deployment. The app now rejects an HTML/Google Sign-in response instead of showing a false success, but the endpoint must be deployed as a web app accessible to the intended caller and must validate a Firebase ID token server-side. The client-supplied `adminUid` is not an authentication mechanism.
 

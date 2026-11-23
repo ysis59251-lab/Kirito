@@ -4,52 +4,43 @@
     ".write": false,
     "adminUsers": {
       "$uid": {
-        ".read": "auth != null && (auth.uid === $uid || root.child('adminUsers').child(auth.uid).child('role').val() === 'owner')",
-        ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() === 'owner' && $uid !== auth.uid",
-        ".validate": "newData.hasChildren(['active', 'role']) && newData.child('role').val() in ['owner', 'admin']"
+        ".read": "auth != null && (auth.uid == $uid || root.child('adminUsers').child(auth.uid).child('role').val() == 'owner')",
+        ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() == 'owner' && $uid != auth.uid"
       }
     },
     "onlineUsers": {
       "$sid": {
-        ".read": "auth != null && (auth.uid === $sid || root.child('adminUsers').child(auth.uid).child('active').val() === true)",
-        ".write": "auth != null && (auth.token.firebase.sign_in_provider === 'anonymous' || root.child('adminUsers').child(auth.uid).child('active').val() === true)",
-        ".validate": "newData.hasChildren(['time', 'page']) && newData.child('time').isNumber() && newData.child('page').isString()"
+        ".read": "auth != null",
+        ".write": "auth != null && auth.token.firebase.sign_in_provider == 'anonymous'"
       }
     },
     "blockedSessions": {
       "$sid": {
-        ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true",
-        ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() in ['owner', 'admin']"
+        ".read": "auth != null",
+        ".write": "auth != null && (root.child('adminUsers').child(auth.uid).child('role').val() == 'owner' || root.child('adminUsers').child(auth.uid).child('role').val() == 'admin')"
       }
     },
     "settings": {
       ".read": "auth != null",
-      ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() === 'owner'"
+      ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() == 'owner'"
     },
     "siteConfig": {
       ".read": "auth != null",
-      ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() === 'owner'"
+      ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() == 'owner'"
     },
     "contentOverrides": {
       ".read": "auth != null",
-      ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() in ['owner', 'admin']"
+      ".write": "auth != null && (root.child('adminUsers').child(auth.uid).child('role').val() == 'owner' || root.child('adminUsers').child(auth.uid).child('role').val() == 'admin')"
     },
     "reports": {
-      ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true",
+      ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true",
       "$report": {
-        ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true"
+        ".write": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || root.child('adminUsers').child(auth.uid).child('active').val() == true)"
       }
     },
     "videoImports": {
-      ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true",
-      ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() === true"
-    },
-    "animeViews": {
-      "$animeId": {
-        ".read": "auth != null",
-        ".write": "auth != null && auth.token.firebase.sign_in_provider === 'anonymous'",
-        ".validate": "newData.isNumber() && newData.val() >= 0"
-      }
+      ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true",
+      ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true"
     }
   }
 }

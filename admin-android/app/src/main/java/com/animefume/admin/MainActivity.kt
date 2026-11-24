@@ -684,6 +684,7 @@ private fun AssistantsScreen(session: AdminSession) {
 
 private fun sendEpisode(uid: String, anime: String, name: String, episode: String, video: String, desc: String, cover: String, languages: List<String>, done: (String) -> Unit) {
     Thread {
+        var completed = 0
         try {
             val cleanVideo = video.trim()
             val cleanCover = cover.trim()
@@ -694,7 +695,6 @@ private fun sendEpisode(uid: String, anime: String, name: String, episode: Strin
             requireHttpUrl(cleanVideo, "ลิงก์วิดีโอ")
             if (cleanCover.isNotBlank()) requireHttpUrl(cleanCover, "ลิงก์รูปปก")
             if (episode.trim().toDoubleOrNull() == null || episode.trim().toDouble() < 0) throw IllegalArgumentException("ตอนต้องเป็นตัวเลขที่ไม่ติดลบ")
-            var completed = 0
             languages.forEach { language ->
                 val payload = JSONObject().apply { put("anime", anime.trim()); put("name", name.trim()); put("episode", episode.trim()); put("title", language); put("video_url", cleanVideo); put("desc", desc.trim()); put("cover", cleanCover); put("adminUid", uid) }
                 val connection = URL(API_URL).openConnection() as HttpURLConnection

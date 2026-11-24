@@ -447,9 +447,14 @@ fetch(API)
 
   document.getElementById("animeName").innerText = info.name || "";
 
-  document.getElementById("desc").innerHTML =
-    `<b>📖 เรื่องย่อ</b><br><br>` +
-    (info.desc || "").replace(/\n/g,"<br><br>");
+  const synopsisElement = document.getElementById("desc");
+  const synopsisHeading = document.createElement("b");
+  synopsisHeading.textContent = "📖 เรื่องย่อ";
+  synopsisElement.replaceChildren(
+    synopsisHeading,
+    document.createTextNode("\n\n" + String(info.desc || ""))
+  );
+  synopsisElement.style.whiteSpace = "pre-line";
 
   document.getElementById("coverImg").src = info.cover || "";
 

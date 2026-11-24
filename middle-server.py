@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """AnimeFume middle server: static files plus a same-origin Google Sheets proxy."""
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 from urllib.request import Request, urlopen
 from html import escape
 import json
 import os
+from pathlib import PurePosixPath
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SHEET_ID = '1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58'
@@ -13,6 +14,13 @@ SHEET_ID = '1zY3E1ovode0tfMAcAkX0Jk5Cwvkay_tY8cbbdRGYH58'
 class Handler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=ROOT, **kwargs)
+
+    def translate_path(self, path):
+        # Never expose repository metadata, dotenv files, or Python caches through this convenience server.
+        decoded = unquote(urlparse(path).path)
+        if any(part.startswith('.') and part != '.well-known' or part == '__pycache__' for part in PurePosixPath(decoded).parts):
+            return os.path.join(ROOT, '__blocked__')
+        return super().translate_path(path)
 
     def do_GET(self):
         parsed = urlparse(self.path)
@@ -86,6 +94,9 @@ class Handler(SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', '8769'))
-    server = ThreadingHTTPServer(('0.0.0.0', port), Handler)
-    print(f'AnimeFume middle server listening on http://127.0.0.1:{port}', flush=True)
+    host = os.environ.get('BIND_HOST', '127.0.0.1')
+    if host not in {'127.0.0.1', 'localhost', '::1'}:
+        print('WARNING: non-loopback bind exposes this static server to the network; place it behind access controls.', flush=True)
+    server = ThreadingHTTPServer((host, port), Handler)
+    print(f'AnimeFume middle server listening on http://{host}:{port}', flush=True)
     server.serve_forever()

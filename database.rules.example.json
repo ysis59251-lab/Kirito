@@ -9,15 +9,17 @@
       }
     },
     "onlineUsers": {
+      ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true && (root.child('adminUsers').child(auth.uid).child('role').val() == 'owner' || root.child('adminUsers').child(auth.uid).child('role').val() == 'admin')",
       "$sid": {
-        ".read": "auth != null",
-        ".write": "auth != null && auth.token.firebase.sign_in_provider == 'anonymous'"
+        ".read": "auth != null && (data.child('authUid').val() == auth.uid || (auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true && (root.child('adminUsers').child(auth.uid).child('role').val() == 'owner' || root.child('adminUsers').child(auth.uid).child('role').val() == 'admin')))",
+        ".write": "auth != null && ((auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true && (root.child('adminUsers').child(auth.uid).child('role').val() == 'owner' || root.child('adminUsers').child(auth.uid).child('role').val() == 'admin')) || (auth.token.firebase.sign_in_provider == 'anonymous' && ((data.exists() && data.child('authUid').val() == auth.uid && (!newData.exists() || (newData.child('authUid').val() == auth.uid && !newData.child('kicked').exists() && !newData.child('blocked').exists() && !newData.child('commandAt').exists()))) || (!data.exists() && newData.exists() && newData.child('authUid').val() == auth.uid && !newData.child('kicked').exists() && !newData.child('blocked').exists() && !newData.child('commandAt').exists()))))"
       }
     },
     "blockedSessions": {
       "$sid": {
-        ".read": "auth != null",
-        ".write": "auth != null && (root.child('adminUsers').child(auth.uid).child('role').val() == 'owner' || root.child('adminUsers').child(auth.uid).child('role').val() == 'admin')"
+        ".read": "auth != null && ((auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true && (root.child('adminUsers').child(auth.uid).child('role').val() == 'owner' || root.child('adminUsers').child(auth.uid).child('role').val() == 'admin')) || root.child('onlineUsers').child($sid).child('authUid').val() == auth.uid)",
+        ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true && (root.child('adminUsers').child(auth.uid).child('role').val() == 'owner' || root.child('adminUsers').child(auth.uid).child('role').val() == 'admin')",
+        ".validate": "newData.isBoolean()"
       }
     },
     "settings": {
@@ -35,7 +37,8 @@
     "reports": {
       ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true",
       "$report": {
-        ".write": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || root.child('adminUsers').child(auth.uid).child('active').val() == true)"
+        ".write": "auth != null && (auth.token.firebase.sign_in_provider == 'anonymous' || root.child('adminUsers').child(auth.uid).child('active').val() == true)",
+        ".validate": "newData.hasChildren(['page','detail','time','read','userAgent','language','screen']) && newData.child('page').isString() && newData.child('page').val().length <= 300 && newData.child('detail').isString() && newData.child('detail').val().length <= 2000 && newData.child('time').isNumber() && newData.child('read').isBoolean() && newData.child('userAgent').isString() && newData.child('userAgent').val().length <= 300 && newData.child('language').isString() && newData.child('language').val().length <= 40 && newData.child('screen').isString() && newData.child('screen').val().length <= 40"
       }
     },
     "videoImports": {

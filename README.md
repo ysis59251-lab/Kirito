@@ -24,3 +24,5 @@ python3 -m http.server 4173
 ```
 
 แล้วเปิด `http://localhost:4173` ในเบราว์เซอร์
+
+หากต้องการใช้ Google Sheets proxy ให้รัน `python3 middle-server.py` (พอร์ต 8769) ซึ่ง bind เฉพาะ `127.0.0.1` โดยปริยายและปิดการเสิร์ฟ dotfiles; อย่ากำหนด `BIND_HOST` เป็น public interface เว้นแต่จะวางหลังระบบควบคุมการเข้าถึงที่เหมาะสม

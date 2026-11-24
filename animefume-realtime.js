@@ -36,6 +36,8 @@ const sid = sessionStorage.getItem(sidKey) || crypto.randomUUID();
 sessionStorage.setItem(sidKey, sid);
 const userRef = ref(db, `onlineUsers/${sid}`);
 let maintenanceActive = false;
+let maintenanceSettingActive = false;
+let maintenanceSystemState = "";
 let heartbeatTimer = null;
 let interactionBlockerInstalled = false;
 let viewerBlocked = false;
@@ -271,9 +273,16 @@ try {
   contentObserver.observe(document.body, { childList: true, subtree: true });
   onValue(ref(db, `onlineUsers/${sid}`), handleViewerControl);
   onValue(ref(db, `blockedSessions/${sid}`), (snapshot) => { if (snapshot.val() === true) showViewerAccessOverlay("blocked"); });
-  onValue(ref(db, "settings"), (snapshot) => {
-    const settings = snapshot.val() || {};
-    renderMaintenance({ val: () => settings.maintenanceMode === true || settings.systemState === "stopped" });
+  const updateMaintenanceState = () => {
+    renderMaintenance({ val: () => maintenanceSettingActive || maintenanceSystemState === "stopped" });
+  };
+  onValue(ref(db, "settings/maintenanceMode"), (snapshot) => {
+    maintenanceSettingActive = snapshot.val() === true;
+    updateMaintenanceState();
+  });
+  onValue(ref(db, "settings/systemState"), (snapshot) => {
+    maintenanceSystemState = snapshot.val() || "";
+    updateMaintenanceState();
   });
   onValue(ref(db, "settings/notificationsEnabled"), (snapshot) => {
     notificationsEnabled = snapshot.val() !== false;

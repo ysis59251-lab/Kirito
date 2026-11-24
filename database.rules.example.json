@@ -3,6 +3,7 @@
     ".read": false,
     ".write": false,
     "adminUsers": {
+      ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true && root.child('adminUsers').child(auth.uid).child('role').val() == 'owner'",
       "$uid": {
         ".read": "auth != null && (auth.uid == $uid || root.child('adminUsers').child(auth.uid).child('role').val() == 'owner')",
         ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('role').val() == 'owner' && $uid != auth.uid"
@@ -16,6 +17,7 @@
       }
     },
     "blockedSessions": {
+      ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true && (root.child('adminUsers').child(auth.uid).child('role').val() == 'owner' || root.child('adminUsers').child(auth.uid).child('role').val() == 'admin')",
       "$sid": {
         ".read": "auth != null && ((auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true && (root.child('adminUsers').child(auth.uid).child('role').val() == 'owner' || root.child('adminUsers').child(auth.uid).child('role').val() == 'admin')) || root.child('onlineUsers').child($sid).child('authUid').val() == auth.uid)",
         ".write": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true && (root.child('adminUsers').child(auth.uid).child('role').val() == 'owner' || root.child('adminUsers').child(auth.uid).child('role').val() == 'admin')",
@@ -33,6 +35,13 @@
     "contentOverrides": {
       ".read": "auth != null",
       ".write": "auth != null && (root.child('adminUsers').child(auth.uid).child('role').val() == 'owner' || root.child('adminUsers').child(auth.uid).child('role').val() == 'admin')"
+    },
+    "animeViews": {
+      ".read": "auth != null",
+      "$animeId": {
+        ".write": "auth != null && auth.token.firebase.sign_in_provider == 'anonymous' && ((!data.exists() && newData.isNumber() && newData.val() == 1) || (data.isNumber() && newData.isNumber() && newData.val() == data.val() + 1))",
+        ".validate": "newData.isNumber() && newData.val() >= 0"
+      }
     },
     "reports": {
       ".read": "auth != null && root.child('adminUsers').child(auth.uid).child('active').val() == true",

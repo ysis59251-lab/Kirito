@@ -2,6 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/fireba
 import {
   getDatabase,
   ref,
+  runTransaction,
   goOnline,
   set,
   onValue,
@@ -17,8 +18,8 @@ const firebaseConfig = {
   databaseURL: "https://mpmp-5864a-default-rtdb.firebaseio.com",
   projectId: "mpmp-5864a",
   storageBucket: "mpmp-5864a.firebasestorage.app",
-  messagingSenderId: "1071327366091",
-  appId: "1:1071327366091:android:b1d3cf11e7d8706462c44e"
+  messagingSenderId: "220776049054",
+  appId: "1:1071327366091:web:53524fb1e90ba83a12ce8f"
 };
 
 const app = initializeApp(firebaseConfig, "animefume-realtime");
@@ -231,6 +232,29 @@ const heartbeat = async () => {
     screen: `${window.innerWidth}x${window.innerHeight}`
   });
 };
+
+const recordAnimeView = async (event) => {
+  const id = String(event?.detail?.id ?? "").trim();
+  if (!/^[A-Za-z0-9_-]{1,120}$/.test(id)) return;
+  const cooldownKey = `animefume_view_${id}`;
+  const now = Date.now();
+  try {
+    const last = Number(localStorage.getItem(cooldownKey) || 0);
+    if (last > 0 && now - last < 10_000) return;
+    localStorage.setItem(cooldownKey, String(now));
+  } catch {}
+  const viewer = await anonymousAuthReady;
+  if (!viewer) return;
+  await runTransaction(ref(db, `animeViews/${id}`), (current) => {
+    if (current == null) return 1;
+    const count = Number(current);
+    return Number.isFinite(count) && count >= 0 ? count + 1 : 1;
+  });
+};
+
+window.addEventListener("animefume:view", (event) => {
+  recordAnimeView(event).catch((error) => console.warn("AnimeFume view count failed", error));
+});
 
 try {
   goOnline(db);
